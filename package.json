@@ -37,5 +37,8 @@
   },
   "peerDependencies": {
     "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@joint/react": "^1.0.0-alpha.5"
   }
 }
