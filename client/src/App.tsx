@@ -1,51 +1,22 @@
-import { useState } from 'react'
-import beaver from './assets/beaver.svg'
-import type { ApiResponse } from 'shared'
-import './App.css'
-
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000"
+import { dia, shapes } from "@joint/core";
+import { createElements, createLinks } from "@joint/react";
+import "./App.css";
 
 function App() {
-  const [data, setData] = useState<ApiResponse | undefined>()
+    const namespace = shapes;
 
-  async function sendRequest() {
-    try {
-      const req = await fetch(`${SERVER_URL}/hello`)
-      const res: ApiResponse = await req.json()
-      setData(res)
-    } catch (error) {
-      console.log(error)
-    }
-  }
+    const graph = new dia.Graph({}, { cellNamespace: namespace });
 
-  return (
-    <>
-      <div>
-        <a href="https://github.com/stevedylandev/bhvr" target="_blank">
-          <img src={beaver} className="logo" alt="beaver logo" />
-        </a>
-      </div>
-      <h1>bhvr</h1>
-      <h2>Bun + Hono + Vite + React</h2>
-      <p>A typesafe fullstack monorepo</p>
-      <div className="card">
-        <div className='button-container'>
-          <button onClick={sendRequest}>
-            Call API
-          </button>
-          <a className='docs-link' target='_blank' href="https://bhvr.dev">Docs</a>
-        </div>
-        {data && (
-          <pre className='response'>
-            <code>
-            Message: {data.message} <br />
-            Success: {data.success.toString()}
-            </code>
-          </pre>
-        )}
-      </div>
-    </>
-  )
+    const paper = new dia.Paper({
+        el: document.getElementById("paper"),
+        model: graph,
+        width: "90vw",
+        height: "90vh",
+        background: { color: "#F5F5F5" },
+        cellViewNamespace: namespace,
+    });
+
+    return <div id="paper"></div>;
 }
 
-export default App
+export default App;
