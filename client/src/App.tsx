@@ -16,6 +16,55 @@ function App() {
         cellViewNamespace: namespace,
     });
 
+    const state = new shapes.standard.Circle();
+    state.position(200, 200); // posição
+    state.resize(80, 80); // tamanho
+    state.attr({
+        body: {
+            fill: "#ffffff",
+            stroke: "#000000",
+            strokeWidth: 2,
+        },
+        label: {
+            text: "q0", // Nome do estado
+            fill: "#000000",
+            fontSize: 16,
+        },
+    });
+    graph.addCell(state);
+
+    const finalState = new shapes.standard.Circle();
+    finalState.position(400, 200);
+    finalState.resize(80, 80);
+    finalState.attr({
+        body: {
+            fill: "#ffffff",
+            stroke: "#000000",
+            strokeWidth: 2,
+        },
+        label: {
+            text: "q1",
+            fill: "#000000",
+            fontSize: 16,
+        },
+    });
+
+    // Exemplo: criar transição (seta)
+    const link = new shapes.standard.Link();
+    link.source(state);
+    link.target(finalState);
+    link.attr({
+        line: {
+            stroke: "#000000",
+            strokeWidth: 2,
+            targetMarker: {
+                type: "path",
+                d: "M 10 -5 0 0 10 5 Z", // seta
+            },
+        },
+    });
+    graph.addCell(link);
+
     return <div id="paper"></div>;
 }
 
