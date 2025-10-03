@@ -1,84 +1,61 @@
-import { dia, shapes } from "@joint/core";
-// import { createElements, createLinks } from "@joint/react";
-import "./App.css";
+import { useCallback } from "react";
+import { GraphProvider, Paper, createElements, createLinks, GraphElement } from "@joint/react";
 
-function App() {
-    const namespace = shapes;
+const initialElements = createElements([
+    { id: "q0", label: "q0", x: 100, y: 100, initial: true, width: 60, height: 60 },
+    { id: "q1", label: "q1", x: 200, y: 100,  width: 60, height: 60 },
+    { id: "q2", label: "q2", x: 300, y: 100, final: true, width: 60, height: 60 },
+]);
+const initialLinks = createLinks([
+    { id: "t1", source: "q0", target: "q1", label: "a" },
+    { id: "t2", source: "q1", target: "q2", label: "up" },
+]);
 
-    const graph = new dia.Graph({}, { cellNamespace: namespace });
+function DiagramExample() {
+    // Renderização de cada nó
+    const renderElement = useCallback((element: GraphElement) => {
+        const final = element.accepting === true;
+        return (
+            <div
+                style={{
+                    padding: "15px",
+                    border: final ? "5px double #000000" : "2px solid #3498db",
+                    borderRadius: "30px",
+                    background: "white",
+                    textAlign: "center",
+                }}
+            >
+                {element.initial && (
+                    <span
+                        style={{
+                            position: "absolute",
+                            left: "-50px",
+                            top: "-5px",
+                            fontSize: "50px",
+                            color: "#e74c3c"
 
-    const paper = new dia.Paper({
-        el: document.getElementById("paper"),
-        model: graph,
-        width: "90vw",
-        height: "90vh",
-        background: { color: "#F5F5F5" },
-        cellViewNamespace: namespace,
-    });
+                        }}
+                    >
+                        →
+                    </span>
+                )}{" "}
+                {String(element.label)}
+            </div>
+        );
+    }, []);
 
-    // /* --- estado inicial (já com createElements/createLinks) --- */
-    // const initialStates = createElements([
-    //     { id: "q0", label: "q0", x: 100, y: 100, initial: true, width: 60, height: 60 },
-    //     { id: "q1", label: "q1", x: 200, y: 100, accepting: false, width: 60, height: 60 },
-    //     { id: "q2", label: "q2", x: 300, y: 100, accepting: true, width: 60, height: 60 },
-    // ]);
-    // const initialLinks = createLinks([
-    //     { id: "t1", source: "q0", target: "q1", label: "a" },
-    //     { id: "t2", source: "q1", target: "q2", label: "a" },
-    // ]);
-
-    const state = new shapes.standard.Circle();
-    state.position(200, 200); // posição
-    state.resize(80, 80); // tamanho
-    state.attr({
-        body: {
-            fill: "#ffffff",
-            stroke: "#000000",
-            strokeWidth: 2,
-        },
-        label: {
-            text: "q0", // Nome do estado
-            fill: "#000000",
-            fontSize: 16,
-        },
-    });
-    graph.addCell(state);
-
-    const finalState = new shapes.standard.Circle();
-    finalState.position(400, 200);
-    finalState.resize(80, 80);
-    finalState.attr({
-        body: {
-            fill: "#ffffff",
-            stroke: "#000000",
-            strokeWidth: 5,
-        },
-        label: {
-            text: "q1",
-            fill: "#000000",
-            fontSize: 16,
-        },
-    });
-    graph.addCell(finalState);
-
-    
-    // Exemplo: criar transição (seta)
-    const link = new shapes.standard.Link();
-    link.source(state);
-    link.target(finalState);
-    link.attr({
-        line: {
-            stroke: "#000000",
-            strokeWidth: 2,
-            targetMarker: {
-                type: "path",
-                d: "M 10 -5 0 0 10 5 Z", // seta
-            },
-        },
-    });
-    graph.addCell(link);
-
-    return <div id="paper"></div>;
+    return (
+        <div style={{ height: "400px", width: "90%", border: "1px solid #96fff6d9", background: "#7a91a5" }}>
+            <Paper width={8000} height={400} renderElement={renderElement} useHTMLOverlay />
+        </div>
+    );
 }
 
-export default App;
+// App com GraphProvider
+export default function App() {
+    return (
+        <GraphProvider initialElements={initialElements} initialLinks={initialLinks}>
+            <DiagramExample />
+        </GraphProvider>
+    );
+}
