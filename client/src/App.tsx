@@ -1,5 +1,5 @@
 import { dia, shapes } from "@joint/core";
-import { createElements, createLinks } from "@joint/react";
+// import { createElements, createLinks } from "@joint/react";
 import "./App.css";
 
 function App() {
@@ -15,6 +15,17 @@ function App() {
         background: { color: "#F5F5F5" },
         cellViewNamespace: namespace,
     });
+
+    // /* --- estado inicial (já com createElements/createLinks) --- */
+    // const initialStates = createElements([
+    //     { id: "q0", label: "q0", x: 100, y: 100, initial: true, width: 60, height: 60 },
+    //     { id: "q1", label: "q1", x: 200, y: 100, accepting: false, width: 60, height: 60 },
+    //     { id: "q2", label: "q2", x: 300, y: 100, accepting: true, width: 60, height: 60 },
+    // ]);
+    // const initialLinks = createLinks([
+    //     { id: "t1", source: "q0", target: "q1", label: "a" },
+    //     { id: "t2", source: "q1", target: "q2", label: "a" },
+    // ]);
 
     const state = new shapes.standard.Circle();
     state.position(200, 200); // posição
@@ -40,7 +51,7 @@ function App() {
         body: {
             fill: "#ffffff",
             stroke: "#000000",
-            strokeWidth: 2,
+            strokeWidth: 5,
         },
         label: {
             text: "q1",
@@ -48,7 +59,9 @@ function App() {
             fontSize: 16,
         },
     });
+    graph.addCell(finalState);
 
+    
     // Exemplo: criar transição (seta)
     const link = new shapes.standard.Link();
     link.source(state);
