@@ -1,11 +1,11 @@
 import { useCallback } from "react";
-import { GraphProvider, Paper, createElements, createLinks, GraphElement, GraphLink } from "@joint/react";
+import { GraphProvider, Paper, createElements, createLinks, GraphElement } from "@joint/react";
 
 const initialElements = createElements([
     { id: "q0", label: "q0", x: 100, y: 150, initial: true, width: 60, height: 60 },
     { id: "q1", label: "q1", x: 200, y: 300, width: 60, height: 60 },
     { id: "q2", label: "q2", x: 300, y: 150, final: true, width: 60, height: 60 },
-    { id: "q3", label: "q3", x: 500, y: 150, final: true, width: 60, height: 60 },
+    { id: "q3", label: "q3", x: 500, y: 250, final: true, width: 60, height: 60 },
 ]);
 
 function gerarLoopVertices(x: number, y: number, raio: number = 40, numVertices: number = 10) {
@@ -25,6 +25,24 @@ function gerarLoopVertices(x: number, y: number, raio: number = 40, numVertices:
     return vertices;
 }
 
+function gerarVerticesCurva(
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    altura: number = 1,
+    numVertices: number = 5
+) {
+    const vertices: { x: number; y: number }[] = [];
+    for (let i = 1; i <= numVertices; i++) {
+        const t = i / (numVertices + 1);
+        const vx = x1 + (x2 - x1) * t;
+        const vy = y1 + (y2 - y1) * t - altura * Math.sin(Math.PI * t);
+        vertices.push({ x: vx, y: vy });
+    }
+    return vertices;
+}
+
 const initialLinks = createLinks([
     { id: "t1", source: "q0", target: "q1", labels: [{ attrs: { text: { text: "a" } } }] },
     { id: "t2", source: "q1", target: "q2", labels: [{ attrs: { text: { text: "b" } } }] },
@@ -37,8 +55,31 @@ const initialLinks = createLinks([
         smooth: true,
         labels: [{ attrs: { text: { text: "a", fill: "#000" } } }],
     },
-    { id: "t5", source: "q2", target: "q3", labels: [{ attrs: { text: { text: "b" } } }] },
-    { id: "t6", source: "q3", target: "q2", labels: [{ attrs: { text: { text: "a" } } }] },
+    {
+        id: "t5",
+        source: "q2",
+        target: "q3",
+        vertices: gerarVerticesCurva(
+            initialElements[2].x,
+            initialElements[2].y,
+            initialElements[3].x,
+            initialElements[3].y
+        ),
+        labels: [{ attrs: { text: { text: "b", fill: "#000" } } }],
+    },
+    {
+        id: "t6",
+        source: "q3",
+        target: "q2",
+        vertices: gerarVerticesCurva(
+            initialElements[3].x,
+            initialElements[3].y,
+            initialElements[2].x,
+            initialElements[2].y,
+            -10
+        ),
+        labels: [{ attrs: { text: { text: "a" } } }],
+    },
 ]);
 
 function DiagramExample() {
@@ -83,22 +124,6 @@ function DiagramExample() {
                 background: "#7a91a5",
             }}
         >
-            <svg style={{ position: "absolute", width: 0, height: 0 }}>
-                <defs>
-                    <marker
-                        id="arrow"
-                        viewBox="0 0 10 10"
-                        refX="8"
-                        refY="5"
-                        markerWidth="6"
-                        markerHeight="6"
-                        orient="auto-start-reverse"
-                    >
-                        <path d="M 0 0 L 10 5 L 0 10 z" fill="black" />
-                    </marker>
-                </defs>
-            </svg>
-
             <Paper width={800} height={400} renderElement={renderElement} useHTMLOverlay />
         </div>
     );
