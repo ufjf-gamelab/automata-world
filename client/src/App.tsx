@@ -1,139 +1,249 @@
-import { useCallback } from "react";
-import { GraphProvider, Paper, createElements, createLinks, GraphElement } from "@joint/react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
+import GraphCanvas, { Node, Edge } from "./components/GraphCanvas";
+import "./styles.css";
 
-const initialElements = createElements([
-    { id: "q0", label: "q0", x: 100, y: 150, initial: true, width: 60, height: 60 },
-    { id: "q1", label: "q1", x: 200, y: 300, width: 60, height: 60 },
-    { id: "q2", label: "q2", x: 300, y: 150, final: true, width: 60, height: 60 },
-    { id: "q3", label: "q3", x: 500, y: 250, final: true, width: 60, height: 60 },
-]);
+function App() {
+    const [nodes, setNodes] = useState<Node[]>([
+        { id: "q0", label: "q0", isInitial: true, isFinal: false },
+        { id: "q1", label: "q1", isInitial: false, isFinal: true },
+    ]);
+    const [edges, setEdges] = useState<Edge[]>([{ id: crypto.randomUUID(), source: "q0", target: "q1", label: "a" }]);
+    const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+    const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
+    const [nodeCounter, setNodeCounter] = useState(2);
+    const [recenterTrigger, setRecenterTrigger] = useState(0);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
-function gerarLoopVertices(x: number, y: number, raio: number = 40, numVertices: number = 10) {
-    const vertices: { x: number; y: number }[] = [];
-    x += 30;
-
-    const angInicio = Math.PI;
-    const angFim = 2 * Math.PI;
-
-    for (let i = 0; i <= numVertices; i++) {
-        const t = angInicio + (i / numVertices) * (angFim - angInicio);
-        const vx = x + Math.cos(t) * raio;
-        const vy = y + Math.sin(t) * raio;
-        vertices.push({ x: vx, y: vy });
-    }
-
-    return vertices;
-}
-
-function gerarVerticesCurva(
-    x1: number,
-    y1: number,
-    x2: number,
-    y2: number,
-    altura: number = 1,
-    numVertices: number = 5
-) {
-    const vertices: { x: number; y: number }[] = [];
-    for (let i = 1; i <= numVertices; i++) {
-        const t = i / (numVertices + 1);
-        const vx = x1 + (x2 - x1) * t;
-        const vy = y1 + (y2 - y1) * t - altura * Math.sin(Math.PI * t);
-        vertices.push({ x: vx, y: vy });
-    }
-    return vertices;
-}
-
-const initialLinks = createLinks([
-    { id: "t1", source: "q0", target: "q1", labels: [{ attrs: { text: { text: "a" } } }] },
-    { id: "t2", source: "q1", target: "q2", labels: [{ attrs: { text: { text: "b" } } }] },
-    { id: "t3", source: "q0", target: "q2", labels: [{ attrs: { text: { text: "b" } } }] },
-    {
-        id: "t4",
-        source: "q2",
-        target: "q2",
-        vertices: gerarLoopVertices(initialElements[2].x, initialElements[2].y),
-        smooth: true,
-        labels: [{ attrs: { text: { text: "a", fill: "#000" } } }],
-    },
-    {
-        id: "t5",
-        source: "q2",
-        target: "q3",
-        vertices: gerarVerticesCurva(
-            initialElements[2].x,
-            initialElements[2].y,
-            initialElements[3].x,
-            initialElements[3].y
-        ),
-        labels: [{ attrs: { text: { text: "b", fill: "#000" } } }],
-    },
-    {
-        id: "t6",
-        source: "q3",
-        target: "q2",
-        vertices: gerarVerticesCurva(
-            initialElements[3].x,
-            initialElements[3].y,
-            initialElements[2].x,
-            initialElements[2].y,
-            -10
-        ),
-        labels: [{ attrs: { text: { text: "a" } } }],
-    },
-]);
-
-function DiagramExample() {
-    // Renderização de cada nó
-    const renderElement = useCallback((element: GraphElement) => {
-        const final = element.final === true;
-        return (
-            <div
-                style={{
-                    padding: "15px",
-                    border: final ? "5px double #000000" : "2px solid #000000",
-                    borderRadius: "30px",
-                    background: "white",
-                    textAlign: "center",
-                    position: "relative",
-                }}
-            >
-                {element.initial && (
-                    <span
-                        style={{
-                            position: "absolute",
-                            left: "-50px",
-                            top: "-5px",
-                            fontSize: "50px",
-                            color: "#e74c3c",
-                        }}
-                    >
-                        →
-                    </span>
-                )}
-                {String(element.label)}
-            </div>
-        );
+    const handleNodeClick = useCallback((nodeId: string) => {
+        setSelectedNodeId(nodeId || null);
+        setSelectedEdgeId(null);
     }, []);
 
+    const handleEdgeClick = useCallback((edgeId: string) => {
+        setSelectedEdgeId(edgeId || null);
+        setSelectedNodeId(null);
+    }, []);
+
+    const handleAddNode = useCallback(() => {
+        const newNodeId = `q${nodeCounter}`;
+        const newNode: Node = { id: newNodeId, label: newNodeId };
+        setNodes((prev) => [...prev, newNode]);
+        setNodeCounter((c) => c + 1);
+    }, [nodeCounter]);
+
+    const handleAddEdge = useCallback(() => {
+        const source = prompt("ID do estado de origem:");
+        if (!source || !nodes.find((n) => n.id === source)) return alert("Origem inválida.");
+        const target = prompt("ID do estado de destino:");
+        if (!target || !nodes.find((n) => n.id === target)) return alert("Destino inválido.");
+        const label = prompt("Símbolo da transição:");
+        if (label === null) return;
+        const newEdge: Edge = { id: crypto.randomUUID(), source, target, label };
+        setEdges((prev) => [...prev, newEdge]);
+    }, [nodes]);
+
+    const handleDeleteSelected = useCallback(() => {
+        if (selectedEdgeId) {
+            setEdges((prev) => prev.filter((e) => e.id !== selectedEdgeId));
+            setSelectedEdgeId(null);
+            return;
+        }
+        if (selectedNodeId) {
+            const remainingNodes = nodes.filter((n) => n.id !== selectedNodeId);
+            const idMap = new Map<string, string>();
+            const reindexedNodes = remainingNodes.map((node, index) => {
+                const newId = `q${index}`;
+                if (node.id !== newId) idMap.set(node.id, newId);
+                return { ...node, id: newId, label: newId };
+            });
+            const reindexedEdges = edges
+                .filter((e) => e.source !== selectedNodeId && e.target !== selectedNodeId)
+                .map((edge) => ({
+                    ...edge,
+                    source: idMap.get(edge.source) || edge.source,
+                    target: idMap.get(edge.target) || edge.target,
+                }));
+            setNodes(reindexedNodes);
+            setEdges(reindexedEdges);
+            setNodeCounter(reindexedNodes.length);
+            setSelectedNodeId(null);
+        }
+    }, [nodes, edges, selectedNodeId, selectedEdgeId]);
+
+    const handleSetInitial = useCallback(() => {
+        if (!selectedNodeId) return;
+        setNodes(nodes.map((n) => ({ ...n, isInitial: n.id === selectedNodeId })));
+    }, [nodes, selectedNodeId]);
+
+    const handleToggleFinal = useCallback(() => {
+        if (!selectedNodeId) return;
+        setNodes(nodes.map((n) => (n.id === selectedNodeId ? { ...n, isFinal: !n.isFinal } : n)));
+    }, [nodes, selectedNodeId]);
+
+    const handleEditEdge = useCallback(
+        (edgeId: string) => {
+            const edge = edges.find((e) => e.id === edgeId);
+            if (!edge) return;
+            const newLabel = prompt(`Editar transição [${edge.label}]:`, edge.label);
+            if (newLabel !== null) {
+                setEdges(edges.map((e) => (e.id === edgeId ? { ...e, label: newLabel } : e)));
+            }
+        },
+        [edges]
+    );
+
+    const handleRecenter = () => setRecenterTrigger((c) => c + 1);
+
+    const handleExport = useCallback(() => {
+        const data = JSON.stringify({ nodes, edges }, null, 2);
+        const blob = new Blob([data], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "automaton.json";
+        a.click();
+        URL.revokeObjectURL(url);
+    }, [nodes, edges]);
+
+    const handleImportClick = () => fileInputRef.current?.click();
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const result = e.target?.result;
+                if (typeof result !== "string") throw new Error("O ficheiro não é válido.");
+                const data = JSON.parse(result);
+                if (!Array.isArray(data.nodes) || !Array.isArray(data.edges)) {
+                    throw new Error("JSON em formato inválido. Precisa das chaves 'nodes' e 'edges'.");
+                }
+                setNodes(data.nodes);
+                setEdges(data.edges);
+                setNodeCounter(data.nodes.length);
+                setSelectedNodeId(null);
+                setSelectedEdgeId(null);
+                handleRecenter();
+            } catch (error) {
+                alert(`Erro ao importar o ficheiro: ${error}`);
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = "";
+    };
+
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (document.activeElement?.tagName === "INPUT") return;
+            switch (event.key.toLowerCase()) {
+                case "n":
+                    event.preventDefault();
+                    handleAddNode();
+                    break;
+                case "t":
+                    event.preventDefault();
+                    handleAddEdge();
+                    break;
+                case "s":
+                    event.preventDefault();
+                    handleSetInitial();
+                    break;
+                case "f":
+                    event.preventDefault();
+                    handleToggleFinal();
+                    break;
+                case "e":
+                    event.preventDefault();
+                    handleExport();
+                    break;
+                case "i":
+                    event.preventDefault();
+                    handleImportClick();
+                    break;
+                case "r":
+                    event.preventDefault();
+                    handleRecenter();
+                    break;
+            }
+            if (event.key === "Delete" || event.key === "Backspace") {
+                if (selectedNodeId || selectedEdgeId) {
+                    event.preventDefault();
+                    handleDeleteSelected();
+                }
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [
+        handleAddNode,
+        handleAddEdge,
+        handleDeleteSelected,
+        handleSetInitial,
+        handleToggleFinal,
+        handleExport,
+        selectedNodeId,
+        selectedEdgeId,
+    ]);
+
     return (
-        <div
-            style={{
-                height: "400px",
-                width: "90%",
-                border: "1px solid #96fff6d9",
-                background: "#7a91a5",
-            }}
-        >
-            <Paper width={800} height={400} renderElement={renderElement} useHTMLOverlay />
+        <div className="app-container">
+            <div className="menu">
+                <h3>Editor de AFD</h3>
+                <button onClick={handleAddNode}>
+                    Adicionar Estado <kbd>N</kbd>
+                </button>
+                <button onClick={handleAddEdge}>
+                    Adicionar Transição <kbd>T</kbd>
+                </button>
+                <button onClick={handleDeleteSelected} disabled={!selectedNodeId && !selectedEdgeId} className="danger">
+                    Remover <kbd>Delete</kbd>
+                </button>
+                <button onClick={handleSetInitial} disabled={!selectedNodeId}>
+                    Definir Inicial <kbd>S</kbd>
+                </button>
+                <button onClick={handleToggleFinal} disabled={!selectedNodeId}>
+                    Alternar Final <kbd>F</kbd>
+                </button>
+                <button onClick={handleRecenter} className="recenter-button">
+                    Recentralizar <kbd>R</kbd>
+                </button>
+                <button onClick={handleImportClick} className="import-button">
+                    Importar JSON <kbd>I</kbd>
+                </button>
+                <button onClick={handleExport} className="export-button">
+                    Exportar JSON <kbd>E</kbd>
+                </button>
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    accept=".json"
+                    style={{ display: "none" }}
+                />
+                <div className="instructions">
+                    <h4>Como Usar</h4>
+                    <p>
+                        • <b>Clique</b> para selecionar.
+                    </p>
+                    <p>
+                        • <b>Duplo Clique</b> na transição para editar.
+                    </p>
+                    <p>• Use os atalhos ou os botões.</p>
+                </div>
+            </div>
+            <GraphCanvas
+                nodes={nodes}
+                edges={edges}
+                selectedNodeId={selectedNodeId}
+                selectedEdgeId={selectedEdgeId}
+                onNodeClick={handleNodeClick}
+                onEdgeClick={handleEdgeClick}
+                onEdgeDoubleClick={handleEditEdge}
+                recenterTrigger={recenterTrigger}
+            />
         </div>
     );
 }
 
-// App com GraphProvider
-export default function App() {
-    return (
-        <GraphProvider initialElements={initialElements} initialLinks={initialLinks}>
-            <DiagramExample />
-        </GraphProvider>
-    );
-}
+export default App;
