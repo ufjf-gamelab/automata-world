@@ -23,7 +23,7 @@
     "test": "turbo test",
     "postinstall": "turbo build --filter=shared --filter=server",
     "predeploy": "bun run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d ./client/dist"
   },
   "keywords": [
     "bun",
