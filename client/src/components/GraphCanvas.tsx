@@ -47,7 +47,7 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const gRef = useRef<SVGGElement>(null);
-  const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown>>();
+  const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
 
   useEffect(() => {
     try {
@@ -121,7 +121,7 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
           return cls;
         });
         if (nodeData.isFinal) { singleNodeGroup.append('circle').attr('r', 24).attr('class', 'inner'); }
-        singleNodeGroup.append('text').attr('text-anchor', 'middle').attr('dy', '0.3em').text(node.label ?? '');
+        singleNodeGroup.append('text').attr('text-anchor', 'middle').attr('dy', '0.3em').text(nodeData.label ?? '');
       });
 
       const svg = d3.select(svgRef.current);
@@ -145,29 +145,32 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
 
   useEffect(() => {
     if (recenterTrigger === 0 && nodes.length > 2) return;
+    
     const svg = d3.select(svgRef.current);
     const g = d3.select(gRef.current);
     const zoom = zoomRef.current;
-    
     const svgNode = svg.node();
+    
     if (!svgNode || !g.node() || !zoom) return;
 
     const gNode = g.node() as SVGGElement;
     const { x, y, width: gWidth, height: gHeight } = gNode.getBBox();
 
-    if (gWidth === 0 || gHeight === 0) {
-        const transform = d3.zoomIdentity.translate(svgNode.clientWidth / 2, svgNode.clientHeight / 2).scale(1);
-        svg.transition().duration(750).call(zoom.transform, transform);
-        return;
+    const calculateTransform = () => {
+        if (gWidth === 0 || gHeight === 0) {
+            return d3.zoomIdentity.translate(svgNode.clientWidth / 2, svgNode.clientHeight / 2).scale(1);
+        }
+        const width = svgNode.clientWidth;
+        const height = svgNode.clientHeight;
+        const scale = Math.min(width / gWidth, height / gHeight) * 0.9;
+        const translateX = width / 2 - (x + gWidth / 2) * scale;
+        const translateY = height / 2 - (y + gHeight / 2) * scale;
+        return d3.zoomIdentity.translate(translateX, translateY).scale(scale);
     };
 
-    const width = svgNode.clientWidth;
-    const height = svgNode.clientHeight;
-    const scale = Math.min(width / gWidth, height / gHeight) * 0.9;
-    const translateX = width / 2 - (x + gWidth / 2) * scale;
-    const translateY = height / 2 - (y + gHeight / 2) * scale;
-    const transform = d3.zoomIdentity.translate(translateX, translateY).scale(scale);
-    svg.transition().duration(750).call(zoom.transform, transform);
+    const transform = calculateTransform();
+    
+    (svg.transition().duration(750) as any).call(zoom.transform, transform);
 
   }, [recenterTrigger, nodes, edges]);
 
