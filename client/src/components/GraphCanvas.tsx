@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
-// Declara a variável 'dagre' como global para o TypeScript
+// Declara a variável 'dagre' como global para o TypeScript, pois é carregada via <script>
 declare const dagre: any;
 
 export interface Node {
@@ -32,18 +32,24 @@ interface GraphCanvasProps {
   onEdgeClick: (edgeId: string) => void;
   onEdgeDoubleClick: (edgeId: string) => void;
   recenterTrigger: number;
+  activeNodeId: string | null;
+  activeEdgeId: string | null;
+  failedNodeId: string | null;
 }
 
 const NODE_WIDTH = 60;
 const NODE_HEIGHT = 60;
 
-const GraphCanvas: React.FC<GraphCanvasProps> = ({ nodes, edges, selectedNodeId, selectedEdgeId, onNodeClick, onEdgeClick, onEdgeDoubleClick, recenterTrigger }) => {
+const GraphCanvas: React.FC<GraphCanvasProps> = ({ 
+    nodes, edges, selectedNodeId, selectedEdgeId, 
+    onNodeClick, onEdgeClick, onEdgeDoubleClick, recenterTrigger,
+    activeNodeId, activeEdgeId, failedNodeId 
+}) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const gRef = useRef<SVGGElement>(null);
-  const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
+  const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown>>();
 
   useEffect(() => {
-    // Adicionado um bloco try-catch para capturar erros de renderização
     try {
       if (typeof dagre === 'undefined') {
         console.error('Dagre.js não foi carregado. Verifique a tag <script> no seu index.html.');
@@ -66,13 +72,13 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({ nodes, edges, selectedNodeId,
       const defs = mainGroup.append('defs');
       defs.append('marker').attr('id', 'arrowhead').attr('viewBox', '-0 -5 10 10').attr('refX', 30).attr('refY', 0).attr('orient', 'auto').attr('markerWidth', 6).attr('markerHeight', 6).append('svg:path').attr('d', 'M 0,-5 L 10 ,0 L 0,5').attr('fill', '#999');
       defs.append('marker').attr('id', 'arrowhead-selected').attr('viewBox', '-0 -5 10 10').attr('refX', 30).attr('refY', 0).attr('orient', 'auto').attr('markerWidth', 6).attr('markerHeight', 6).append('svg:path').attr('d', 'M 0,-5 L 10 ,0 L 0,5').attr('fill', '#007bff');
-      defs.append('marker').attr('viewBox', '-0 -5 10 10').attr('refX', 0).attr('refY', 0).attr('orient', 'auto').attr('markerWidth', 6).attr('markerHeight', 6).append('svg:path').attr('d', 'M 0,-5 L 10 ,0 L 0,5').attr('fill', '#28a745');
+      defs.append('marker').attr('id', 'arrowhead-initial').attr('viewBox', '-0 -5 10 10').attr('refX', 0).attr('refY', 0).attr('orient', 'auto').attr('markerWidth', 6).attr('markerHeight', 6).append('svg:path').attr('d', 'M 0,-5 L 10 ,0 L 0,5').attr('fill', '#28a745');
 
       const initialNodeData = nodes.find(n => n.isInitial);
       if (initialNodeData) {
           const initialNodeCoords = g.node(initialNodeData.id);
           if (initialNodeCoords) {
-              mainGroup.append('path').attr('d', `M ${initialNodeCoords.x - 60},${initialNodeCoords.y} L ${initialNodeCoords.x - 32},${initialNodeCoords.y}`).attr('marker-end', 'url(#arrowhead-initial)');
+              mainGroup.append('path').attr('class', 'initial-arrow').attr('d', `M ${initialNodeCoords.x - 60},${initialNodeCoords.y} L ${initialNodeCoords.x - 32},${initialNodeCoords.y}`).attr('marker-end', 'url(#arrowhead-initial)');
           }
       }
         
@@ -81,8 +87,12 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({ nodes, edges, selectedNodeId,
           const dagreEdge = g.edge({ v: edgeData.source, w: edgeData.target, name: edgeData.id });
           if (!dagreEdge) return;
           
+          const isSelected = edgeData.id === selectedEdgeId;
+          const isActive = edgeData.id === activeEdgeId;
+
           const lineGenerator = d3.line<Point>().x(d => d.x).y(d => d.y).curve(d3.curveBasis);
-          const edgeElement = edgeGroup.append('g').attr('class', 'edge')
+          const edgeElement = edgeGroup.append('g')
+            .attr('class', `edge ${isActive ? 'active' : ''}`)
             .on('click', (event) => { event.stopPropagation(); onEdgeClick(edgeData.id); })
             .on('dblclick', (event) => { event.stopPropagation(); onEdgeDoubleClick(edgeData.id); });
             
@@ -90,9 +100,9 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({ nodes, edges, selectedNodeId,
             .attr('id', `path-${edgeData.id}`)
             .attr('d', lineGenerator(dagreEdge.points))
             .attr('fill', 'none')
-            .attr('stroke', edgeData.id === selectedEdgeId ? '#007bff' : '#999')
-            .attr('stroke-width', edgeData.id === selectedEdgeId ? 3 : 2)
-            .attr('marker-end', `url(#${edgeData.id === selectedEdgeId ? 'arrowhead-selected' : 'arrowhead'})`);
+            .attr('stroke', isSelected || isActive ? '#007bff' : '#999')
+            .attr('stroke-width', isSelected || isActive ? 3 : 2)
+            .attr('marker-end', `url(#${isSelected || isActive ? 'arrowhead-selected' : 'arrowhead'})`);
 
           edgeElement.append('text').append('textPath').attr('xlink:href', `#path-${edgeData.id}`).attr('startOffset', '50%').attr('text-anchor', 'middle').text(edgeData.label);
       });
@@ -102,29 +112,39 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({ nodes, edges, selectedNodeId,
         const node = g.node(nodeData.id);
         if (!node) return;
         const singleNodeGroup = nodeGroup.append('g').attr('class', 'node').attr('transform', `translate(${node.x}, ${node.y})`).on('click', (event) => { event.stopPropagation(); onNodeClick(nodeData.id); });
-        singleNodeGroup.append('circle').attr('r', 30).attr('class', () => { let cls = 'outer'; if (nodeData.id === selectedNodeId) cls += ' selected'; if (nodeData.isInitial) cls += ' initial'; return cls; });
+        singleNodeGroup.append('circle').attr('r', 30).attr('class', () => {
+          let cls = 'outer';
+          if (nodeData.id === selectedNodeId) cls += ' selected';
+          if (nodeData.id === activeNodeId) cls += ' active';
+          if (nodeData.id === failedNodeId) cls += ' failed';
+          if (nodeData.isInitial) cls += ' initial';
+          return cls;
+        });
         if (nodeData.isFinal) { singleNodeGroup.append('circle').attr('r', 24).attr('class', 'inner'); }
         singleNodeGroup.append('text').attr('text-anchor', 'middle').attr('dy', '0.3em').text(node.label ?? '');
       });
 
+      const svg = d3.select(svgRef.current);
       if (!zoomRef.current) {
           const zoom = d3.zoom<SVGSVGElement, unknown>().on('zoom', (event) => {
-            d3.select(gRef.current).attr('transform', event.transform.toString());
+            mainGroup.attr('transform', event.transform.toString());
           });
           zoomRef.current = zoom;
-          
-          const svg = d3.select(svgRef.current);
           svg.call(zoom).on("dblclick.zoom", null);
-          svg.on('click', () => { onNodeClick(''); onEdgeClick(''); });
       }
+      
+      svg.on('click', () => {
+          onNodeClick('');
+          onEdgeClick('');
+      });
+    
     } catch (error) {
         console.error("Ocorreu um erro ao renderizar o grafo. Verifique os dados e a biblioteca Dagre.", error);
     }
-    
-  }, [nodes, edges, selectedNodeId, selectedEdgeId, onNodeClick, onEdgeClick, onEdgeDoubleClick]);
+  }, [nodes, edges, selectedNodeId, selectedEdgeId, onNodeClick, onEdgeClick, onEdgeDoubleClick, activeNodeId, activeEdgeId, failedNodeId]);
 
   useEffect(() => {
-    if (recenterTrigger === 0 && nodes.length <= 2) return; // Não recentraliza no início se já estiver visível
+    if (recenterTrigger === 0 && nodes.length > 2) return;
     const svg = d3.select(svgRef.current);
     const g = d3.select(gRef.current);
     const zoom = zoomRef.current;
@@ -137,19 +157,19 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({ nodes, edges, selectedNodeId,
 
     if (gWidth === 0 || gHeight === 0) {
         const transform = d3.zoomIdentity.translate(svgNode.clientWidth / 2, svgNode.clientHeight / 2).scale(1);
-        svg.transition().duration(750).call(zoom.transform as any, transform);
+        svg.transition().duration(750).call(zoom.transform, transform);
         return;
     };
 
     const width = svgNode.clientWidth;
     const height = svgNode.clientHeight;
-    const scale = Math.min(width / gWidth, height / gHeight) * 0.65;
+    const scale = Math.min(width / gWidth, height / gHeight) * 0.9;
     const translateX = width / 2 - (x + gWidth / 2) * scale;
     const translateY = height / 2 - (y + gHeight / 2) * scale;
     const transform = d3.zoomIdentity.translate(translateX, translateY).scale(scale);
-    svg.transition().duration(750).call(zoom.transform as any, transform);
+    svg.transition().duration(750).call(zoom.transform, transform);
 
-  }, [recenterTrigger, nodes, edges]); // Adicionado nodes e edges para re-centralizar ao importar
+  }, [recenterTrigger, nodes, edges]);
 
   return (
     <div className="canvas-wrapper">
@@ -159,5 +179,6 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({ nodes, edges, selectedNodeId,
     </div>
   );
 };
+
 export default GraphCanvas;
 
