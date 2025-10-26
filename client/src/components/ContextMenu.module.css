@@ -1,0 +1,80 @@
+/* src/components/ContextMenu.module.css */
+.contextMenu {
+    position: fixed;
+    background: white;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.05);
+    z-index: 100;
+    border-radius: 8px;
+    min-width: 220px;
+    padding: 6px;
+    opacity: 0;
+    transform: translateY(-5px);
+    animation: fadeIn 0.1s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.contextMenuButton {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 12px;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #2d3748;
+    border-radius: 6px;
+    transition: background-color 0.15s, color 0.15s;
+    white-space: nowrap;
+}
+
+.contextMenuButton:hover {
+    background-color: #f7fafc;
+    color: #2b6cb0;
+}
+
+.contextMenu hr {
+    border: none;
+    border-top: 1px solid #e2e8f0;
+    margin: 6px 0;
+}
+
+/* Style for delete buttons specifically */
+.textRed600 {
+    /* Keep a descriptive name */
+    color: #e53e3e !important;
+    /* Use !important if needed */
+}
+
+.textRed600:hover {
+    background-color: #fff5f5 !important;
+    color: #c53030 !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .contextMenu {
+        min-width: 180px;
+        padding: 4px;
+    }
+
+    .contextMenuButton {
+        padding: 8px 10px;
+        font-size: 13px;
+        gap: 8px;
+    }
+
+    .contextMenu hr {
+        margin: 4px 0;
+    }
+}

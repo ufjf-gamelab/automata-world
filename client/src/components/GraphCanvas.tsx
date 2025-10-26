@@ -1,187 +1,222 @@
-import React, { useEffect, useRef } from 'react';
-import * as d3 from 'd3';
-
-// Declara a variável 'dagre' como global para o TypeScript, pois é carregada via <script>
-declare const dagre: any;
-
-export interface Node {
-  id: string;
-  label: string;
-  isInitial?: boolean;
-  isFinal?: boolean;
-}
-
-export interface Edge {
-  id: string;
-  source: string;
-  target: string;
-  label: string;
-}
-
-interface Point {
-    x: number;
-    y: number;
-}
+// src/components/GraphCanvas.tsx
+import React, { useEffect, useRef } from "react";
+import * as d3 from "d3";
+import NodeComponent from "./Node";
+import EdgeComponent from "./Edge";
+import type { Node, Edge } from "./AutomatonEditor"; // Types from parent
+import { NODE_WIDTH, NODE_HEIGHT } from "./AutomatonEditor"; // Constants from parent
+import styles from "./GraphCanvas.module.css"; // Import CSS Module for GraphCanvas
 
 interface GraphCanvasProps {
-  nodes: Node[];
-  edges: Edge[];
-  selectedNodeId: string | null;
-  selectedEdgeId: string | null;
-  onNodeClick: (nodeId: string) => void;
-  onEdgeClick: (edgeId: string) => void;
-  onEdgeDoubleClick: (edgeId: string) => void;
-  recenterTrigger: number;
-  activeNodeId: string | null;
-  activeEdgeId: string | null;
-  failedNodeId: string | null;
+    nodes: Node[];
+    edges: Edge[];
+    // Removed svgWidth/svgHeight as SVG is now 100%
+    onNodeDrag: (id: string, x: number, y: number) => void;
+    onNodeClick: (event: React.MouseEvent, node: Node) => void;
+    onEdgeClick: (event: React.MouseEvent, edge: Edge) => void;
+    onSvgMouseMove: (x: number, y: number) => void;
+    recenterTrigger: number;
+    linkingState: { sourceNode: Node | null };
+    mousePosition: { x: number; y: number };
+    sourceNodeForLinking: Node | null;
+    activeNodeId: string | null;
+    activeEdgeId: string | null;
+    failedNodeId: string | null;
+    isSimulating: boolean;
 }
 
-const NODE_WIDTH = 60;
-const NODE_HEIGHT = 60;
-
-const GraphCanvas: React.FC<GraphCanvasProps> = ({ 
-    nodes, edges, selectedNodeId, selectedEdgeId, 
-    onNodeClick, onEdgeClick, onEdgeDoubleClick, recenterTrigger,
-    activeNodeId, activeEdgeId, failedNodeId 
+const GraphCanvas: React.FC<GraphCanvasProps> = ({
+    nodes,
+    edges,
+    onNodeDrag,
+    onNodeClick,
+    onEdgeClick,
+    onSvgMouseMove,
+    recenterTrigger,
+    sourceNodeForLinking,
+    mousePosition,
+    activeNodeId,
+    activeEdgeId,
+    failedNodeId,
+    isSimulating,
 }) => {
-  const svgRef = useRef<SVGSVGElement>(null);
-  const gRef = useRef<SVGGElement>(null);
-  const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
+    const svgRef = useRef<SVGSVGElement>(null);
+    const gRef = useRef<SVGGElement>(null);
+    const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
 
-  useEffect(() => {
-    try {
-      if (typeof dagre === 'undefined') {
-        console.error('Dagre.js não foi carregado. Verifique a tag <script> no seu index.html.');
-        return;
-      }
+    // Effect to initialize Zoom behavior
+    useEffect(() => {
+        if (!svgRef.current || !gRef.current) return;
+        const svg = d3.select(svgRef.current);
+        const g = d3.select(gRef.current);
+        const zoom = d3
+            .zoom<SVGSVGElement, unknown>()
+            .scaleExtent([0.1, 4])
+            .on("zoom", (event) => {
+                g.attr("transform", event.transform.toString());
+            });
+        svg.call(zoom).on("dblclick.zoom", null);
+        zoomRef.current = zoom;
+    }, []);
 
-      if (!svgRef.current || !gRef.current) return;
+    // Effect for Recenter/Zoom-to-Fit
+    useEffect(() => {
+        if (recenterTrigger === 0) return; // Skip initial mount if trigger starts at 0
+        if (!svgRef.current || !gRef.current || !zoomRef.current || nodes.length === 0) return;
 
-      const g = new dagre.graphlib.Graph({ multigraph: true });
-      g.setGraph({ rankdir: 'LR', nodesep: 70, ranksep: 120 });
-      g.setDefaultEdgeLabel(() => ({}));
+        const svg = d3.select(svgRef.current);
+        const zoom = zoomRef.current;
+        const svgNode = svg.node();
+        if (!svgNode) return;
 
-      nodes.forEach((node) => g.setNode(node.id, { label: node.label, width: NODE_WIDTH, height: NODE_HEIGHT }));
-      edges.forEach((edge) => g.setEdge(edge.source, edge.target, { label: edge.label }, edge.id));
-      dagre.layout(g);
-
-      const mainGroup = d3.select(gRef.current);
-      mainGroup.selectAll('*').remove();
-      
-      const defs = mainGroup.append('defs');
-      defs.append('marker').attr('id', 'arrowhead').attr('viewBox', '-0 -5 10 10').attr('refX', 30).attr('refY', 0).attr('orient', 'auto').attr('markerWidth', 6).attr('markerHeight', 6).append('svg:path').attr('d', 'M 0,-5 L 10 ,0 L 0,5').attr('fill', '#999');
-      defs.append('marker').attr('id', 'arrowhead-selected').attr('viewBox', '-0 -5 10 10').attr('refX', 30).attr('refY', 0).attr('orient', 'auto').attr('markerWidth', 6).attr('markerHeight', 6).append('svg:path').attr('d', 'M 0,-5 L 10 ,0 L 0,5').attr('fill', '#007bff');
-      defs.append('marker').attr('id', 'arrowhead-initial').attr('viewBox', '-0 -5 10 10').attr('refX', 0).attr('refY', 0).attr('orient', 'auto').attr('markerWidth', 6).attr('markerHeight', 6).append('svg:path').attr('d', 'M 0,-5 L 10 ,0 L 0,5').attr('fill', '#28a745');
-
-      const initialNodeData = nodes.find(n => n.isInitial);
-      if (initialNodeData) {
-          const initialNodeCoords = g.node(initialNodeData.id);
-          if (initialNodeCoords) {
-              mainGroup.append('path').attr('class', 'initial-arrow').attr('d', `M ${initialNodeCoords.x - 60},${initialNodeCoords.y} L ${initialNodeCoords.x - 32},${initialNodeCoords.y}`).attr('marker-end', 'url(#arrowhead-initial)');
-          }
-      }
-        
-      const edgeGroup = mainGroup.append('g').attr('class', 'edges');
-      edges.forEach(edgeData => {
-          const dagreEdge = g.edge({ v: edgeData.source, w: edgeData.target, name: edgeData.id });
-          if (!dagreEdge) return;
-          
-          const isSelected = edgeData.id === selectedEdgeId;
-          const isActive = edgeData.id === activeEdgeId;
-
-          const lineGenerator = d3.line<Point>().x(d => d.x).y(d => d.y).curve(d3.curveBasis);
-          const edgeElement = edgeGroup.append('g')
-            .attr('class', `edge ${isActive ? 'active' : ''}`)
-            .on('click', (event) => { event.stopPropagation(); onEdgeClick(edgeData.id); })
-            .on('dblclick', (event) => { event.stopPropagation(); onEdgeDoubleClick(edgeData.id); });
-            
-          edgeElement.append('path')
-            .attr('id', `path-${edgeData.id}`)
-            .attr('d', lineGenerator(dagreEdge.points))
-            .attr('fill', 'none')
-            .attr('stroke', isSelected || isActive ? '#007bff' : '#999')
-            .attr('stroke-width', isSelected || isActive ? 3 : 2)
-            .attr('marker-end', `url(#${isSelected || isActive ? 'arrowhead-selected' : 'arrowhead'})`);
-
-          edgeElement.append('text').append('textPath').attr('xlink:href', `#path-${edgeData.id}`).attr('startOffset', '50%').attr('text-anchor', 'middle').text(edgeData.label);
-      });
-
-      const nodeGroup = mainGroup.append('g').attr('class', 'nodes');
-      nodes.forEach((nodeData) => {
-        const node = g.node(nodeData.id);
-        if (!node) return;
-        const singleNodeGroup = nodeGroup.append('g').attr('class', 'node').attr('transform', `translate(${node.x}, ${node.y})`).on('click', (event) => { event.stopPropagation(); onNodeClick(nodeData.id); });
-        singleNodeGroup.append('circle').attr('r', 30).attr('class', () => {
-          let cls = 'outer';
-          if (nodeData.id === selectedNodeId) cls += ' selected';
-          if (nodeData.id === activeNodeId) cls += ' active';
-          if (nodeData.id === failedNodeId) cls += ' failed';
-          if (nodeData.isInitial) cls += ' initial';
-          return cls;
-        });
-        if (nodeData.isFinal) { singleNodeGroup.append('circle').attr('r', 24).attr('class', 'inner'); }
-        singleNodeGroup.append('text').attr('text-anchor', 'middle').attr('dy', '0.3em').text(nodeData.label ?? '');
-      });
-
-      const svg = d3.select(svgRef.current);
-      if (!zoomRef.current) {
-          const zoom = d3.zoom<SVGSVGElement, unknown>().on('zoom', (event) => {
-            mainGroup.attr('transform', event.transform.toString());
-          });
-          zoomRef.current = zoom;
-          svg.call(zoom).on("dblclick.zoom", null);
-      }
-      
-      svg.on('click', () => {
-          onNodeClick('');
-          onEdgeClick('');
-      });
-    
-    } catch (error) {
-        console.error("Ocorreu um erro ao renderizar o grafo. Verifique os dados e a biblioteca Dagre.", error);
-    }
-  }, [nodes, edges, selectedNodeId, selectedEdgeId, onNodeClick, onEdgeClick, onEdgeDoubleClick, activeNodeId, activeEdgeId, failedNodeId]);
-
-  useEffect(() => {
-    if (recenterTrigger === 0 && nodes.length > 2) return;
-    
-    const svg = d3.select(svgRef.current);
-    const g = d3.select(gRef.current);
-    const zoom = zoomRef.current;
-    const svgNode = svg.node();
-    
-    if (!svgNode || !g.node() || !zoom) return;
-
-    const gNode = g.node() as SVGGElement;
-    const { x, y, width: gWidth, height: gHeight } = gNode.getBBox();
-
-    const calculateTransform = () => {
-        if (gWidth === 0 || gHeight === 0) {
-            return d3.zoomIdentity.translate(svgNode.clientWidth / 2, svgNode.clientHeight / 2).scale(1);
-        }
         const width = svgNode.clientWidth;
         const height = svgNode.clientHeight;
-        const scale = Math.min(width / gWidth, height / gHeight) * 0.9;
-        const translateX = width / 2 - (x + gWidth / 2) * scale;
-        const translateY = height / 2 - (y + gHeight / 2) * scale;
-        return d3.zoomIdentity.translate(translateX, translateY).scale(scale);
+        if (width === 0 || height === 0) return; // Avoid division by zero if SVG not rendered
+
+        // Calculate bounding box of nodes
+        let minX = Infinity,
+            minY = Infinity,
+            maxX = -Infinity,
+            maxY = -Infinity;
+        nodes.forEach((node) => {
+            minX = Math.min(minX, node.x);
+            minY = Math.min(minY, node.y);
+            maxX = Math.max(maxX, node.x);
+            maxY = Math.max(maxY, node.y);
+        });
+
+        // Add padding based on node size
+        const gWidth = maxX - minX + NODE_WIDTH;
+        const gHeight = maxY - minY + NODE_HEIGHT;
+        const gCenterX = minX + gWidth / 2 - NODE_WIDTH / 2; // Adjusted center calculation
+        const gCenterY = minY + gHeight / 2 - NODE_HEIGHT / 2; // Adjusted center calculation
+
+        if (gWidth === 0 || gHeight === 0) return; // Avoid division by zero for single node
+
+        const scale = Math.min(width / gWidth, height / gHeight) * 0.6; // Scale factor (0.6 for more zoom out)
+        const translateX = width / 2 - gCenterX * scale;
+        const translateY = height / 2 - gCenterY * scale;
+        const transform = d3.zoomIdentity.translate(translateX, translateY).scale(scale);
+
+        // Apply smooth transition
+        (svg.transition().duration(750) as any).call(zoom.transform, transform);
+    }, [recenterTrigger]); // Depends only on the trigger
+
+    // Mouse Move handler to calculate world coordinates
+    const handleMouseMove = (event: React.MouseEvent) => {
+        if (!svgRef.current) return;
+        const svg = svgRef.current;
+        const svgRect = svg.getBoundingClientRect();
+        const screenX = event.clientX - svgRect.left;
+        const screenY = event.clientY - svgRect.top;
+        const transform = d3.zoomTransform(svg); // Get current zoom/pan
+        const [worldX, worldY] = transform.invert([screenX, screenY]); // Convert screen to SVG world coords
+        onSvgMouseMove(worldX, worldY); // Pass world coords to parent
     };
 
-    const transform = calculateTransform();
-    
-    (svg.transition().duration(750) as any).call(zoom.transform, transform);
+    // Map nodes by ID for faster lookup when rendering edges
+    const nodesById = new Map(nodes.map((node) => [node.id, node]));
 
-  }, [recenterTrigger, nodes, edges]);
+    return (
+        <svg
+            ref={svgRef}
+            width="100%" // Occupy full container width
+            height="100%" // Occupy full container height
+            onMouseMove={handleMouseMove}
+            className={styles.graphCanvas} // Apply optional base style from module
+        >
+            <defs>
+                {/* Standard Arrow Head */}
+                <marker
+                    id="arrowhead"
+                    viewBox="0 0 10 10"
+                    refX={10} // Point towards the end line
+                    refY={5}
+                    orient="auto"
+                    markerWidth={6}
+                    markerHeight={6}
+                >
+                    {/* Use global class 'arrow-head' from global.css */}
+                    <path d="M 0 0 L 10 5 L 0 10 z" className="arrow-head" />
+                </marker>
+                {/* Arrow Head for Initial State Pointer */}
+                <marker
+                    id="arrowhead-initial"
+                    viewBox="-0 -5 10 10"
+                    refX={10} // Point towards the end line
+                    refY={0}
+                    orient="auto"
+                    markerWidth={6}
+                    markerHeight={6}
+                >
+                    <path d="M 0,-5 L 10 ,0 L 0,5" fill="#28a745" /> {/* Green fill */}
+                </marker>
+            </defs>
 
-  return (
-    <div className="canvas-wrapper">
-      <svg ref={svgRef} width="100%" height="100%">
-        <g ref={gRef} />
-      </svg>
-    </div>
-  );
+            {/* Main group transformed by zoom/pan */}
+            <g ref={gRef}>
+                {/* Edges rendered first (underneath nodes) */}
+                <g>
+                    {edges.map((edge) => {
+                        const sourceNode = nodesById.get(edge.source);
+                        const targetNode = nodesById.get(edge.target);
+                        // Skip rendering if nodes aren't found (e.g., during deletion)
+                        if (!sourceNode || !targetNode) return null;
+
+                        // Calculate bundling info for EdgeComponent
+                        const parallelEdges = edges.filter((e) => e.source === edge.source && e.target === edge.target);
+                        const reverseEdges = edges.filter((e) => e.source === edge.target && e.target === edge.source);
+                        const bundleSize = parallelEdges.length;
+                        const bundleIndex = parallelEdges.findIndex((e) => e.id === edge.id);
+                        const hasReverse = reverseEdges.length > 0;
+                        const totalEdgesInRelation = bundleSize + reverseEdges.length;
+                        // Determine main curve for consistent bending direction
+                        const isMainCurve = edge.source < edge.target;
+
+                        return (
+                            <EdgeComponent
+                                key={edge.id}
+                                edge={edge}
+                                sourceNode={sourceNode}
+                                targetNode={targetNode}
+                                isActive={edge.id === activeEdgeId}
+                                isSimulating={isSimulating}
+                                totalEdgesInRelation={totalEdgesInRelation}
+                                bundleSize={bundleSize}
+                                bundleIndex={bundleIndex}
+                                hasReverseEdge={hasReverse}
+                                isMainCurve={isMainCurve}
+                                onEdgeClick={onEdgeClick}
+                            />
+                        );
+                    })}
+                </g>
+
+                {/* Ghost line for linking mode */}
+                {sourceNodeForLinking && (
+                    <path
+                        d={`M ${sourceNodeForLinking.x} ${sourceNodeForLinking.y} L ${mousePosition.x} ${mousePosition.y}`}
+                        // Use class from GraphCanvas's CSS Module
+                        className={styles.ghostLine}
+                    />
+                )}
+
+                {/* Nodes rendered last (on top of edges) */}
+                <g>
+                    {nodes.map((node) => (
+                        <NodeComponent
+                            key={node.id}
+                            node={node}
+                            onDrag={onNodeDrag}
+                            onClick={onNodeClick}
+                            isActive={node.id === activeNodeId}
+                            isFailed={node.id === failedNodeId}
+                        />
+                    ))}
+                </g>
+            </g>
+        </svg>
+    );
 };
 
 export default GraphCanvas;
-

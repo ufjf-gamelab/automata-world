@@ -1,0 +1,48 @@
+/* src/components/TransitionModal.module.css */
+.modalOverlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex; justify-content: center; align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background: white; padding: 25px; border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  min-width: 300px; max-width: 90%;
+}
+
+.modalContent h4 {
+  margin-top: 0; margin-bottom: 20px; color: #343a40;
+  font-size: 1.1rem; font-weight: 600;
+}
+
+.modalContent form input[type="text"] {
+  width: 100%; padding: 10px 12px; margin-bottom: 20px;
+  border-radius: 6px; border: 1px solid #ced4da;
+  box-sizing: border-box; font-size: 1rem;
+}
+.modalContent form input[type="text"]:focus {
+  border-color: #80bdff; outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.modalActions {
+  display: flex; justify-content: flex-end; gap: 10px;
+}
+
+.modalActions button { /* Base style */
+  padding: 8px 16px; border-radius: 6px; font-size: 14px;
+  font-weight: 500; cursor: pointer; border: 1px solid transparent;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.cancelButton { /* Specific class */
+  background-color: #f8f9fa; border-color: #dee2e6; color: #495057;
+}
+.cancelButton:hover { background-color: #e9ecef; }
+
+.submitButton { /* Specific class */
+  background-color: #007bff; color: white;
+}
+.submitButton:hover { background-color: #0056b3; }
