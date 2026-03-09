@@ -1,29 +1,27 @@
-/* src/AutomatonEditor.module.css */
-/* Styles specific to the overall editor layout, if any */
-
-.appContainer { /* Renamed from .app-container */
+.appContainer {
   display: flex;
-  flex-direction: row; /* Desktop */
+  flex-direction: row;
   width: 100vw;
   height: 100vh;
+  overflow: hidden;
 }
 
-.canvasWrapper { /* Renamed */
+.canvasWrapper {
   flex-grow: 1;
   height: 100%;
   background-color: #fdfdfd;
   overflow: hidden;
   position: relative;
+  min-height: 0;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .appContainer {
-    flex-direction: column; /* Mobile */
+    flex-direction: column-reverse;
   }
+
   .canvasWrapper {
-    height: auto;
-    flex-grow: 1;
-    order: 1; /* Canvas first on mobile */
+    flex: 1 1 0;
+    height: 0;
   }
 }

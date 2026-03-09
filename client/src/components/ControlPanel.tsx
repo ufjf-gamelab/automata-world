@@ -1,8 +1,6 @@
-// src/components/ControlPanel.tsx
 import React from "react";
-import styles from "./ControlPanel.module.css"; // Import the CSS Module
+import styles from "./ControlPanel.module.css";
 
-// Define the props the component expects (callback functions)
 interface ControlPanelProps {
     onRelayout: () => void;
     onImportClick: () => void;
@@ -11,33 +9,23 @@ interface ControlPanelProps {
 
 const ControlPanel: React.FC<ControlPanelProps> = ({ onRelayout, onImportClick, onExport }) => {
     return (
-        // Apply the main panel style from the CSS Module
         <div className={styles.controlPanel}>
             {/* Reorganize Button */}
             <button
                 onClick={onRelayout}
-                // Apply the specific button style from the CSS Module
                 className={styles.recenterButton}
-                title="Reorganizar & Centralizar" // Tooltip for clarity
+                title="Reorganizar & Centralizar"
             >
                 Reorganizar
             </button>
 
             {/* Import Button */}
-            <button
-                onClick={onImportClick} // Triggers the hidden file input click
-                className={styles.importButton} // Apply specific style
-                title="Importar JSON"
-            >
+            <button onClick={onImportClick} className={styles.importButton} title="Importar JSON">
                 Importar
             </button>
 
             {/* Export Button */}
-            <button
-                onClick={onExport}
-                className={styles.exportButton} // Apply specific style
-                title="Exportar JSON"
-            >
+            <button onClick={onExport} className={styles.exportButton} title="Exportar JSON">
                 Exportar
             </button>
         </div>

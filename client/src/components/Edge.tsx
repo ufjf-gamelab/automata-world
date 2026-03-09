@@ -1,7 +1,6 @@
-// src/components/Edge.tsx
 import React from "react";
 import type { Edge, Node } from "./AutomatonEditor";
-import styles from "./Edge.module.css"; // Import module
+import styles from "./Edge.module.css";
 
 const NODE_WIDTH = 60;
 
@@ -16,21 +15,14 @@ interface EdgeProps {
     bundleSize: number;
     bundleIndex: number;
     hasReverseEdge: boolean;
-    isMainCurve: boolean;
+    avoidanceOffset: number;
 }
 
 const EdgeComponent = ({
-    edge,
-    sourceNode,
-    targetNode,
-    isActive,
-    isSimulating,
-    onEdgeClick,
-    totalEdgesInRelation,
-    bundleSize,
-    bundleIndex,
-    hasReverseEdge,
-    isMainCurve,
+    edge, sourceNode, targetNode,
+    isActive, isSimulating, onEdgeClick,
+    totalEdgesInRelation, bundleSize, bundleIndex,
+    hasReverseEdge, avoidanceOffset,
 }: EdgeProps) => {
     const radius = NODE_WIDTH / 2;
 
@@ -41,108 +33,110 @@ const EdgeComponent = ({
 
     const gClasses = [
         styles.edge,
-        isActive ? styles.active : "", // Assuming 'active' class exists in module
-        isActive && isSimulating ? styles.simulating : "", // Assuming 'simulating' class exists
-    ]
-        .filter(Boolean)
-        .join(" ");
-    // --- 1. LÓGICA DE SELF-LOOP (CURVA DO USUÁRIO RESTAURADA) ---
-    if (sourceNode.id === targetNode.id) {
-        // Raio do arco (aumenta para cada loop)
-        const loopRadius = 25 + bundleIndex * 10; // 25, 35, 45...
+        isActive                 ? styles.active    : "",
+        isActive && isSimulating ? styles.simulating : "",
+    ].filter(Boolean).join(" ");
 
-        // Pontos de início e fim ligeiramente separados
+    //SELF-LOOP
+    if (sourceNode.id === targetNode.id) {
+        const loopRadius = 25 + bundleIndex * 10;
         const startX = sourceNode.x - 5;
         const startY = sourceNode.y - radius;
-        const endX = sourceNode.x + 5;
-        const endY = sourceNode.y - radius;
-
-        // Pontos de controle com o multiplicador 2.25 (SUA LÓGICA)
+        const endX   = sourceNode.x + 5;
+        const endY   = sourceNode.y - radius;
         const c1x = startX - loopRadius * 2.25;
         const c1y = startY - loopRadius * 2.25;
-        const c2x = endX + loopRadius * 2.25;
-        const c2y = endY - loopRadius * 2.25;
-
+        const c2x = endX   + loopRadius * 2.25;
+        const c2y = endY   - loopRadius * 2.25;
         const pathData = `M ${startX},${startY} C ${c1x},${c1y} ${c2x},${c2y} ${endX},${endY}`;
-
-        // Posição do label (ajustada para SUA curva)
-        const labelY = c1y + 15; // Usando c1y como referência, conforme seu código
+        // Ponto real em t=0.5 da Bézier cúbica
+        const labelX = (1/8)*startX + (3/8)*c1x + (3/8)*c2x + (1/8)*endX;
+        const labelY = (1/8)*startY + (3/8)*c1y + (3/8)*c2y + (1/8)*endY;
 
         return (
             <g className={gClasses} onClick={handleEdgeClick}>
                 <path d={pathData} markerEnd="url(#arrowhead)" />
-                <text className={styles.edgeLabelText} x={sourceNode.x} y={labelY}>
+                <text className={styles.edgeLabelText} x={labelX} y={labelY}>
                     {edge.label}
                 </text>
             </g>
         );
     }
 
-    // --- 2. LÓGICA DE ARESTA NORMAL (V6 - Bézier Cúbica) ---
-    // (Esta parte permanece a mesma)
-    const dx = targetNode.x - sourceNode.x;
-    const dy = targetNode.y - sourceNode.y;
+    // ARESTA NORMAL
+    const dx  = targetNode.x - sourceNode.x;
+    const dy  = targetNode.y - sourceNode.y;
     const len = Math.max(1, Math.sqrt(dx * dx + dy * dy));
-    const ux = dx / len;
-    const uy = dy / len;
+    const ux  = dx / len;
+    const uy  = dy / len;
+
     const startX = sourceNode.x + ux * radius;
     const startY = sourceNode.y + uy * radius;
-    const endX = targetNode.x - ux * radius;
-    const endY = targetNode.y - uy * radius;
+    const endX   = targetNode.x - ux * radius;
+    const endY   = targetNode.y - uy * radius;
+    const midX   = (startX + endX) / 2;
+    const midY   = (startY + endY) / 2;
 
-    const midX = (startX + endX) / 2;
-    const midY = (startY + endY) / 2;
+    // Vetor normal perpendicular à aresta
+    const nx = -uy;
+    const ny =  ux;
+
+    // Cálculo de curvatura 
+    //  Se a aresta reta passa por cima de outro nó → usa avoidanceOffset
+    //  Aresta bidirecional ou paralela → usa offset baseado em bundleIndex
+    //  Aresta simples e livre → linha reta
 
     let curveOffset: number;
 
-    if (totalEdgesInRelation === 1) {
-        curveOffset = 0; // Reta
+    if (avoidanceOffset !== 0) {
+        // Desvio de colisão tem prioridade e pode ser somado ao offset paralelo
+        const parallelBump = (bundleSize > 1)
+            ? (bundleIndex - (bundleSize - 1) / 2) * 30
+            : 0;
+        curveOffset = avoidanceOffset + parallelBump;
+    } else if (totalEdgesInRelation === 1) {
+        curveOffset = 0; // linha reta — sem paralelas, sem reversas, sem colisão
     } else {
-        let baseCurve: number;
-        if (hasReverseEdge) {
-            baseCurve = isMainCurve ? 25 : -25;
-        } else {
-            baseCurve = 20;
-        }
-        const parallelSpread = 30; // Espaçamento
-        const midIndex = (bundleSize - 1) / 2;
-        const parallelOffset = (bundleIndex - midIndex) * parallelSpread;
-        curveOffset = baseCurve + parallelOffset;
+        // Arestas bidirecionais ou paralelas
+        // Normais opostos em A↔B garantem curvatura para lados opostos
+        // usando sempre +baseCurve (ver comentário em automatonReducer)
+        const baseCurve      = hasReverseEdge ? 65 : 35;
+        const parallelSpread = 40;
+        const midIndex       = (bundleSize - 1) / 2;
+        curveOffset = baseCurve + (bundleIndex - midIndex) * parallelSpread;
     }
-    // --- Fim da Lógica de Curvatura ---
 
+    //Traçado
     let pathData: string;
     let labelX: number;
     let labelY: number;
 
     if (Math.abs(curveOffset) < 1) {
-        // --- Desenha uma LINHA RETA ---
         pathData = `M ${startX},${startY} L ${endX},${endY}`;
         labelX = midX;
         labelY = midY - 5;
     } else {
-        // --- Desenha uma LINHA CURVA (Bézier Cúbica) ---
-        const nx = -uy;
-        const ny = ux;
         const peakX = midX + nx * curveOffset;
         const peakY = midY + ny * curveOffset;
         const c1x = (startX + peakX) / 2;
         const c1y = (startY + peakY) / 2;
-        const c2x = (endX + peakX) / 2;
-        const c2y = (endY + peakY) / 2;
+        const c2x = (endX   + peakX) / 2;
+        const c2y = (endY   + peakY) / 2;
         pathData = `M ${startX},${startY} C ${c1x},${c1y} ${c2x},${c2y} ${endX},${endY}`;
-        labelX = peakX;
-        labelY = peakY;
+
+        // Ponto real da Bézier cúbica em t=0.5:  B(0.5) = ⅛P0 + ⅜P1 + ⅜P2 + ⅛P3
+        labelX = (1/8)*startX + (3/8)*c1x + (3/8)*c2x + (1/8)*endX;
+        labelY = (1/8)*startY + (3/8)*c1y + (3/8)*c2y + (1/8)*endY;
     }
 
     return (
         <g className={gClasses} onClick={handleEdgeClick}>
             <path d={pathData} markerEnd="url(#arrowhead)" />
             <text
-                className={styles.edgeLabelText} // Use module class
+                className={styles.edgeLabelText}
                 x={labelX}
                 y={labelY}
-                dy={curveOffset > 0 ? -5 : 5}
+                dy={curveOffset > 0 ? -5 : curveOffset < 0 ? 5 : -5}
             >
                 {edge.label}
             </text>

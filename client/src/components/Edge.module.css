@@ -1,4 +1,3 @@
-/* src/components/Edge.module.css */
 .edge {
   cursor: pointer;
 }
@@ -14,36 +13,33 @@
   stroke: #868e96;
 }
 
-.edgeLabelText { /* Renamed from .edge-label-text */
+.edgeLabelText {
   font-size: 16px;
   font-weight: 500;
   fill: #495057;
   text-anchor: middle;
   dominant-baseline: central;
   paint-order: stroke;
-  /* Use CSS variable for background or hardcode it */
   stroke: var(--canvas-background, #fdfdfd);
   stroke-width: 3px;
   stroke-linecap: butt;
   stroke-linejoin: miter;
 }
 
-/* Simulation state */
 .edge.active path {
   stroke: #007bff;
   stroke-width: 3px;
 }
-/* Use global class for arrow head or define here */
-/* .edge.active .arrowHead { fill: #007bff; } */
+
 
 .edge.simulating path {
   stroke-dasharray: 8 8;
   animation: march 0.5s linear infinite;
 }
-/* Use global class for arrow head or define here */
-/* .edge.simulating .arrowHead { fill: #007bff; transition: fill 0.1s; } */
 
-/* Animation needs to be global or copied here */
+
 @keyframes march {
-  to { stroke-dashoffset: -16; }
+  to {
+    stroke-dashoffset: -16;
+  }
 }

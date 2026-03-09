@@ -1,16 +1,21 @@
-// src/components/TransitionModal.tsx
 import React, { useState, useEffect } from "react";
-import styles from "./TransitionModal.module.css"; // Import module
+import styles from "./TransitionModal.module.css";
 
 interface TransitionModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSubmit: (label: string) => void;
-    initialValue?: string; // Para edição
-    title: string; // Título dinâmico
+    initialValue?: string;
+    title: string;
 }
 
-const TransitionModal: React.FC<TransitionModalProps> = ({ isOpen, onClose, onSubmit, initialValue = "", title }) => {
+const TransitionModal: React.FC<TransitionModalProps> = ({
+    isOpen,
+    onClose,
+    onSubmit,
+    initialValue = "",
+    title,
+}) => {
     const [label, setLabel] = useState(initialValue);
 
     // Reseta o label quando o modal é reaberto com um valor inicial diferente
@@ -21,7 +26,6 @@ const TransitionModal: React.FC<TransitionModalProps> = ({ isOpen, onClose, onSu
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (label.trim()) {
-            // Não permite labels vazios
             onSubmit(label.trim());
         } else {
             alert("O símbolo da transição não pode ser vazio.");

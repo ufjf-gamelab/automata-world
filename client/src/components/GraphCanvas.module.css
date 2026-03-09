@@ -1,8 +1,4 @@
-/* src/components/GraphCanvas.module.css */
-
-/* SVG styles are often kept global or applied directly,
-   but we can scope things like the ghost line */
-.graphCanvas { /* Optional class for the SVG itself if needed */
+.graphCanvas {
   display: block;
   width: 100%;
   height: 100%;
@@ -16,9 +12,3 @@
   stroke-dasharray: 6 6;
   pointer-events: none;
 }
-
-/* Base styles for nodes/edges might remain global or be duplicated
-   in Node/Edge modules if preferred. Let's keep them global for simplicity. */
-
-/* Arrow head style is referenced by ID, keep it global or inline */
-/* .arrowHead { fill: #adb5bd; transition: fill 0.2s; } */

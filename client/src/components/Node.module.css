@@ -1,6 +1,5 @@
-/* src/components/Node.module.css */
-.node { /* Renamed from .node */
-  cursor: pointer; /* Changed from move to pointer for consistency */
+.node {
+  cursor: pointer;
 }
 
 .outer {
@@ -16,28 +15,26 @@
   fill: none;
 }
 
-.node text { /* Keep targeting text tag */
+.node text {
   font-size: 16px;
   font-weight: 500;
   fill: #212529;
   pointer-events: none;
   user-select: none;
-  /* Added from global styles that might apply */
   text-anchor: middle;
   dominant-baseline: central;
 }
 
-.outer.initial { /* State classes */
+.outer.initial {
   stroke: #28a745;
   stroke-width: 3px;
 }
 
-.initialArrow { /* Renamed from .initial-arrow */
+.initialArrow {
   stroke: #28a745;
   stroke-width: 2px;
 }
 
-/* Simulation States */
 .outer.active {
   fill: #fff3cd;
   stroke: #ffc107;
@@ -51,19 +48,26 @@
   stroke-width: 3px;
 }
 
-/* Dragging State */
 .node.dragging .outer,
-.node.dragging text { /* Combined selector */
+.node.dragging text {
   cursor: grabbing;
 }
+
 .node.dragging .outer {
-   stroke: #0056b3; /* Added visual feedback */
-   stroke-width: 3px;
+  stroke: #0056b3;
+  stroke-width: 3px;
 }
 
-/* Animation needs to be global or copied here */
 @keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.15); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.15);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }

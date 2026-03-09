@@ -1,62 +1,84 @@
-/* src/components/ControlPanel.module.css */
 .controlPanel {
   position: absolute;
   z-index: 10;
   background: #ffffff;
   border: 1px solid #dee2e6;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   padding: 10px;
   top: 15px;
   right: 15px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  box-sizing: border-box;
-  /* MUDANÇA: Usar width em vez de min-width */
-  width: max-content; /* Força a largura a se ajustar ao conteúdo */
+  width: max-content;
 }
 
 .controlPanel button {
   background-color: #007bff;
   color: white;
   border: none;
-  padding: 8px 12px;
-  border-radius: 6px;
+  padding: 10px 14px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
-  transition: background-color 0.2s, box-shadow 0.2s;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  box-sizing: border-box;
-  white-space: nowrap; /* Impede quebra de linha */
-  text-align: center;
+  font-weight: 500;
+  transition: background-color 0.2s, transform 0.1s;
+  white-space: nowrap;
+  min-height: 40px;
+  -webkit-tap-highlight-color: transparent;
 }
+
 .controlPanel button:hover {
   background-color: #0056b3;
 }
 
-/* Specific button styles */
-.recenterButton { background-color: #6c757d !important; }
-.recenterButton:hover { background-color: #5a6268 !important; }
-.importButton { background-color: #28a745 !important; }
-.importButton:hover { background-color: #218838 !important; }
-.exportButton { background-color: #17a2b8 !important; }
-.exportButton:hover { background-color: #117a8b !important; }
+.controlPanel button:active {
+  transform: scale(0.96);
+}
 
-/* Responsive styles */
+.recenterButton {
+  background-color: #6c757d !important;
+}
+
+.recenterButton:hover {
+  background-color: #5a6268 !important;
+}
+
+.importButton {
+  background-color: #28a745 !important;
+}
+
+.importButton:hover {
+  background-color: #218838 !important;
+}
+
+.exportButton {
+  background-color: #17a2b8 !important;
+}
+
+.exportButton:hover {
+  background-color: #117a8b !important;
+}
+
 @media (max-width: 768px) {
   .controlPanel {
     top: auto;
-    bottom: 15px;
+    bottom: 12px;
     left: 50%;
+    right: auto;
     transform: translateX(-50%);
     flex-direction: row;
-    gap: 15px;
-    padding: 10px 15px;
-    /* MUDANÇA: Remover width: max-content no mobile */
-    /* width: auto; */
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 30px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   }
+
   .controlPanel button {
     font-size: 13px;
+    padding: 10px 14px;
+    min-height: 44px;
+    border-radius: 8px;
   }
 }

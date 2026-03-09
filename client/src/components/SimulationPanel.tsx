@@ -1,6 +1,4 @@
-// src/components/SimulationPanel.tsx
 import React from "react";
-// Importa o CSS Module
 import styles from "./SimulationPanel.module.css";
 
 interface SimulationPanelProps {
@@ -25,15 +23,16 @@ const SimulationPanel: React.FC<SimulationPanelProps> = ({
     getStatusMessage,
 }) => {
     return (
-        // Usa template literals para as classes condicionais
-        <div className={`${styles.simulationPanel} ${isSimPanelOpen ? styles.open : styles.collapsed}`}>
+        <div
+            className={`${styles.simulationPanel} ${isSimPanelOpen ? styles.open : styles.collapsed}`}
+        >
             <div className={styles.panelHeader}>
                 {isSimPanelOpen && <h4>Simulação</h4>}
 
                 {isSimPanelOpen && (
                     <button
                         onClick={() => setSimPanelOpen(false)}
-                        className={styles.toggleButton} // Usa a classe do module
+                        className={styles.toggleButton}
                         title="Recolher painel"
                     >
                         {"‹"}
@@ -43,7 +42,7 @@ const SimulationPanel: React.FC<SimulationPanelProps> = ({
                 {!isSimPanelOpen && (
                     <button
                         onClick={() => setSimPanelOpen(true)}
-                        className={styles.expandButton} // Usa a classe do module
+                        className={styles.expandButton}
                         title="Expandir painel de simulação"
                     >
                         ▶️
@@ -60,7 +59,6 @@ const SimulationPanel: React.FC<SimulationPanelProps> = ({
                         onChange={(e) => setInputWord(e.target.value)}
                         placeholder="Palavra de entrada"
                         disabled={animationStatus === "running"}
-                        // input não precisa de classe do module se estilizado via seletor de tag
                     />
                     {animationStatus !== "running" ? (
                         <button onClick={handlePlayAnimation} className={styles.playButton}>
@@ -76,7 +74,9 @@ const SimulationPanel: React.FC<SimulationPanelProps> = ({
                         </button>
                     )}
                     {/* Usa template literal para o estado da status bar */}
-                    <div className={`${styles.statusBar} ${styles[animationStatus]}`}>{getStatusMessage()}</div>
+                    <div className={`${styles.statusBar} ${styles[animationStatus]}`}>
+                        {getStatusMessage()}
+                    </div>
                 </div>
             )}
         </div>

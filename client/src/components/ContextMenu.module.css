@@ -1,4 +1,3 @@
-/* src/components/ContextMenu.module.css */
 .contextMenu {
     position: fixed;
     background: white;
@@ -49,11 +48,8 @@
     margin: 6px 0;
 }
 
-/* Style for delete buttons specifically */
 .textRed600 {
-    /* Keep a descriptive name */
     color: #e53e3e !important;
-    /* Use !important if needed */
 }
 
 .textRed600:hover {
@@ -61,7 +57,6 @@
     color: #c53030 !important;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
     .contextMenu {
         min-width: 180px;
