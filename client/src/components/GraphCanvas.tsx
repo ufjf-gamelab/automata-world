@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useCallback } from "react";
 import * as d3 from "d3";
 import NodeComponent from "./Node";
 import EdgeComponent from "./Edge";
@@ -11,7 +11,7 @@ interface GraphCanvasProps {
     edges: Edge[];
     onNodeDrag: (id: string, x: number, y: number) => void;
     onNodeClick: (event: React.MouseEvent | React.TouchEvent, node: Node) => void;
-    onNodeLongPress?: (event: React.TouchEvent, node: Node) => void;
+    onNodeLongPress?: (event: TouchEvent, node: Node) => void;
     onEdgeClick: (event: React.MouseEvent, edge: Edge) => void;
     onSvgMouseMove: (x: number, y: number) => void;
     recenterTrigger: number;
@@ -24,7 +24,6 @@ interface GraphCanvasProps {
     isSimulating: boolean;
 }
 
-/** Distância de um ponto P ao segmento AB */
 function distPointToSegment(
     px: number,
     py: number,
@@ -33,38 +32,28 @@ function distPointToSegment(
     bx: number,
     by: number,
 ): number {
-    const dx = bx - ax;
-    const dy = by - ay;
+    const dx = bx - ax,
+        dy = by - ay;
     const lenSq = dx * dx + dy * dy;
     if (lenSq === 0) return Math.hypot(px - ax, py - ay);
     const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lenSq));
     return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
 }
 
-/**
- * Para uma aresta reta de `src` até `tgt`, verifica se algum outro nó
- * está a menos de `threshold` px do segmento. Retorna o desvio lateral
- * sugerido (positivo ou negativo) para evitar a colisão, ou 0 se livre.
- */
 function computeAvoidanceOffset(
     src: Node,
     tgt: Node,
     allNodes: Node[],
-    threshold = NODE_WIDTH * 1.4, // ~84 px
+    threshold = NODE_WIDTH * 1.4,
 ): number {
     const radius = NODE_WIDTH / 2;
     const dx = tgt.x - src.x;
     const dy = tgt.y - src.y;
     const len = Math.max(1, Math.hypot(dx, dy));
-    // pontos de início/fim reais (na borda dos círculos)
     const ax = src.x + (dx / len) * radius;
     const ay = src.y + (dy / len) * radius;
     const bx = tgt.x - (dx / len) * radius;
     const by = tgt.y - (dy / len) * radius;
-
-    // Vetor normal à aresta (para decidir o lado do desvio)
-    // const nx = -dy / len;
-    // const ny =  dx / len;
 
     let maxPenetration = 0;
     let sideSign = 1;
@@ -76,18 +65,13 @@ function computeAvoidanceOffset(
             const penetration = threshold - dist;
             if (penetration > maxPenetration) {
                 maxPenetration = penetration;
-                // Descobre de qual lado do segmento o nó está
-                // (produto vetorial 2D → sinal indica o lado)
                 const cross = (bx - ax) * (node.y - ay) - (by - ay) * (node.x - ax);
-                // Curva para o lado oposto ao nó bloqueador
                 sideSign = cross > 0 ? -1 : 1;
             }
         }
     }
 
     if (maxPenetration === 0) return 0;
-
-    // Offset mínimo para a curva passar longe o suficiente
     return sideSign * Math.max(70, maxPenetration * 1.6);
 }
 
@@ -111,15 +95,23 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
     const gRef = useRef<SVGGElement>(null);
     const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
 
-    // Inicializa zoom
     useEffect(() => {
         if (!svgRef.current || !gRef.current) return;
         const svg = d3.select(svgRef.current);
         const g = d3.select(gRef.current);
+
         const zoom = d3
             .zoom<SVGSVGElement, unknown>()
             .scaleExtent([0.1, 4])
+            .filter((event) => {
+                if (event.type === "touchstart" || event.type === "touchmove") {
+                    const target = event.target as Element;
+                    if (target.closest?.("." + styles.nodeGroup)) return false;
+                }
+                return !event.button;
+            })
             .on("zoom", (event) => g.attr("transform", event.transform.toString()));
+
         svg.call(zoom).on("dblclick.zoom", null);
         zoomRef.current = zoom;
     }, []);
@@ -160,14 +152,19 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
         (svg.transition().duration(750) as any).call(zoomRef.current.transform, transform);
     }, [recenterTrigger]);
 
-    const handleMouseMove = (event: React.MouseEvent) => {
-        if (!svgRef.current) return;
+    const screenToWorld = useCallback((clientX: number, clientY: number) => {
+        if (!svgRef.current) return { x: 0, y: 0 };
         const rect = svgRef.current.getBoundingClientRect();
-        const screenX = event.clientX - rect.left;
-        const screenY = event.clientY - rect.top;
+        const screenX = clientX - rect.left;
+        const screenY = clientY - rect.top;
         const transform = d3.zoomTransform(svgRef.current);
-        const [worldX, worldY] = transform.invert([screenX, screenY]);
-        onSvgMouseMove(worldX, worldY);
+        const [x, y] = transform.invert([screenX, screenY]);
+        return { x, y };
+    }, []);
+
+    const handleMouseMove = (event: React.MouseEvent) => {
+        const { x, y } = screenToWorld(event.clientX, event.clientY);
+        onSvgMouseMove(x, y);
     };
 
     const nodesById = new Map(nodes.map((n) => [n.id, n]));
@@ -223,9 +220,6 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
                         const bundleIndex = parallelEdges.findIndex((e) => e.id === edge.id);
                         const hasReverse = reverseEdges.length > 0;
                         const totalEdgesInRelation = bundleSize + reverseEdges.length;
-
-                        // Detecta se a aresta reta passaria por cima de outro nó
-                        // e calcula o desvio lateral necessário
                         const avoidanceOffset = computeAvoidanceOffset(
                             sourceNode,
                             targetNode,
@@ -259,7 +253,7 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
                     />
                 )}
 
-                {/* Nós */}
+                {/* Nós — recebem screenToWorld para drag de toque */}
                 <g>
                     {nodes.map((node) => (
                         <NodeComponent
@@ -268,6 +262,7 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
                             onDrag={onNodeDrag}
                             onClick={onNodeClick}
                             onLongPress={onNodeLongPress}
+                            screenToWorld={screenToWorld}
                             isActive={node.id === activeNodeId}
                             isFailed={node.id === failedNodeId}
                         />

@@ -1,12 +1,15 @@
 .node {
   cursor: pointer;
+  touch-action: none;
+  -webkit-touch-callout: none;
+  user-select: none;
 }
 
 .outer {
   stroke: #495057;
   stroke-width: 2px;
   fill: #fff;
-  transition: fill 0.2s, stroke 0.2s, transform 0.2s;
+  transition: fill 0.2s, stroke 0.2s;
 }
 
 .inner {
@@ -48,14 +51,10 @@
   stroke-width: 3px;
 }
 
-.node.dragging .outer,
-.node.dragging text {
-  cursor: grabbing;
-}
-
 .node.dragging .outer {
   stroke: #0056b3;
   stroke-width: 3px;
+  cursor: grabbing;
 }
 
 @keyframes pulse {

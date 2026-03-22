@@ -238,7 +238,7 @@ function AutomatonEditor() {
     };
 
     // Long-press em nó (celular): mesmo comportamento do clique
-    const handleNodeLongPress = (event: React.TouchEvent, node: Node) => {
+    const handleNodeLongPress = (event: TouchEvent, node: Node) => {
         event.stopPropagation();
         closeAllMenus();
         const touch = event.changedTouches[0];
