@@ -1,5 +1,5 @@
 import { Cone, Cylinder } from "@react-three/drei";
-import type { MapObjectProps } from "./playerTypes";
+import type { MapObjectProps } from "./types";
 
 export default function Tree({ position }: MapObjectProps) {
     const trunkHeight = 0.8;

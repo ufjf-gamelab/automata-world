@@ -1,4 +1,4 @@
-import characterModel from "../../assets/glb/character-r.glb?url";
+import characterModel from "../../../assets/glb/character-r.glb?url";
 
 export const PLAYER_CONFIG = {
     modelPath: characterModel,

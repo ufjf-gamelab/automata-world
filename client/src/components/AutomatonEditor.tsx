@@ -4,6 +4,7 @@ import SimulationPanel from "./SimulationPanel";
 import TransitionModal from "./TransitionModal";
 import ControlPanel from "./ControlPanel";
 import ContextMenu, { MenuItem } from "./ContextMenu";
+import GameApp from "./game/App";
 import styles from "./AutomatonEditor.module.css";
 import { graphReducer, getLayout, type GraphState, type Node, type Edge } from "./Automatonreducer";
 
@@ -205,7 +206,6 @@ function AutomatonEditor() {
     const handleNodeDrag = (id: string, x: number, y: number) =>
         dispatch({ type: "DRAG_NODE", id, x, y });
 
-    // Unifica clique de mouse e toque rápido
     const handleNodeClick = (event: React.MouseEvent | React.TouchEvent, node: Node) => {
         event.stopPropagation();
         closeAllMenus();
@@ -222,7 +222,6 @@ function AutomatonEditor() {
             return;
         }
 
-        // Obtém coordenadas seja de mouse ou de toque
         let clientX: number, clientY: number;
         if ("touches" in event) {
             const touch = (event as React.TouchEvent).changedTouches[0];
@@ -237,7 +236,6 @@ function AutomatonEditor() {
         setContextMenu({ visible: true, x, y, selectedNodeId: node.id });
     };
 
-    // Long-press em nó (celular): mesmo comportamento do clique
     const handleNodeLongPress = (event: TouchEvent, node: Node) => {
         event.stopPropagation();
         closeAllMenus();
@@ -429,72 +427,80 @@ function AutomatonEditor() {
 
     return (
         <div className={styles.appContainer}>
-            <SimulationPanel
-                isSimPanelOpen={isSimPanelOpen}
-                setSimPanelOpen={setSimPanelOpen}
-                inputWord={inputWord}
-                setInputWord={setInputWord}
-                animationStatus={animationStatus}
-                handlePlayAnimation={handlePlayAnimation}
-                handleStopAnimation={handleStopAnimation}
-                getStatusMessage={getStatusMessage}
-            />
-
-            <div className={styles.canvasWrapper} onClick={handleSvgClick}>
-                <ControlPanel
-                    onRelayout={handleRelayout}
-                    onImportClick={handleImportClick}
-                    onExport={handleExport}
+            <div className={styles.automatonSection}>
+                <SimulationPanel
+                    isSimPanelOpen={isSimPanelOpen}
+                    setSimPanelOpen={setSimPanelOpen}
+                    inputWord={inputWord}
+                    setInputWord={setInputWord}
+                    animationStatus={animationStatus}
+                    handlePlayAnimation={handlePlayAnimation}
+                    handleStopAnimation={handleStopAnimation}
+                    getStatusMessage={getStatusMessage}
                 />
 
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    accept=".json"
-                    style={{ display: "none" }}
-                />
+                <div className={styles.canvasWrapper} onClick={handleSvgClick}>
+                    <ControlPanel
+                        onRelayout={handleRelayout}
+                        onImportClick={handleImportClick}
+                        onExport={handleExport}
+                    />
 
-                <GraphCanvas
-                    nodes={nodes}
-                    edges={edges}
-                    onNodeDrag={handleNodeDrag}
-                    onNodeClick={handleNodeClick}
-                    onNodeLongPress={handleNodeLongPress}
-                    onEdgeClick={handleEdgeClick}
-                    onSvgMouseMove={handleSvgMouseMove}
-                    recenterTrigger={recenterTrigger}
-                    linkingState={linkingState}
-                    mousePosition={mousePosition}
-                    sourceNodeForLinking={linkingState.sourceNode}
-                    activeNodeId={animationStep?.currentNodeId ?? null}
-                    activeEdgeId={animationStep?.activeEdgeId ?? null}
-                    failedNodeId={animationStep?.failed ? animationStep.currentNodeId : null}
-                    isSimulating={animationStatus === "running"}
-                />
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        accept=".json"
+                        style={{ display: "none" }}
+                    />
 
-                <TransitionModal
-                    isOpen={modalData.isOpen}
-                    onClose={() => setModalData({ isOpen: false, action: null, title: "" })}
-                    onSubmit={handleModalSubmit}
-                    initialValue={modalData.action === "edit" ? modalData.edgeToEdit?.label : ""}
-                    title={modalData.title}
-                />
+                    <GraphCanvas
+                        nodes={nodes}
+                        edges={edges}
+                        onNodeDrag={handleNodeDrag}
+                        onNodeClick={handleNodeClick}
+                        onNodeLongPress={handleNodeLongPress}
+                        onEdgeClick={handleEdgeClick}
+                        onSvgMouseMove={handleSvgMouseMove}
+                        recenterTrigger={recenterTrigger}
+                        linkingState={linkingState}
+                        mousePosition={mousePosition}
+                        sourceNodeForLinking={linkingState.sourceNode}
+                        activeNodeId={animationStep?.currentNodeId ?? null}
+                        activeEdgeId={animationStep?.activeEdgeId ?? null}
+                        failedNodeId={animationStep?.failed ? animationStep.currentNodeId : null}
+                        isSimulating={animationStatus === "running"}
+                    />
 
-                <ContextMenu
-                    isVisible={contextMenu.visible}
-                    x={contextMenu.x}
-                    y={contextMenu.y}
-                    items={nodeMenuItems}
-                    menuRef={menuRef}
-                />
-                <ContextMenu
-                    isVisible={edgeMenu.visible}
-                    x={edgeMenu.x}
-                    y={edgeMenu.y}
-                    items={edgeMenuItems}
-                    menuRef={menuRef}
-                />
+                    <TransitionModal
+                        isOpen={modalData.isOpen}
+                        onClose={() => setModalData({ isOpen: false, action: null, title: "" })}
+                        onSubmit={handleModalSubmit}
+                        initialValue={
+                            modalData.action === "edit" ? modalData.edgeToEdit?.label : ""
+                        }
+                        title={modalData.title}
+                    />
+
+                    <ContextMenu
+                        isVisible={contextMenu.visible}
+                        x={contextMenu.x}
+                        y={contextMenu.y}
+                        items={nodeMenuItems}
+                        menuRef={menuRef}
+                    />
+                    <ContextMenu
+                        isVisible={edgeMenu.visible}
+                        x={edgeMenu.x}
+                        y={edgeMenu.y}
+                        items={edgeMenuItems}
+                        menuRef={menuRef}
+                    />
+                </div>
+            </div>
+
+            <div className={styles.gameWrapper}>
+                <GameApp />
             </div>
         </div>
     );

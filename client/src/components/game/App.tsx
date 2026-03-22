@@ -8,7 +8,7 @@ import CommandTape from "./elements/CommandTape";
 import VictoryModal from "./elements/VictoryModal";
 import { stagesList } from "./elements/Stages";
 import { gameReducer, createInitialState } from "./gameReducer";
-import type { Stage } from "./elements/playerTypes";
+import type { Stage } from "./elements/types";
 import "./App.css";
 
 export default function App() {

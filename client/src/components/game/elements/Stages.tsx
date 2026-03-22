@@ -1,4 +1,4 @@
-import type { Stage } from "./playerTypes";
+import type { Stage } from "./types";
 
 export const stagesList: Stage[] = [
     {
