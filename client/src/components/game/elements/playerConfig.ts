@@ -1,7 +1,9 @@
 import characterModel from "../../../assets/glb/character-r.glb?url";
+import characterTexture from "../../../assets/glb/Textures/texture-r.png?url";
 
 export const PLAYER_CONFIG = {
     modelPath: characterModel,
+    texturePath: characterTexture,
     animations: {
         idle: "idle",
         walk: "walk",

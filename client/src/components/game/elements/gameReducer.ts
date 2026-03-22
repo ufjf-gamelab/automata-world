@@ -1,4 +1,4 @@
-import { type Stage } from "./elements/types";
+import { type Stage } from "./types";
 
 export type GameState = {
     activeStage: Stage;

@@ -1,7 +1,8 @@
 import { useRef, useEffect, useState } from "react";
-import { useFrame } from "@react-three/fiber";
-import { useGLTF, useAnimations } from "@react-three/drei";
-import { Group, MathUtils, Vector3, LoopOnce, LoopRepeat } from "three";
+import { useFrame, useLoader } from "@react-three/fiber";
+import { useAnimations } from "@react-three/drei";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { Group, MathUtils, Vector3, LoopOnce, LoopRepeat, LoadingManager } from "three";
 import type { PlayerProps } from "./playerTypes";
 import { PLAYER_CONFIG } from "./playerConfig";
 
@@ -13,7 +14,21 @@ export default function Player({
     command = "",
 }: PlayerProps) {
     const groupRef = useRef<Group>(null);
-    const { scene, animations } = useGLTF(PLAYER_CONFIG.modelPath);
+
+    // Intercepta a URL da textura antes que o GLTFLoader tente buscá-la,
+    // redirecionando para o path gerado pelo Vite (com hash correto).
+    const gltf = useLoader(GLTFLoader, PLAYER_CONFIG.modelPath, (loader) => {
+        const manager = new LoadingManager();
+        manager.setURLModifier((url) => {
+            if (url.includes("texture-r")) {
+                return PLAYER_CONFIG.texturePath;
+            }
+            return url;
+        });
+        loader.manager = manager;
+    });
+
+    const { scene, animations } = gltf;
     const { actions } = useAnimations(animations, groupRef);
 
     const currentAnimRef = useRef<string>("");
@@ -48,7 +63,6 @@ export default function Player({
 
     // Inicia idle ao carregar ───────────────────────────────────────────────
     useEffect(() => {
-        console.log("Clips disponíveis:", Object.keys(actions));
         const t = setTimeout(() => playAnim(ANIMS.idle), 80);
         return () => clearTimeout(t);
     }, [actions]);
@@ -137,7 +151,6 @@ export default function Player({
             }
         }
 
-        // Interpolação — lógica original preservada
         let nx = MathUtils.lerp(x, targetX, speed);
         let nz = MathUtils.lerp(z, targetZ, speed);
         let ny = MathUtils.lerp(y, targetY, speed);
@@ -146,15 +159,14 @@ export default function Player({
         const dXZ = Math.hypot(targetX - x, targetZ - z);
 
         if (dY > 0.1 && Math.abs(dY) > 0.05) {
-            nx = x; // sobe primeiro
+            nx = x;
             nz = z;
         } else if (dY < -0.1 && dXZ > 0.05) {
-            ny = y; // desce depois de chegar no XZ
+            ny = y;
         }
 
         groupRef.current.position.set(nx, ny + hopOffset, nz);
 
-        // Rotação suave
         let diff = targetRotY - groupRef.current.rotation.y;
         while (diff > Math.PI) diff -= Math.PI * 2;
         while (diff < -Math.PI) diff += Math.PI * 2;
@@ -167,5 +179,3 @@ export default function Player({
         </group>
     );
 }
-
-useGLTF.preload(PLAYER_CONFIG.modelPath);
