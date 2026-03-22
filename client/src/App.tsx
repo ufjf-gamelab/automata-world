@@ -1,5 +1,5 @@
 // src/App.tsx
-import AutomatonEditor from "./components/AutomatonEditor";
+import AutomatonEditor from "./components/automataCanvas/AutomatonEditor";
 import "./global.css"; // Import global styles (body, etc.)
 import "./App.css"; // Import App specific styles (might be empty)
 

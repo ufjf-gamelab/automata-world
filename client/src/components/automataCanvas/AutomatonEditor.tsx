@@ -4,7 +4,7 @@ import SimulationPanel from "./SimulationPanel";
 import TransitionModal from "./TransitionModal";
 import ControlPanel from "./ControlPanel";
 import ContextMenu, { MenuItem } from "./ContextMenu";
-import GameApp from "./game/App";
+import GameApp from "../game/App";
 import styles from "./AutomatonEditor.module.css";
 import { graphReducer, getLayout, type GraphState, type Node, type Edge } from "./Automatonreducer";
 
