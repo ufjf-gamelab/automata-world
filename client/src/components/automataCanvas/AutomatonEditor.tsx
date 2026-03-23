@@ -4,7 +4,7 @@ import SimulationPanel from "./SimulationPanel";
 import TransitionModal from "./TransitionModal";
 import ControlPanel from "./ControlPanel";
 import ContextMenu, { MenuItem } from "./ContextMenu";
-import GameApp from "../game/App";
+import GameView from "../GameView";
 import styles from "./AutomatonEditor.module.css";
 import { graphReducer, getLayout, type GraphState, type Node, type Edge } from "./Automatonreducer";
 
@@ -476,9 +476,7 @@ function AutomatonEditor() {
                         isOpen={modalData.isOpen}
                         onClose={() => setModalData({ isOpen: false, action: null, title: "" })}
                         onSubmit={handleModalSubmit}
-                        initialValue={
-                            modalData.action === "edit" ? modalData.edgeToEdit?.label : ""
-                        }
+                        initialValue={modalData.action === "edit" ? modalData.edgeToEdit?.label : ""}
                         title={modalData.title}
                     />
 
@@ -500,7 +498,7 @@ function AutomatonEditor() {
             </div>
 
             <div className={styles.gameWrapper}>
-                <GameApp />
+                <GameView />
             </div>
         </div>
     );

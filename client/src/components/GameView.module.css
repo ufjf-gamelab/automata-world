@@ -1,0 +1,50 @@
+.gameView {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background-color: #6ebcbb80;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+.stageBar {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background-color: #2a2a2a;
+    border-bottom: 1px solid #444;
+}
+
+.stageBar button {
+    padding: 5px 14px;
+    border: none;
+    border-radius: 5px;
+    background-color: #444;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.85rem;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+
+.stageBar button:hover {
+    background-color: #666;
+}
+
+.stageBar button.active {
+    background-color: #646cff;
+    box-shadow: 0 0 8px rgba(100, 108, 255, 0.5);
+}
+
+.canvasFrame {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    background-color: #1a1a1a;
+}
