@@ -51,29 +51,22 @@ const SimulationPanel: React.FC<SimulationPanelProps> = ({
             </div>
             {isSimPanelOpen && (
                 <div className={styles.panelContent}>
-                    {" "}
-                    {/* Usa a classe do module */}
                     <input
                         type="text"
                         value={inputWord}
-                        onChange={(e) => setInputWord(e.target.value)}
+                        onChange={(e) => setInputWord(e.target.value.toUpperCase())}
                         placeholder="Palavra de entrada"
                         disabled={animationStatus === "running"}
                     />
                     {animationStatus !== "running" ? (
                         <button onClick={handlePlayAnimation} className={styles.playButton}>
-                            {" "}
-                            {/* Usa a classe do module */}
                             Play
                         </button>
                     ) : (
                         <button onClick={handleStopAnimation} className={styles.danger}>
-                            {" "}
-                            {/* Usa a classe do module */}
                             Stop
                         </button>
                     )}
-                    {/* Usa template literal para o estado da status bar */}
                     <div className={`${styles.statusBar} ${styles[animationStatus]}`}>
                         {getStatusMessage()}
                     </div>

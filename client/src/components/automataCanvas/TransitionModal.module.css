@@ -28,20 +28,47 @@
   font-weight: 600;
 }
 
-.modalContent form input[type="text"] {
-  width: 100%;
-  padding: 10px 12px;
+.commandGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
   margin-bottom: 20px;
-  border-radius: 6px;
-  border: 1px solid #ced4da;
-  box-sizing: border-box;
-  font-size: 1rem;
 }
 
-.modalContent form input[type="text"]:focus {
+.commandButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
+  background: #f8f9fa;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.commandButton:hover {
   border-color: #80bdff;
-  outline: 0;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  background: #e8f4ff;
+}
+
+.commandButtonActive {
+  border-color: #007bff;
+  background: #e8f4ff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+}
+
+.commandKey {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #212529;
+  font-family: monospace;
+}
+
+.commandDesc {
+  font-size: 0.72rem;
+  color: #6c757d;
 }
 
 .modalActions {
@@ -75,6 +102,11 @@
   color: white;
 }
 
-.submitButton:hover {
+.submitButton:hover:not(:disabled) {
   background-color: #0056b3;
+}
+
+.submitButton:disabled {
+  background-color: #a0c4ff;
+  cursor: not-allowed;
 }

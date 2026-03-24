@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from "react";
 import styles from "./TransitionModal.module.css";
 
+const GAME_COMMANDS = [
+    { key: "f", label: "F", description: "Frente" },
+    { key: "e", label: "E", description: "Esquerda" },
+    { key: "d", label: "D", description: "Direita" },
+    { key: "t", label: "T", description: "Trás" },
+    { key: "p", label: "P", description: "Pula" },
+    { key: "b", label: "B", description: "Botão" },
+];
+
 interface TransitionModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -16,44 +25,44 @@ const TransitionModal: React.FC<TransitionModalProps> = ({
     initialValue = "",
     title,
 }) => {
-    const [label, setLabel] = useState(initialValue);
+    const [selected, setSelected] = useState(initialValue.toLowerCase());
 
-    // Reseta o label quando o modal é reaberto com um valor inicial diferente
     useEffect(() => {
-        setLabel(initialValue);
+        setSelected(initialValue.toLowerCase());
     }, [initialValue, isOpen]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (label.trim()) {
-            onSubmit(label.trim());
-        } else {
-            alert("O símbolo da transição não pode ser vazio.");
+        if (selected) {
+            onSubmit(selected);
         }
     };
 
-    if (!isOpen) {
-        return null;
-    }
+    if (!isOpen) return null;
 
     return (
         <div className={styles.modalOverlay} onClick={onClose}>
             <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
                 <h4>{title}</h4>
                 <form onSubmit={handleSubmit}>
-                    <input
-                        type="text"
-                        value={label}
-                        onChange={(e) => setLabel(e.target.value)}
-                        placeholder="Símbolo(s)"
-                        autoFocus
-                        maxLength={5}
-                    />
+                    <div className={styles.commandGrid}>
+                        {GAME_COMMANDS.map((cmd) => (
+                            <button
+                                key={cmd.key}
+                                type="button"
+                                className={`${styles.commandButton} ${selected === cmd.key ? styles.commandButtonActive : ""}`}
+                                onClick={() => setSelected(cmd.key)}
+                            >
+                                <span className={styles.commandKey}>{cmd.label}</span>
+                                <span className={styles.commandDesc}>{cmd.description}</span>
+                            </button>
+                        ))}
+                    </div>
                     <div className={styles.modalActions}>
                         <button type="button" onClick={onClose} className={styles.cancelButton}>
                             Cancelar
                         </button>
-                        <button type="submit" className={styles.submitButton}>
+                        <button type="submit" className={styles.submitButton} disabled={!selected}>
                             Confirmar
                         </button>
                     </div>

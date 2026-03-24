@@ -49,7 +49,6 @@ const EdgeComponent = ({
         const c2x = endX   + loopRadius * 2.25;
         const c2y = endY   - loopRadius * 2.25;
         const pathData = `M ${startX},${startY} C ${c1x},${c1y} ${c2x},${c2y} ${endX},${endY}`;
-        // Ponto real em t=0.5 da Bézier cúbica
         const labelX = (1/8)*startX + (3/8)*c1x + (3/8)*c2x + (1/8)*endX;
         const labelY = (1/8)*startY + (3/8)*c1y + (3/8)*c2y + (1/8)*endY;
 
@@ -57,7 +56,7 @@ const EdgeComponent = ({
             <g className={gClasses} onClick={handleEdgeClick}>
                 <path d={pathData} markerEnd="url(#arrowhead)" />
                 <text className={styles.edgeLabelText} x={labelX} y={labelY}>
-                    {edge.label}
+                    {edge.label.toUpperCase()}
                 </text>
             </g>
         );
@@ -77,36 +76,25 @@ const EdgeComponent = ({
     const midX   = (startX + endX) / 2;
     const midY   = (startY + endY) / 2;
 
-    // Vetor normal perpendicular à aresta
     const nx = -uy;
     const ny =  ux;
-
-    // Cálculo de curvatura 
-    //  Se a aresta reta passa por cima de outro nó → usa avoidanceOffset
-    //  Aresta bidirecional ou paralela → usa offset baseado em bundleIndex
-    //  Aresta simples e livre → linha reta
 
     let curveOffset: number;
 
     if (avoidanceOffset !== 0) {
-        // Desvio de colisão tem prioridade e pode ser somado ao offset paralelo
         const parallelBump = (bundleSize > 1)
             ? (bundleIndex - (bundleSize - 1) / 2) * 30
             : 0;
         curveOffset = avoidanceOffset + parallelBump;
     } else if (totalEdgesInRelation === 1) {
-        curveOffset = 0; // linha reta — sem paralelas, sem reversas, sem colisão
+        curveOffset = 0;
     } else {
-        // Arestas bidirecionais ou paralelas
-        // Normais opostos em A↔B garantem curvatura para lados opostos
-        // usando sempre +baseCurve (ver comentário em automatonReducer)
         const baseCurve      = hasReverseEdge ? 65 : 35;
         const parallelSpread = 40;
         const midIndex       = (bundleSize - 1) / 2;
         curveOffset = baseCurve + (bundleIndex - midIndex) * parallelSpread;
     }
 
-    //Traçado
     let pathData: string;
     let labelX: number;
     let labelY: number;
@@ -124,7 +112,6 @@ const EdgeComponent = ({
         const c2y = (endY   + peakY) / 2;
         pathData = `M ${startX},${startY} C ${c1x},${c1y} ${c2x},${c2y} ${endX},${endY}`;
 
-        // Ponto real da Bézier cúbica em t=0.5:  B(0.5) = ⅛P0 + ⅜P1 + ⅜P2 + ⅛P3
         labelX = (1/8)*startX + (3/8)*c1x + (3/8)*c2x + (1/8)*endX;
         labelY = (1/8)*startY + (3/8)*c1y + (3/8)*c2y + (1/8)*endY;
     }
@@ -138,7 +125,7 @@ const EdgeComponent = ({
                 y={labelY}
                 dy={curveOffset > 0 ? -5 : curveOffset < 0 ? 5 : -5}
             >
-                {edge.label}
+                {edge.label.toUpperCase()}
             </text>
         </g>
     );

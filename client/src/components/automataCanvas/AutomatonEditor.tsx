@@ -17,9 +17,9 @@ const initialNodesData: Node[] = [
     { id: "2", label: "2", x: 0, y: 0, isFinal: true },
 ];
 const initialEdgesData: Edge[] = [
-    { id: crypto.randomUUID(), source: "0", target: "1", label: "a" },
-    { id: crypto.randomUUID(), source: "1", target: "2", label: "b" },
-    { id: crypto.randomUUID(), source: "2", target: "2", label: "b" },
+    { id: crypto.randomUUID(), source: "0", target: "1", label: "f" },
+    { id: crypto.randomUUID(), source: "1", target: "2", label: "f" },
+    { id: crypto.randomUUID(), source: "2", target: "2", label: "e" },
 ];
 const initialGraphState: GraphState = {
     nodes: getLayout(initialNodesData, initialEdgesData),
@@ -95,7 +95,7 @@ function AutomatonEditor() {
         title: "",
     });
 
-    const [inputWord, setInputWord] = useState("ab");
+    const [inputWord, setInputWord] = useState("ff");
     const [animationStatus, setAnimationStatus] = useState<AnimationStatus>("idle");
     const [animationStep, setAnimationStep] = useState<AnimationStep | null>(null);
     const animationTimeoutRef = useRef<number | null>(null);
@@ -121,9 +121,9 @@ function AutomatonEditor() {
                 return;
             }
 
-            const currentChar = inputWord[characterIndex];
+            const currentChar = inputWord[characterIndex].toLowerCase();
             const transition = edges.find(
-                (e) => e.source === currentNodeId && e.label === currentChar,
+                (e) => e.source === currentNodeId && e.label.toLowerCase() === currentChar,
             );
 
             if (transition) {
@@ -476,7 +476,9 @@ function AutomatonEditor() {
                         isOpen={modalData.isOpen}
                         onClose={() => setModalData({ isOpen: false, action: null, title: "" })}
                         onSubmit={handleModalSubmit}
-                        initialValue={modalData.action === "edit" ? modalData.edgeToEdit?.label : ""}
+                        initialValue={
+                            modalData.action === "edit" ? modalData.edgeToEdit?.label : ""
+                        }
                         title={modalData.title}
                     />
 
