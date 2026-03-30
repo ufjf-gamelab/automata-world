@@ -43,8 +43,18 @@ export interface ModalData {
 // --- Props públicas do componente ---
 
 export interface AutomatonEditorProps {
-    onStartTransition?: (edgeId: string, fromNodeId: string, toNodeId: string, symbol: string) => void;
-    onEndTransition?: (edgeId: string, fromNodeId: string, toNodeId: string, symbol: string) => void;
+    onStartTransition?: (
+        edgeId: string,
+        fromNodeId: string,
+        toNodeId: string,
+        symbol: string,
+    ) => void;
+    onEndTransition?: (
+        edgeId: string,
+        fromNodeId: string,
+        toNodeId: string,
+        symbol: string,
+    ) => void;
     onStateEnter?: (nodeId: string) => void;
     onStateExit?: (nodeId: string) => void;
 }
@@ -60,7 +70,7 @@ const initialNodesData: Node[] = [
 const initialEdgesData: Edge[] = [
     { id: crypto.randomUUID(), source: "0", target: "1", label: "f" },
     { id: crypto.randomUUID(), source: "1", target: "2", label: "f" },
-    { id: crypto.randomUUID(), source: "2", target: "2", label: "e" },
+    { id: crypto.randomUUID(), source: "2", target: "2", label: "n" },
 ];
 
 export const initialGraphState: GraphState = {

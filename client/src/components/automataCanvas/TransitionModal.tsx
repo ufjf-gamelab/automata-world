@@ -3,11 +3,12 @@ import styles from "./TransitionModal.module.css";
 
 const GAME_COMMANDS = [
     { key: "f", label: "F", description: "Frente" },
-    { key: "e", label: "E", description: "Esquerda" },
-    { key: "d", label: "D", description: "Direita" },
-    { key: "t", label: "T", description: "Trás" },
     { key: "p", label: "P", description: "Pula" },
     { key: "b", label: "B", description: "Botão" },
+    { key: "n", label: "N", description: "Norte" },
+    { key: "s", label: "S", description: "Sul" },
+    { key: "l", label: "L", description: "Leste" },
+    { key: "o", label: "O", description: "Oeste" },
 ];
 
 interface TransitionModalProps {
@@ -33,9 +34,7 @@ const TransitionModal: React.FC<TransitionModalProps> = ({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (selected) {
-            onSubmit(selected);
-        }
+        if (selected) onSubmit(selected);
     };
 
     if (!isOpen) return null;
@@ -62,7 +61,11 @@ const TransitionModal: React.FC<TransitionModalProps> = ({
                         <button type="button" onClick={onClose} className={styles.cancelButton}>
                             Cancelar
                         </button>
-                        <button type="submit" className={styles.submitButton} disabled={!selected}>
+                        <button
+                            type="submit"
+                            className={styles.submitButton}
+                            disabled={!selected}
+                        >
                             Confirmar
                         </button>
                     </div>

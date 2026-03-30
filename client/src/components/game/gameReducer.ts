@@ -19,6 +19,22 @@ export type GameAction =
     | { type: "STOP_EXECUTION" }
     | { type: "NEXT_STEP" };
 
+// Direções absolutas — rotationIndex → [deltaX, deltaZ]
+// 0 = Sul  (+Z), 1 = Leste (+X), 2 = Norte (-Z), 3 = Oeste (-X)
+const DIRECTIONS: [number, number][] = [
+    [0, 1], // 0 Sul
+    [1, 0], // 1 Leste
+    [0, -1], // 2 Norte
+    [-1, 0], // 3 Oeste
+];
+
+const DIRECTION_MAP: Record<string, number> = {
+    s: 0,
+    l: 1,
+    n: 2,
+    o: 3,
+};
+
 // --- FUNÇÕES AUXILIARES (Puras) ---
 const parseGridToHeights = (gridString: string) => {
     return gridString.split("\n").map((row) =>
@@ -80,28 +96,18 @@ export const createInitialState = (initialStage: Stage): GameState => {
     };
 };
 
-// --- REDUCER (O Cérebro) ---
+// --- REDUCER ---
 export const gameReducer = (state: GameState, action: GameAction): GameState => {
     switch (action.type) {
         case "RESET_STAGE": {
-            //
             const stage = action.payload?.stage || state.activeStage;
-            // Se commands vier no payload, usa ele. Se for undefined, mantem o atual. Se for string vazia, limpa.
             const newCommands =
                 action.payload?.commands !== undefined ? action.payload.commands : state.commands;
-
-            return {
-                ...createInitialState(stage),
-                commands: newCommands,
-            };
+            return { ...createInitialState(stage), commands: newCommands };
         }
 
-        case "UPDATE_COMMANDS": {
-            return {
-                ...createInitialState(state.activeStage),
-                commands: action.payload,
-            };
-        }
+        case "UPDATE_COMMANDS":
+            return { ...createInitialState(state.activeStage), commands: action.payload };
 
         case "START_EXECUTION":
             return { ...state, isExecuting: true };
@@ -121,15 +127,9 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
             let currH = state.blockHeight;
             let currActiveButtons = [...state.activeButtons];
 
-            // Lógica de Alvo
-            let targetX = currX;
-            let targetZ = currZ;
-
-            if (currRot === 0) targetZ += 1;
-            else if (currRot === 1) targetX += 1;
-            else if (currRot === 2) targetZ -= 1;
-            else if (currRot === 3) targetX -= 1;
-
+            const [dx, dz] = DIRECTIONS[currRot];
+            const targetX = currX + dx;
+            const targetZ = currZ + dz;
             const targetH = getBlockHeight(targetX, targetZ, heightMatrix);
             const isTargetValid = targetH !== -1;
 
@@ -146,6 +146,7 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
                         nextH = targetH;
                     }
                     break;
+
                 case "p":
                     if (isTargetValid && targetH === currH + 1) {
                         nextX = targetX;
@@ -153,32 +154,29 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
                         nextH = targetH;
                     }
                     break;
-                case "t":
-                    nextRot = (currRot + 2) % 4;
-                    break;
-                case "e":
-                    nextRot = (currRot + 1) % 4;
-                    break;
-                case "d":
-                    nextRot = (currRot + 3) % 4; // 3 rotações p/ direita = 1 p/ esquerda
-                    break;
-                case "b": {
-                    const rawVal = getRawValue(currX, currZ, state.activeStage.floor);
-                    const isButton = rawVal > 5 || rawVal === 0;
 
-                    if (isButton) {
-                        const key = `${currX}-${currZ}`;
-                        if (currActiveButtons.includes(key)) {
-                            currActiveButtons = currActiveButtons.filter((k) => k !== key);
-                        } else {
-                            currActiveButtons.push(key);
-                        }
+                case "n":
+                case "s":
+                case "l":
+                case "o":
+                    nextRot = DIRECTION_MAP[char];
+                    break;
+
+                case "b": {
+                    // B só funciona se o tile à frente for um botão
+                    const rawVal = getRawValue(targetX, targetZ, state.activeStage.floor);
+                    const isFrontButton = rawVal > 5 || rawVal === 0;
+
+                    if (isFrontButton && isTargetValid) {
+                        const key = `${targetX}-${targetZ}`;
+                        currActiveButtons = currActiveButtons.includes(key)
+                            ? currActiveButtons.filter((k) => k !== key)
+                            : [...currActiveButtons, key];
                     }
                     break;
                 }
             }
 
-            // Verifica Vitória
             const nextCommandIndex = state.commandIndex + 1;
             const isTapeFinished = nextCommandIndex >= state.commands.length;
             const totalButtons = countTotalButtons(state.activeStage.floor);
@@ -191,8 +189,8 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
                 playerRotation: nextRot,
                 blockHeight: nextH,
                 activeButtons: currActiveButtons,
-                commandIndex: state.commandIndex + 1,
-                isVictory: isVictory,
+                commandIndex: nextCommandIndex,
+                isVictory,
             };
         }
 

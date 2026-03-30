@@ -1,13 +1,27 @@
-import { Canvas } from "@react-three/fiber";
+import { useRef } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 
 import Floor from "./game/Floor";
 import Player from "./game/Player";
 import VictoryModal from "./game/VictoryModal";
+import CompassRose from "./CompassRose";
 import { stagesList } from "./game/Stages";
 import type { Stage } from "./game/types";
 import type { GameState } from "./game/gameReducer";
 import styles from "./GameView.module.css";
+
+// Lê o azimute da câmera a cada frame e atualiza o grupo SVG da rosa diretamente,
+// sem disparar re-renders do React.
+function CameraWatcher({ compassRef }: { compassRef: React.RefObject<SVGGElement | null> }) {
+    useFrame(({ camera }) => {
+        if (!compassRef.current) return;
+        // Azimute horizontal da câmera no plano XZ (em graus)
+        const azimuth = Math.atan2(camera.position.x, camera.position.z) * (180 / Math.PI);
+        compassRef.current.setAttribute("transform", `rotate(${azimuth}, 40, 40)`);
+    });
+    return null;
+}
 
 interface GameViewProps {
     gameState: GameState;
@@ -32,6 +46,7 @@ export default function GameView({
         commandIndex,
     } = gameState;
 
+    const compassInnerRef = useRef<SVGGElement | null>(null);
     const [visualX, visualZ] = getVisualPosition(playerGridPos, activeStage.floor);
 
     return (
@@ -68,7 +83,10 @@ export default function GameView({
                     </group>
 
                     <OrbitControls enablePan={false} enableZoom={false} />
+                    <CameraWatcher compassRef={compassInnerRef} />
                 </Canvas>
+
+                <CompassRose rotationIndex={playerRotation} innerRef={compassInnerRef} />
             </div>
         </div>
     );
