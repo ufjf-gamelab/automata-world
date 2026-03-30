@@ -33,7 +33,7 @@
 
 @media (max-width: 768px) {
   .appContainer {
-    flex-direction: column;
+    flex-direction: column-reverse;
   }
 
   .automatonSection {

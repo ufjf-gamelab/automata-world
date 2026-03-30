@@ -65,7 +65,29 @@ interface ModalData {
     title: string;
 }
 
-function AutomatonEditor() {
+export interface AutomatonEditorProps {
+    onStartTransition?: (
+        edgeId: string,
+        fromNodeId: string,
+        toNodeId: string,
+        symbol: string,
+    ) => void;
+    onEndTransition?: (
+        edgeId: string,
+        fromNodeId: string,
+        toNodeId: string,
+        symbol: string,
+    ) => void;
+    onStateEnter?: (nodeId: string) => void;
+    onStateExit?: (nodeId: string) => void;
+}
+
+function AutomatonEditor({
+    onStartTransition,
+    onEndTransition,
+    onStateEnter,
+    onStateExit,
+}: AutomatonEditorProps = {}) {
     const [graph, dispatch] = useReducer(graphReducer, initialGraphState);
     const { nodes, edges } = graph;
 
@@ -100,6 +122,25 @@ function AutomatonEditor() {
     const [animationStep, setAnimationStep] = useState<AnimationStep | null>(null);
     const animationTimeoutRef = useRef<number | null>(null);
 
+    const onStartTransitionRef = useRef(onStartTransition);
+    const onEndTransitionRef = useRef(onEndTransition);
+    const onStateEnterRef = useRef(onStateEnter);
+    const onStateExitRef = useRef(onStateExit);
+    useEffect(() => {
+        onStartTransitionRef.current = onStartTransition;
+    }, [onStartTransition]);
+    useEffect(() => {
+        onEndTransitionRef.current = onEndTransition;
+    }, [onEndTransition]);
+    useEffect(() => {
+        onStateEnterRef.current = onStateEnter;
+    }, [onStateEnter]);
+    useEffect(() => {
+        onStateExitRef.current = onStateExit;
+    }, [onStateExit]);
+
+    const [currentCommand, setCurrentCommand] = useState("");
+
     useEffect(() => {
         if (animationStatus !== "running") {
             if (animationTimeoutRef.current) clearTimeout(animationTimeoutRef.current);
@@ -127,12 +168,29 @@ function AutomatonEditor() {
             );
 
             if (transition) {
+                onStateExitRef.current?.(currentNodeId!);
+                onStartTransitionRef.current?.(
+                    transition.id,
+                    currentNodeId!,
+                    transition.target,
+                    currentChar,
+                );
+
+                setCurrentCommand(currentChar);
                 setAnimationStep({
                     currentNodeId: transition.target,
                     activeEdgeId: transition.id,
                     characterIndex: characterIndex + 1,
                     failed: false,
                 });
+
+                onEndTransitionRef.current?.(
+                    transition.id,
+                    currentNodeId!,
+                    transition.target,
+                    currentChar,
+                );
+                onStateEnterRef.current?.(transition.target);
             } else {
                 setAnimationStatus("rejected");
                 setAnimationStep((prev) =>
@@ -149,6 +207,7 @@ function AutomatonEditor() {
     const handlePlayAnimation = () => {
         const initialNode = nodes.find((n) => n.isInitial);
         if (!initialNode) return alert("Defina um estado inicial para começar a simulação.");
+        setCurrentCommand("");
         setAnimationStatus("running");
         setAnimationStep({
             currentNodeId: initialNode.id,
@@ -156,11 +215,13 @@ function AutomatonEditor() {
             characterIndex: 0,
             failed: false,
         });
+        onStateEnterRef.current?.(initialNode.id);
     };
 
     const handleStopAnimation = () => {
         setAnimationStatus("idle");
         setAnimationStep(null);
+        setCurrentCommand("");
     };
 
     const getStatusMessage = useCallback(() => {
@@ -500,7 +561,7 @@ function AutomatonEditor() {
             </div>
 
             <div className={styles.gameWrapper}>
-                <GameView />
+                <GameView externalCommand={currentCommand} />
             </div>
         </div>
     );
