@@ -1,4 +1,3 @@
-import { useReducer } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 
@@ -6,17 +5,23 @@ import Floor from "./game/Floor";
 import Player from "./game/Player";
 import VictoryModal from "./game/VictoryModal";
 import { stagesList } from "./game/Stages";
-import { gameReducer, createInitialState } from "./game/gameReducer";
 import type { Stage } from "./game/types";
+import type { GameState } from "./game/gameReducer";
 import styles from "./GameView.module.css";
 
 interface GameViewProps {
-    externalCommand?: string;
+    gameState: GameState;
+    currentCommand: string;
+    onChangeStage: (stage: Stage) => void;
+    onNextStage: () => void;
 }
 
-export default function GameView({ externalCommand = "" }: GameViewProps) {
-    const [state, dispatch] = useReducer(gameReducer, stagesList[0], createInitialState);
-
+export default function GameView({
+    gameState,
+    currentCommand,
+    onChangeStage,
+    onNextStage,
+}: GameViewProps) {
     const {
         activeStage,
         activeButtons,
@@ -25,30 +30,20 @@ export default function GameView({ externalCommand = "" }: GameViewProps) {
         blockHeight,
         isVictory,
         commandIndex,
-    } = state;
-
-    const handleChangeStage = (stage: Stage) => {
-        dispatch({ type: "RESET_STAGE", payload: { stage, commands: "" } });
-    };
-
-    const handleNextStage = () => {
-        const currentIndex = stagesList.findIndex((s) => s.id === activeStage.id);
-        const nextStage = stagesList[currentIndex + 1] || stagesList[0];
-        dispatch({ type: "RESET_STAGE", payload: { stage: nextStage, commands: "" } });
-    };
+    } = gameState;
 
     const [visualX, visualZ] = getVisualPosition(playerGridPos, activeStage.floor);
 
     return (
         <div className={styles.gameView}>
-            <VictoryModal isOpen={isVictory} onNextStage={handleNextStage} />
+            <VictoryModal isOpen={isVictory} onNextStage={onNextStage} />
 
             <div className={styles.stageBar}>
                 {stagesList.map((stage) => (
                     <button
                         key={stage.id}
                         className={activeStage.id === stage.id ? styles.active : ""}
-                        onClick={() => handleChangeStage(stage)}
+                        onClick={() => onChangeStage(stage)}
                     >
                         {stage.name}
                     </button>
@@ -68,7 +63,7 @@ export default function GameView({ externalCommand = "" }: GameViewProps) {
                             rotationIndex={playerRotation}
                             blockHeight={blockHeight}
                             stepIndex={commandIndex}
-                            command={externalCommand}
+                            command={currentCommand}
                         />
                     </group>
 

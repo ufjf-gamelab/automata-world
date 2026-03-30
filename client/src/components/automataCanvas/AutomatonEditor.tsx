@@ -7,6 +7,9 @@ import ContextMenu, { MenuItem } from "./ContextMenu";
 import GameView from "../GameView";
 import styles from "./AutomatonEditor.module.css";
 import { graphReducer } from "./Automatonreducer";
+import { gameReducer, createInitialState } from "../game/gameReducer";
+import { stagesList } from "../game/Stages";
+import type { Stage } from "../game/types";
 import {
     initialGraphState,
     type AnimationStatus,
@@ -17,7 +20,7 @@ import {
     type ModalData,
     type AutomatonEditorProps,
 } from "./AutomatonEditorTypes";
-import { useGraphActions } from "./Usegraphactions.ts";
+import { useGraphActions } from "./Usegraphactions";
 
 export type { Node, Edge } from "./Automatonreducer";
 export { NODE_WIDTH, NODE_HEIGHT } from "./Automatonreducer";
@@ -29,8 +32,12 @@ function AutomatonEditor({
     onStateEnter,
     onStateExit,
 }: AutomatonEditorProps = {}) {
+    // --- Estado do autômato ---
     const [graph, dispatch] = useReducer(graphReducer, initialGraphState);
     const { nodes, edges } = graph;
+
+    // --- Estado do jogo (controlado pelo autômato) ---
+    const [gameState, gameDispatch] = useReducer(gameReducer, stagesList[0], createInitialState);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const menuRef = useRef<HTMLDivElement>(null);
@@ -99,6 +106,7 @@ function AutomatonEditor({
         setModalData,
     });
 
+    // --- Loop de simulação ---
     useEffect(() => {
         if (animationStatus !== "running") {
             if (animationTimeoutRef.current) clearTimeout(animationTimeoutRef.current);
@@ -133,13 +141,18 @@ function AutomatonEditor({
                     transition.target,
                     currentChar,
                 );
+
+                // Avança o jogo um passo com o símbolo da transição
+                gameDispatch({ type: "NEXT_STEP" });
                 setCurrentCommand(currentChar);
+
                 setAnimationStep({
                     currentNodeId: transition.target,
                     activeEdgeId: transition.id,
                     characterIndex: characterIndex + 1,
                     failed: false,
                 });
+
                 onEndTransitionRef.current?.(
                     transition.id,
                     currentNodeId!,
@@ -163,6 +176,10 @@ function AutomatonEditor({
     const handlePlayAnimation = () => {
         const initialNode = nodes.find((n) => n.isInitial);
         if (!initialNode) return alert("Defina um estado inicial para começar a simulação.");
+
+        // Carrega a palavra como sequência de comandos do jogo e reinicia o mapa
+        gameDispatch({ type: "UPDATE_COMMANDS", payload: inputWord.toLowerCase() });
+
         setCurrentCommand("");
         setAnimationStatus("running");
         setAnimationStep({
@@ -178,6 +195,7 @@ function AutomatonEditor({
         setAnimationStatus("idle");
         setAnimationStep(null);
         setCurrentCommand("");
+        gameDispatch({ type: "RESET_STAGE", payload: { commands: "" } });
     };
 
     const getStatusMessage = useCallback(() => {
@@ -192,6 +210,18 @@ function AutomatonEditor({
                 return "Pronto para simular.";
         }
     }, [animationStatus, inputWord]);
+
+    // --- Handlers do jogo ---
+    const handleChangeStage = (stage: Stage) => {
+        gameDispatch({ type: "RESET_STAGE", payload: { stage, commands: "" } });
+        handleStopAnimation();
+    };
+
+    const handleNextStage = () => {
+        const currentIndex = stagesList.findIndex((s) => s.id === gameState.activeStage.id);
+        const nextStage = stagesList[currentIndex + 1] || stagesList[0];
+        gameDispatch({ type: "RESET_STAGE", payload: { stage: nextStage, commands: "" } });
+    };
 
     const nodeMenuItems: MenuItem[] = [
         {
@@ -301,7 +331,12 @@ function AutomatonEditor({
             </div>
 
             <div className={styles.gameWrapper}>
-                <GameView externalCommand={currentCommand} />
+                <GameView
+                    gameState={gameState}
+                    currentCommand={currentCommand}
+                    onChangeStage={handleChangeStage}
+                    onNextStage={handleNextStage}
+                />
             </div>
         </div>
     );
