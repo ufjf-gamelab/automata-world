@@ -18,10 +18,22 @@
   fill: none;
 }
 
-.node text {
-  font-size: 16px;
-  font-weight: 500;
-  fill: #212529;
+/* Texto da ação — destaque, maior */
+.actionText {
+  font-size: 18px;
+  font-weight: 700;
+  fill: #2de452;
+  pointer-events: none;
+  user-select: none;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+/* Fallback: id do estado, menor e cinza */
+.labelText {
+  font-size: 13px;
+  font-weight: 400;
+  fill: #adb5bd;
   pointer-events: none;
   user-select: none;
   text-anchor: middle;
@@ -58,15 +70,7 @@
 }
 
 @keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.15);
-  }
-
-  100% {
-    transform: scale(1);
-  }
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.15); }
+  100% { transform: scale(1); }
 }

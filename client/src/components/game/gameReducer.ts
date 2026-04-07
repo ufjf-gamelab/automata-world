@@ -90,7 +90,7 @@ const applyCommand = (
     const targetX = currX + dx;
     const targetZ = currZ + dz;
     const targetH = getBlockHeight(targetX, targetZ, heightMatrix);
-    const isTargetValid = targetH !== -1;
+    const isTargetValid = targetH > 0;
 
     let nextX = currX;
     let nextZ = currZ;
