@@ -1,7 +1,5 @@
 import { getLayout, type Node, type Edge, type GraphState } from "./Automatonreducer";
 
-// --- Tipos internos da simulação e UI ---
-
 export type AnimationStatus = "idle" | "running" | "accepted" | "rejected";
 
 export interface AnimationStep {
@@ -29,7 +27,7 @@ export interface LinkingState {
     sourceNode: Node | null;
 }
 
-export type ModalAction = "add" | "edit" | "link";
+export type ModalAction = "add" | "edit" | "link" | "nodeAction";
 
 export interface ModalData {
     isOpen: boolean;
@@ -37,10 +35,9 @@ export interface ModalData {
     sourceId?: string;
     targetId?: string;
     edgeToEdit?: Edge;
+    nodeForAction?: Node;
     title: string;
 }
-
-// --- Props públicas do componente ---
 
 export interface AutomatonEditorProps {
     onStartTransition?: (
@@ -59,8 +56,6 @@ export interface AutomatonEditorProps {
     onStateExit?: (nodeId: string) => void;
 }
 
-// --- Estado inicial do grafo ---
-
 const initialNodesData: Node[] = [
     { id: "0", label: "0", x: 0, y: 0, isInitial: true },
     { id: "1", label: "1", x: 0, y: 0 },
@@ -68,9 +63,9 @@ const initialNodesData: Node[] = [
 ];
 
 const initialEdgesData: Edge[] = [
-    { id: crypto.randomUUID(), source: "0", target: "1", label: "f" },
-    { id: crypto.randomUUID(), source: "1", target: "2", label: "f" },
-    { id: crypto.randomUUID(), source: "2", target: "2", label: "n" },
+    { id: crypto.randomUUID(), source: "0", target: "1", label: "f", action: "f" },
+    { id: crypto.randomUUID(), source: "1", target: "2", label: "f", action: "f" },
+    { id: crypto.randomUUID(), source: "2", target: "2", label: "n", action: "n" },
 ];
 
 export const initialGraphState: GraphState = {

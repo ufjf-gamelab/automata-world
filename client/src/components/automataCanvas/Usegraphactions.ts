@@ -42,7 +42,6 @@ export function useGraphActions({
     setMousePosition,
     setModalData,
 }: UseGraphActionsParams) {
-
     const closeAllMenus = useCallback(() => {
         setContextMenu({ visible: false, x: 0, y: 0, selectedNodeId: null });
         setEdgeMenu({ visible: false, x: 0, y: 0, selectedEdge: null });
@@ -55,8 +54,10 @@ export function useGraphActions({
         const menuHeight = menuRef.current?.clientHeight ?? 200;
         let x = clientX + padding;
         let y = clientY + padding;
-        if (x + menuWidth > window.innerWidth - padding) x = window.innerWidth - menuWidth - padding;
-        if (y + menuHeight > window.innerHeight - padding) y = window.innerHeight - menuHeight - padding;
+        if (x + menuWidth > window.innerWidth - padding)
+            x = window.innerWidth - menuWidth - padding;
+        if (y + menuHeight > window.innerHeight - padding)
+            y = window.innerHeight - menuHeight - padding;
         if (x < padding) x = padding;
         if (y < padding) y = padding;
         return { x, y };
@@ -69,8 +70,6 @@ export function useGraphActions({
 
     const handleNodeClick = (event: React.MouseEvent | React.TouchEvent, node: Node) => {
         event.stopPropagation();
-
-        // Ref ao linkingState via setter para não precisar de dep
         setLinkingState((prev) => {
             if (prev.sourceNode) {
                 setModalData({
@@ -84,9 +83,8 @@ export function useGraphActions({
             }
             return prev;
         });
-
         setLinkingState((prev) => {
-            if (prev.sourceNode) return prev; // já tratado acima
+            if (prev.sourceNode) return prev;
             let clientX: number, clientY: number;
             if ("touches" in event) {
                 const touch = (event as React.TouchEvent).changedTouches[0];
@@ -149,6 +147,18 @@ export function useGraphActions({
         setContextMenu((prev) => ({ ...prev, visible: false }));
     };
 
+    const handleSetNodeAction = () => {
+        const node = nodes.find((n) => n.id === contextMenu.selectedNodeId);
+        if (!node) return;
+        setModalData({
+            isOpen: true,
+            action: "nodeAction",
+            nodeForAction: node,
+            title: `Ação do Estado ${node.label}`,
+        });
+        closeAllMenus();
+    };
+
     // --- Aresta ---
 
     const handleEdgeClick = (event: React.MouseEvent, edge: Edge) => {
@@ -165,7 +175,7 @@ export function useGraphActions({
             isOpen: true,
             action: "edit",
             edgeToEdit: edge,
-            title: `Editar Transição (${edge.source} -${edge.label}→ ${edge.target})`,
+            title: `Editar Transição (${edge.source} -${edge.label.toUpperCase()}→ ${edge.target})`,
         });
         closeAllMenus();
     };
@@ -178,11 +188,11 @@ export function useGraphActions({
 
     // --- Modal ---
 
-    const handleModalSubmit = (label: string) => {
+    const handleModalSubmit = (label: string, action?: string) => {
         setModalData((modal) => {
-            const { action, sourceId, targetId, edgeToEdit } = modal;
+            const { action: modalAction, sourceId, targetId, edgeToEdit } = modal;
 
-            if (action === "add" && sourceId) {
+            if (modalAction === "add" && sourceId) {
                 const newId = `${graph.nodeCounter}`;
                 const isDuplicate = edges.some(
                     (e) => e.source === sourceId && e.target === newId && e.label === label,
@@ -191,8 +201,8 @@ export function useGraphActions({
                     alert(`Erro: Transição (${sourceId} -${label}-> ${newId}) já existe.`);
                     return modal;
                 }
-                dispatch({ type: "ADD_NODE_AND_EDGE", sourceId, label });
-            } else if (action === "link" && sourceId && targetId) {
+                dispatch({ type: "ADD_NODE_AND_EDGE", sourceId, label, action });
+            } else if (modalAction === "link" && sourceId && targetId) {
                 const isDuplicate = edges.some(
                     (e) => e.source === sourceId && e.target === targetId && e.label === label,
                 );
@@ -200,9 +210,8 @@ export function useGraphActions({
                     alert(`Erro: Transição (${sourceId} -${label}-> ${targetId}) já existe.`);
                     return modal;
                 }
-                dispatch({ type: "ADD_EDGE", sourceId, targetId, label });
-            } else if (action === "edit" && edgeToEdit) {
-                if (label === edgeToEdit.label) return { isOpen: false, action: null, title: "" };
+                dispatch({ type: "ADD_EDGE", sourceId, targetId, label, action });
+            } else if (modalAction === "edit" && edgeToEdit) {
                 const isDuplicate = edges.some(
                     (e) =>
                         e.id !== edgeToEdit.id &&
@@ -211,12 +220,27 @@ export function useGraphActions({
                         e.label === label,
                 );
                 if (isDuplicate) {
-                    alert(`Erro: Transição (${edgeToEdit.source} -${label}-> ${edgeToEdit.target}) já existe.`);
+                    alert(
+                        `Erro: Transição (${edgeToEdit.source} -${label}-> ${edgeToEdit.target}) já existe.`,
+                    );
                     return modal;
                 }
-                dispatch({ type: "EDIT_EDGE", edgeId: edgeToEdit.id, label });
+                dispatch({ type: "EDIT_EDGE", edgeId: edgeToEdit.id, label, action });
             }
 
+            return { isOpen: false, action: null, title: "" };
+        });
+    };
+
+    const handleNodeActionSubmit = (nodeAction?: string) => {
+        setModalData((modal) => {
+            if (modal.nodeForAction) {
+                dispatch({
+                    type: "SET_NODE_ACTION",
+                    nodeId: modal.nodeForAction.id,
+                    action: nodeAction,
+                });
+            }
             return { isOpen: false, action: null, title: "" };
         });
     };
@@ -269,8 +293,6 @@ export function useGraphActions({
         event.target.value = "";
     };
 
-    // --- SVG ---
-
     const handleSvgClick = () => closeAllMenus();
 
     const handleSvgMouseMove = (x: number, y: number) => {
@@ -290,10 +312,12 @@ export function useGraphActions({
         handleDeleteNode,
         handleAddNewStateAndLink,
         handleStartLinking,
+        handleSetNodeAction,
         handleEdgeClick,
         handleOpenEditEdgeModal,
         handleDeleteEdge,
         handleModalSubmit,
+        handleNodeActionSubmit,
         handleRelayout,
         handleExport,
         handleImportClick,

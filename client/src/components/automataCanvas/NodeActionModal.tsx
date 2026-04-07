@@ -2,42 +2,30 @@ import React, { useState, useEffect } from "react";
 import styles from "./TransitionModal.module.css";
 import { GAME_COMMANDS } from "../game/gameConfig";
 
-interface TransitionModalProps {
+interface NodeActionModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (label: string, action?: string) => void;
-    initialLabel?: string;
+    onSubmit: (action?: string) => void;
     initialAction?: string;
     title: string;
 }
 
-const TransitionModal: React.FC<TransitionModalProps> = ({
+const NodeActionModal: React.FC<NodeActionModalProps> = ({
     isOpen,
     onClose,
     onSubmit,
-    initialLabel = "",
     initialAction = "",
     title,
 }) => {
-    const [label, setLabel] = useState(initialLabel.toLowerCase());
     const [action, setAction] = useState(initialAction.toLowerCase());
 
     useEffect(() => {
-        setLabel(initialLabel.toLowerCase());
         setAction(initialAction.toLowerCase());
-    }, [initialLabel, initialAction, isOpen]);
-
-    const handleLabelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const val = e.target.value
-            .replace(/[^a-zA-Z]/g, "")
-            .slice(0, 1)
-            .toLowerCase();
-        setLabel(val);
-    };
+    }, [initialAction, isOpen]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (label) onSubmit(label, action || undefined);
+        onSubmit(action || undefined);
     };
 
     if (!isOpen) return null;
@@ -48,20 +36,8 @@ const TransitionModal: React.FC<TransitionModalProps> = ({
                 <h4>{title}</h4>
                 <form onSubmit={handleSubmit}>
                     <div className={styles.section}>
-                        <label className={styles.sectionLabel}>Símbolo lido na fita</label>
-                        <input
-                            type="text"
-                            value={label.toUpperCase()}
-                            onChange={handleLabelChange}
-                            placeholder="Qualquer letra (a-z)"
-                            autoFocus
-                            className={styles.symbolInput}
-                        />
-                    </div>
-
-                    <div className={styles.section}>
                         <label className={styles.sectionLabel}>
-                            Ação ao percorrer
+                            Ação ao entrar no estado
                             <span className={styles.optional}>(opcional)</span>
                         </label>
                         <div className={styles.commandGrid}>
@@ -83,7 +59,7 @@ const TransitionModal: React.FC<TransitionModalProps> = ({
                         <button type="button" onClick={onClose} className={styles.cancelButton}>
                             Cancelar
                         </button>
-                        <button type="submit" className={styles.submitButton} disabled={!label}>
+                        <button type="submit" className={styles.submitButton}>
                             Confirmar
                         </button>
                     </div>
@@ -93,4 +69,4 @@ const TransitionModal: React.FC<TransitionModalProps> = ({
     );
 };
 
-export default TransitionModal;
+export default NodeActionModal;

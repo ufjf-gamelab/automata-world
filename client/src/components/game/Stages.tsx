@@ -2,6 +2,17 @@ import type { Stage } from "./types";
 
 export const stagesList: Stage[] = [
     {
+        id: 1,
+        name: "Fase meia volta",
+        floor: `-6-1  
+-6-1
+-1-1
+-1-6
+-616
+`,
+        playerPosition: [3, 0],
+    },
+    {
         id: 0,
         name: "Fase 0",
         floor: `-1  
@@ -11,8 +22,8 @@ export const stagesList: Stage[] = [
         playerPosition: [1, 0],
     },
     {
-        id: 1,
-        name: "Fase 1",
+        id: 2,
+        name: "Fase 2",
         floor: `--6  
 --1
 --162
@@ -24,8 +35,8 @@ export const stagesList: Stage[] = [
         playerPosition: [2, 0],
     },
     {
-        id: 2,
-        name: "Fase 2",
+        id: 3,
+        name: "Fase 3",
         floor: `1111
 1221
 1282
@@ -34,8 +45,8 @@ export const stagesList: Stage[] = [
         playerPosition: [1, 1],
     },
     {
-        id: 3,
-        name: "Fase 3",
+        id: 4,
+        name: "Fase 4",
         floor: `11111
 17771
 17371
@@ -45,8 +56,8 @@ export const stagesList: Stage[] = [
         playerPosition: [1, 1],
     },
     {
-        id: 4,
-        name: "Fase 4",
+        id: 5,
+        name: "Fase 5",
         floor: `1
 2-716
 8-2-2

@@ -1,16 +1,11 @@
-import { useRef } from "react";
 import styles from "./CompassRose.module.css";
-
-// playerRotation → ângulo do ponteiro no SVG (0° = topo = Norte)
-const PLAYER_ANGLE = [180, 90, 0, 270]; // Sul, Leste, Norte, Oeste
 
 interface CompassRoseProps {
     rotationIndex: number;
     innerRef: React.RefObject<SVGGElement | null>;
 }
 
-export default function CompassRose({ rotationIndex, innerRef }: CompassRoseProps) {
-    const playerAngle = PLAYER_ANGLE[rotationIndex] ?? 0;
+export default function CompassRose({ innerRef }: CompassRoseProps) {
 
     return (
         <div className={styles.compass}>
@@ -74,7 +69,7 @@ export default function CompassRose({ rotationIndex, innerRef }: CompassRoseProp
                     </text>
 
                     {/* Ponteiro do jogador — ângulo fixo no espaço do mundo */}
-                    <g transform={`rotate(${playerAngle}, 40, 40)`}>
+                    <g >
                         <polygon points="40,16 44,40 40,36 36,40" fill="#ff5252" />
                         <polygon points="40,64 44,40 40,44 36,40" fill="rgba(255,255,255,0.4)" />
                     </g>

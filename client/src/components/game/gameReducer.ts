@@ -1,4 +1,5 @@
 import { type Stage } from "./types";
+import { MOVEMENT_MODE } from "./gameConfig";
 
 export type GameState = {
     activeStage: Stage;
@@ -17,27 +18,21 @@ export type GameAction =
     | { type: "UPDATE_COMMANDS"; payload: string }
     | { type: "START_EXECUTION" }
     | { type: "STOP_EXECUTION" }
-    | { type: "NEXT_STEP" };
+    | { type: "NEXT_STEP" }
+    | { type: "EXECUTE_ACTION"; payload: string };
 
-// Direções absolutas — rotationIndex → [deltaX, deltaZ]
-// 0 = Sul  (+Z), 1 = Leste (+X), 2 = Norte (-Z), 3 = Oeste (-X)
+// 0 = Sul (+Z), 1 = Leste (+X), 2 = Norte (-Z), 3 = Oeste (-X)
 const DIRECTIONS: [number, number][] = [
-    [0, 1], // 0 Sul
-    [1, 0], // 1 Leste
-    [0, -1], // 2 Norte
-    [-1, 0], // 3 Oeste
+    [0, 1],
+    [1, 0],
+    [0, -1],
+    [-1, 0],
 ];
 
-const DIRECTION_MAP: Record<string, number> = {
-    s: 0,
-    l: 1,
-    n: 2,
-    o: 3,
-};
+const CARDINAL_MAP: Record<string, number> = { s: 0, l: 1, n: 2, o: 3 };
 
-// --- FUNÇÕES AUXILIARES (Puras) ---
-const parseGridToHeights = (gridString: string) => {
-    return gridString.split("\n").map((row) =>
+const parseGridToHeights = (gridString: string) =>
+    gridString.split("\n").map((row) =>
         row.split("").map((char) => {
             if (char === " ") return 0;
             let val = parseInt(char);
@@ -46,7 +41,6 @@ const parseGridToHeights = (gridString: string) => {
             return val;
         }),
     );
-};
 
 const getBlockHeight = (x: number, z: number, heightMatrix: number[][]) => {
     if (z < 0 || z >= heightMatrix.length) return -1;
@@ -66,23 +60,105 @@ const getRawValue = (x: number, z: number, gridString: string) => {
 
 const countTotalButtons = (gridString: string) => {
     let count = 0;
-    const rows = gridString.trim().split("\n");
-    rows.forEach((row) => {
-        row.split("").forEach((char) => {
-            if (char === " ") return;
-            const val = parseInt(char);
-            if (val === 0 || val > 5) count++;
-        });
-    });
+    gridString
+        .trim()
+        .split("\n")
+        .forEach((row) =>
+            row.split("").forEach((char) => {
+                if (char === " ") return;
+                const val = parseInt(char);
+                if (val === 0 || val > 5) count++;
+            }),
+        );
     return count;
 };
 
-// --- INITIAL STATE ---
+// Executa um único comando e retorna as partes do estado alteradas.
+// Compartilhado entre NEXT_STEP e EXECUTE_ACTION.
+const applyCommand = (
+    char: string,
+    state: GameState,
+): Pick<GameState, "playerGridPos" | "playerRotation" | "blockHeight" | "activeButtons"> => {
+    const heightMatrix = parseGridToHeights(state.activeStage.floor);
+    const currX = state.playerGridPos[0];
+    const currZ = state.playerGridPos[1];
+    let currRot = state.playerRotation;
+    const currH = state.blockHeight;
+    let currActiveButtons = [...state.activeButtons];
+
+    const [dx, dz] = DIRECTIONS[currRot];
+    const targetX = currX + dx;
+    const targetZ = currZ + dz;
+    const targetH = getBlockHeight(targetX, targetZ, heightMatrix);
+    const isTargetValid = targetH !== -1;
+
+    let nextX = currX;
+    let nextZ = currZ;
+    let nextH = currH;
+    let nextRot = currRot;
+
+    switch (char) {
+        case "f":
+            if (isTargetValid && (targetH === currH || targetH === currH - 1)) {
+                nextX = targetX;
+                nextZ = targetZ;
+                nextH = targetH;
+            }
+            break;
+
+        case "p":
+            if (isTargetValid && targetH === currH + 1) {
+                nextX = targetX;
+                nextZ = targetZ;
+                nextH = targetH;
+            }
+            break;
+
+        case "b": {
+            const rawVal = getRawValue(targetX, targetZ, state.activeStage.floor);
+            const isFrontButton = rawVal > 5 || rawVal === 0;
+            if (isFrontButton && isTargetValid && targetH === currH) {
+                nextX = targetX;
+                nextZ = targetZ;
+                nextH = targetH;
+                const key = `${targetX}-${targetZ}`;
+                currActiveButtons = currActiveButtons.includes(key)
+                    ? currActiveButtons.filter((k) => k !== key)
+                    : [...currActiveButtons, key];
+            }
+            break;
+        }
+
+        case "n":
+        case "s":
+        case "l":
+        case "o":
+            if (MOVEMENT_MODE === "cardinal") nextRot = CARDINAL_MAP[char];
+            break;
+
+        case "e":
+            if (MOVEMENT_MODE === "relative") nextRot = (currRot + 1) % 4;
+            break;
+        case "d":
+            if (MOVEMENT_MODE === "relative") nextRot = (currRot + 3) % 4;
+            break;
+        case "t":
+            if (MOVEMENT_MODE === "relative") nextRot = (currRot + 2) % 4;
+            break;
+    }
+
+    return {
+        playerGridPos: [nextX, nextZ],
+        playerRotation: nextRot,
+        blockHeight: nextH,
+        activeButtons: currActiveButtons,
+    };
+};
+
 export const createInitialState = (initialStage: Stage): GameState => {
     const heightMatrix = parseGridToHeights(initialStage.floor);
     const [x, z] = initialStage.playerPosition;
     const h = getBlockHeight(x, z, heightMatrix);
-
     return {
         activeStage: initialStage,
         activeButtons: [],
@@ -96,7 +172,6 @@ export const createInitialState = (initialStage: Stage): GameState => {
     };
 };
 
-// --- REDUCER ---
 export const gameReducer = (state: GameState, action: GameAction): GameState => {
     switch (action.type) {
         case "RESET_STAGE": {
@@ -117,81 +192,22 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
 
         case "NEXT_STEP": {
             if (state.commandIndex >= state.commands.length) return state;
-
             const char = state.commands[state.commandIndex].toLowerCase();
-            const heightMatrix = parseGridToHeights(state.activeStage.floor);
-
-            let currX = state.playerGridPos[0];
-            let currZ = state.playerGridPos[1];
-            let currRot = state.playerRotation;
-            let currH = state.blockHeight;
-            let currActiveButtons = [...state.activeButtons];
-
-            const [dx, dz] = DIRECTIONS[currRot];
-            const targetX = currX + dx;
-            const targetZ = currZ + dz;
-            const targetH = getBlockHeight(targetX, targetZ, heightMatrix);
-            const isTargetValid = targetH !== -1;
-
-            let nextX = currX;
-            let nextZ = currZ;
-            let nextH = currH;
-            let nextRot = currRot;
-
-            switch (char) {
-                case "f":
-                    if (isTargetValid && (targetH === currH || targetH === currH - 1)) {
-                        nextX = targetX;
-                        nextZ = targetZ;
-                        nextH = targetH;
-                    }
-                    break;
-
-                case "p":
-                    if (isTargetValid && targetH === currH + 1) {
-                        nextX = targetX;
-                        nextZ = targetZ;
-                        nextH = targetH;
-                    }
-                    break;
-
-                case "n":
-                case "s":
-                case "l":
-                case "o":
-                    nextRot = DIRECTION_MAP[char];
-                    break;
-
-                case "b": {
-                    // B só funciona se o tile à frente for um botão
-                    const rawVal = getRawValue(targetX, targetZ, state.activeStage.floor);
-                    const isFrontButton = rawVal > 5 || rawVal === 0;
-
-                    if (isFrontButton && isTargetValid) {
-                        const key = `${targetX}-${targetZ}`;
-                        currActiveButtons = currActiveButtons.includes(key)
-                            ? currActiveButtons.filter((k) => k !== key)
-                            : [...currActiveButtons, key];
-                    }
-                    break;
-                }
-            }
-
             const nextCommandIndex = state.commandIndex + 1;
+            const applied = applyCommand(char, state);
             const isTapeFinished = nextCommandIndex >= state.commands.length;
             const totalButtons = countTotalButtons(state.activeStage.floor);
             const isVictory =
-                totalButtons > 0 && currActiveButtons.length === totalButtons && isTapeFinished;
+                totalButtons > 0 && applied.activeButtons.length === totalButtons && isTapeFinished;
+            return { ...state, ...applied, commandIndex: nextCommandIndex, isVictory };
+        }
 
-            return {
-                ...state,
-                playerGridPos: [nextX, nextZ],
-                playerRotation: nextRot,
-                blockHeight: nextH,
-                activeButtons: currActiveButtons,
-                commandIndex: nextCommandIndex,
-                isVictory,
-            };
+        case "EXECUTE_ACTION": {
+            const char = action.payload.toLowerCase();
+            const applied = applyCommand(char, state);
+            const totalButtons = countTotalButtons(state.activeStage.floor);
+            const isVictory = totalButtons > 0 && applied.activeButtons.length === totalButtons;
+            return { ...state, ...applied, isVictory };
         }
 
         default:

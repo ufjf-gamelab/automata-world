@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef, useReducer } from "react";
 import GraphCanvas from "./GraphCanvas";
 import SimulationPanel from "./SimulationPanel";
 import TransitionModal from "./TransitionModal";
+import NodeActionModal from "./NodeActionModal";
 import ControlPanel from "./ControlPanel";
 import ContextMenu, { MenuItem } from "./ContextMenu";
 import GameView from "../GameView";
@@ -32,11 +33,9 @@ function AutomatonEditor({
     onStateEnter,
     onStateExit,
 }: AutomatonEditorProps = {}) {
-    // --- Estado do autômato ---
     const [graph, dispatch] = useReducer(graphReducer, initialGraphState);
     const { nodes, edges } = graph;
 
-    // --- Estado do jogo (controlado pelo autômato) ---
     const [gameState, gameDispatch] = useReducer(gameReducer, stagesList[0], createInitialState);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -65,13 +64,12 @@ function AutomatonEditor({
         title: "",
     });
 
-    const [inputWord, setInputWord] = useState("ff");
+    const [inputWord, setInputWord] = useState("FF");
     const [animationStatus, setAnimationStatus] = useState<AnimationStatus>("idle");
     const [animationStep, setAnimationStep] = useState<AnimationStep | null>(null);
     const [currentCommand, setCurrentCommand] = useState("");
     const animationTimeoutRef = useRef<number | null>(null);
 
-    // Refs para os callbacks evitam closures stale no useEffect da simulação
     const onStartTransitionRef = useRef(onStartTransition);
     const onEndTransitionRef = useRef(onEndTransition);
     const onStateEnterRef = useRef(onStateEnter);
@@ -142,9 +140,10 @@ function AutomatonEditor({
                     currentChar,
                 );
 
-                // Avança o jogo um passo com o símbolo da transição
-                gameDispatch({ type: "NEXT_STEP" });
-                setCurrentCommand(currentChar);
+                // Se a aresta tem ação, executa no jogo; senão usa o símbolo lido
+                const gameCommand = transition.action || transition.label;
+                gameDispatch({ type: "EXECUTE_ACTION", payload: gameCommand });
+                setCurrentCommand(gameCommand);
 
                 setAnimationStep({
                     currentNodeId: transition.target,
@@ -159,6 +158,12 @@ function AutomatonEditor({
                     transition.target,
                     currentChar,
                 );
+
+                // Executa ação do estado destino ao entrar nele
+                const targetNode = nodes.find((n) => n.id === transition.target);
+                if (targetNode?.action) {
+                    gameDispatch({ type: "EXECUTE_ACTION", payload: targetNode.action });
+                }
                 onStateEnterRef.current?.(transition.target);
             } else {
                 setAnimationStatus("rejected");
@@ -176,10 +181,7 @@ function AutomatonEditor({
     const handlePlayAnimation = () => {
         const initialNode = nodes.find((n) => n.isInitial);
         if (!initialNode) return alert("Defina um estado inicial para começar a simulação.");
-
-        // Carrega a palavra como sequência de comandos do jogo e reinicia o mapa
-        gameDispatch({ type: "UPDATE_COMMANDS", payload: inputWord.toLowerCase() });
-
+        gameDispatch({ type: "RESET_STAGE", payload: { commands: "" } });
         setCurrentCommand("");
         setAnimationStatus("running");
         setAnimationStep({
@@ -188,6 +190,10 @@ function AutomatonEditor({
             characterIndex: 0,
             failed: false,
         });
+        // Executa ação do estado inicial ao entrar
+        if (initialNode.action) {
+            gameDispatch({ type: "EXECUTE_ACTION", payload: initialNode.action });
+        }
         onStateEnterRef.current?.(initialNode.id);
     };
 
@@ -211,7 +217,6 @@ function AutomatonEditor({
         }
     }, [animationStatus, inputWord]);
 
-    // --- Handlers do jogo ---
     const handleChangeStage = (stage: Stage) => {
         gameDispatch({ type: "RESET_STAGE", payload: { stage, commands: "" } });
         handleStopAnimation();
@@ -237,6 +242,7 @@ function AutomatonEditor({
             onClick: actions.handleSetInitialState,
         },
         { icon: "🔘", label: "Alternar Estado Final", onClick: actions.handleToggleFinalState },
+        { icon: "⚡", label: "Definir Ação do Estado", onClick: actions.handleSetNodeAction },
         { isSeparator: true },
         {
             icon: "🗑️",
@@ -247,7 +253,7 @@ function AutomatonEditor({
     ];
 
     const edgeMenuItems: MenuItem[] = [
-        { icon: "✏️", label: "Editar Símbolo", onClick: actions.handleOpenEditEdgeModal },
+        { icon: "✏️", label: "Editar Transição", onClick: actions.handleOpenEditEdgeModal },
         {
             icon: "🗑️",
             label: "Excluir Transição",
@@ -304,12 +310,23 @@ function AutomatonEditor({
                     />
 
                     <TransitionModal
-                        isOpen={modalData.isOpen}
+                        isOpen={modalData.isOpen && modalData.action !== "nodeAction"}
                         onClose={() => setModalData({ isOpen: false, action: null, title: "" })}
                         onSubmit={actions.handleModalSubmit}
-                        initialValue={
+                        initialLabel={
                             modalData.action === "edit" ? modalData.edgeToEdit?.label : ""
                         }
+                        initialAction={
+                            modalData.action === "edit" ? modalData.edgeToEdit?.action : ""
+                        }
+                        title={modalData.title}
+                    />
+
+                    <NodeActionModal
+                        isOpen={modalData.isOpen && modalData.action === "nodeAction"}
+                        onClose={() => setModalData({ isOpen: false, action: null, title: "" })}
+                        onSubmit={actions.handleNodeActionSubmit}
+                        initialAction={modalData.nodeForAction?.action}
                         title={modalData.title}
                     />
 

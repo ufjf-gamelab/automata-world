@@ -7,13 +7,15 @@ export interface Node {
     y: number;
     isInitial?: boolean;
     isFinal?: boolean;
+    action?: string; // comando do jogo executado ao entrar no estado
 }
 
 export interface Edge {
     id: string;
     source: string;
     target: string;
-    label: string;
+    label: string; // símbolo lido na fita (qualquer letra)
+    action?: string; // comando do jogo executado ao percorrer a aresta
 }
 
 export const NODE_WIDTH = 60;
@@ -23,8 +25,6 @@ export const getLayout = (nodesToLayout: Node[], edgesToLayout: Edge[]): Node[] 
     if (nodesToLayout.length === 0) return nodesToLayout;
 
     const g = new dagre.graphlib.Graph({ multigraph: true });
-
-    // Espaçamento para arestas curvas terem espaço
     g.setGraph({ rankdir: "LR", nodesep: 100, ranksep: 180, edgesep: 60 });
     g.setDefaultEdgeLabel(() => ({}));
 
@@ -40,21 +40,13 @@ export const getLayout = (nodesToLayout: Node[], edgesToLayout: Edge[]): Node[] 
         return { ...node, x: pos.x, y: pos.y };
     });
 
-    // Separar pares bidirecionais
-    //
-    // Quando A↔B existem, as arestas curvam para lados opostos.
-    const MIN_BIDIR_DIST = 160; // px mínimo entre nós com aresta bidirecional
-
+    const MIN_BIDIR_DIST = 160;
     const nodeMap = new Map(laid.map((n) => [n.id, { ...n }]));
 
-    // Coleta pares bidirecionais únicos (apenas uma direção)
     const bidirPairs = new Set<string>();
     edgesToLayout.forEach((e) => {
         const reverse = edgesToLayout.find((r) => r.source === e.target && r.target === e.source);
-        if (reverse) {
-            const key = [e.source, e.target].sort().join("↔");
-            bidirPairs.add(key);
-        }
+        if (reverse) bidirPairs.add([e.source, e.target].sort().join("↔"));
     });
 
     bidirPairs.forEach((key) => {
@@ -62,13 +54,10 @@ export const getLayout = (nodesToLayout: Node[], edgesToLayout: Edge[]): Node[] 
         const a = nodeMap.get(idA);
         const b = nodeMap.get(idB);
         if (!a || !b) return;
-
         const dx = b.x - a.x;
         const dy = b.y - a.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-
         if (dist < MIN_BIDIR_DIST) {
-            // Empurra os nós ao longo da direção atual para atingir MIN_BIDIR_DIST
             const scale = MIN_BIDIR_DIST / Math.max(dist, 1);
             const midX = (a.x + b.x) / 2;
             const midY = (a.y + b.y) / 2;
@@ -96,9 +85,10 @@ export interface GraphState {
 
 export type GraphAction =
     | { type: "DRAG_NODE"; id: string; x: number; y: number }
-    | { type: "ADD_NODE_AND_EDGE"; sourceId: string; label: string }
-    | { type: "ADD_EDGE"; sourceId: string; targetId: string; label: string }
-    | { type: "EDIT_EDGE"; edgeId: string; label: string }
+    | { type: "ADD_NODE_AND_EDGE"; sourceId: string; label: string; action?: string }
+    | { type: "ADD_EDGE"; sourceId: string; targetId: string; label: string; action?: string }
+    | { type: "EDIT_EDGE"; edgeId: string; label: string; action?: string }
+    | { type: "SET_NODE_ACTION"; nodeId: string; action?: string }
     | { type: "DELETE_NODE"; nodeId: string }
     | { type: "DELETE_EDGE"; edgeId: string }
     | { type: "SET_INITIAL"; nodeId: string }
@@ -135,6 +125,7 @@ export function graphReducer(state: GraphState, action: GraphAction): GraphState
                 source: action.sourceId,
                 target: newId,
                 label: action.label,
+                action: action.action,
             };
             return {
                 nodes: [...state.nodes, newNode],
@@ -156,6 +147,7 @@ export function graphReducer(state: GraphState, action: GraphAction): GraphState
                 source: action.sourceId,
                 target: action.targetId,
                 label: action.label,
+                action: action.action,
             };
             return { ...state, edges: [...state.edges, newEdge] };
         }
@@ -164,7 +156,17 @@ export function graphReducer(state: GraphState, action: GraphAction): GraphState
             return {
                 ...state,
                 edges: state.edges.map((e) =>
-                    e.id === action.edgeId ? { ...e, label: action.label } : e,
+                    e.id === action.edgeId
+                        ? { ...e, label: action.label, action: action.action }
+                        : e,
+                ),
+            };
+
+        case "SET_NODE_ACTION":
+            return {
+                ...state,
+                nodes: state.nodes.map((n) =>
+                    n.id === action.nodeId ? { ...n, action: action.action } : n,
                 ),
             };
 
