@@ -1,7 +1,7 @@
 import React, { useCallback } from "react";
 import type { Dispatch, RefObject } from "react";
-import { getLayout, type Node, type Edge } from "./Automatonreducer";
-import type { GraphAction, GraphState } from "./Automatonreducer";
+import { getLayout, type Node, type Edge } from "./AutomatonReducer";
+import type { GraphAction, GraphState } from "./AutomatonReducer";
 import type {
     ContextMenuData,
     EdgeMenuData,

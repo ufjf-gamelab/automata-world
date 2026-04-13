@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
-import { GAME_COMMANDS } from "../game/gameConfig";
-import type { Node } from "./AutomatonEditor";
-import { NODE_WIDTH } from "./AutomatonEditor";
+import { GAME_COMMANDS } from "../../game/gameConfig";
+import type { Node } from "../AutomatonReducer";
+import { NODE_WIDTH } from "../AutomatonReducer";
 import { useNodeDrag } from "./useNodeDrag";
 import styles from "./Node.module.css";
 

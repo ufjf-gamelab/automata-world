@@ -1,5 +1,5 @@
 import React from "react";
-import type { CommandTapeProps } from "./types";
+import type { CommandTapeProps } from "./data/types";
 import "./CommandTape.css";
 
 const CHAR_WIDTH = 40;

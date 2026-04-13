@@ -18,22 +18,25 @@
   fill: none;
 }
 
-/* Texto da ação — destaque, maior */
+/* Action sequence shown inside the node */
 .actionText {
-  font-size: 18px;
+  font-size: 12px;
   font-weight: 700;
-  fill: #2de452;
+  font-family: monospace;
+  fill: #1a73e8;
   pointer-events: none;
   user-select: none;
   text-anchor: middle;
   dominant-baseline: central;
+  /* Clip text that overflows the circle boundary */
+  overflow: hidden;
 }
 
-/* Fallback: id do estado, menor e cinza */
+/* Node id — plain label when there is no action */
 .labelText {
-  font-size: 13px;
-  font-weight: 400;
-  fill: #adb5bd;
+  font-size: 16px;
+  font-weight: 500;
+  fill: #212529;
   pointer-events: none;
   user-select: none;
   text-anchor: middle;
@@ -70,7 +73,15 @@
 }
 
 @keyframes pulse {
-  0%   { transform: scale(1); }
-  50%  { transform: scale(1.15); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.15);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }

@@ -2,7 +2,7 @@
 // Keeps AutomatonEditor focused on layout and UI concerns only.
 import { useState, useEffect, useRef, useCallback } from "react";
 import type { Dispatch } from "react";
-import type { Node, Edge } from "./Automatonreducer";
+import type { Node, Edge } from "./AutomatonReducer";
 import type { AnimationStatus, AnimationStep } from "./AutomatonEditorTypes";
 import type { GameAction } from "../game/gameReducer";
 

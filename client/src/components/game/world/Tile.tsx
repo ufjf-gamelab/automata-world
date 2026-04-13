@@ -1,5 +1,5 @@
 import { RoundedBox } from "@react-three/drei";
-import type { TileProps } from "./types";
+import type { TileProps } from "../data/types";
 
 export default function Tile({ position, height, isButton = false, isActive = false }: TileProps) {
     const tiles = [];

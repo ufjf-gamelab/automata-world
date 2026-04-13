@@ -1,15 +1,15 @@
 import { useState, useReducer, useRef } from "react";
 import type { Dispatch } from "react";
-import GraphCanvas from "./GraphCanvas";
-import SimulationPanel from "./SimulationPanel";
-import TransitionModal from "./TransitionModal";
-import NodeActionModal from "./NodeActionModal";
-import ControlPanel from "./ControlPanel";
-import ContextMenu, { MenuItem } from "./ContextMenu";
+import GraphCanvas from "./canvas/GraphCanvas";
+import SimulationPanel from "./ui/SimulationPanel";
+import TransitionModal from "./ui/TransitionModal";
+import NodeActionModal from "./ui/NodeActionModal";
+import ControlPanel from "./ui/ControlPanel";
+import ContextMenu, { MenuItem } from "./ui/ContextMenu";
 import styles from "./AutomatonEditor.module.css";
-import { graphReducer } from "./Automatonreducer";
+import { graphReducer } from "./AutomatonReducer";
 import { useSimulation } from "./useSimulation";
-import { useGraphActions } from "./Usegraphactions";
+import { useGraphActions } from "./useGraphActions";
 import {
     initialGraphState,
     type ContextMenuData,
@@ -20,8 +20,8 @@ import {
 } from "./AutomatonEditorTypes";
 import type { GameAction } from "../game/gameReducer";
 
-export type { Node, Edge } from "./Automatonreducer";
-export { NODE_WIDTH, NODE_HEIGHT } from "./Automatonreducer";
+export type { Node, Edge } from "./AutomatonReducer";
+export { NODE_WIDTH, NODE_HEIGHT } from "./AutomatonReducer";
 export type { AutomatonEditorProps } from "./AutomatonEditorTypes";
 
 interface Props extends AutomatonEditorProps {

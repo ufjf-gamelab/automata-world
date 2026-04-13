@@ -2,12 +2,12 @@ import { useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 
-import Floor from "./game/Floor";
-import Player from "./game/Player";
-import VictoryModal from "./game/VictoryModal";
+import Floor from "./game/world/Floor";
+import Player from "./game/player/Player";
+import VictoryModal from "./game/ui/VictoryModal";
 import CompassRose from "./CompassRose";
-import { stagesList } from "./game/Stages";
-import type { Stage } from "./game/types";
+import { stagesList } from "./game/data/Stages";
+import type { Stage } from "./game/data/types";
 import type { GameState } from "./game/gameReducer";
 import styles from "./GameView.module.css";
 

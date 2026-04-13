@@ -1,4 +1,4 @@
-import type { VictoryModalProps } from "./types";
+import type { VictoryModalProps } from "../data/types";
 import "./VictoryModal.css";
 
 export default function VictoryModal({ isOpen, onNextStage }: VictoryModalProps) {

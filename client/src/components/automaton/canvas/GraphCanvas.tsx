@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useCallback } from "react";
 import * as d3 from "d3";
 import NodeComponent from "./Node";
 import EdgeComponent from "./Edge";
-import type { Node, Edge } from "./AutomatonEditor";
-import { NODE_WIDTH, NODE_HEIGHT } from "./AutomatonEditor";
+import type { Node, Edge } from "../AutomatonReducer";
+import { NODE_WIDTH, NODE_HEIGHT } from "../AutomatonReducer";
 import styles from "./GraphCanvas.module.css";
 
 interface GraphCanvasProps {

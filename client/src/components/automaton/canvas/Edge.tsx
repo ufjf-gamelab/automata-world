@@ -1,6 +1,6 @@
 import React from "react";
-import type { Edge, Node } from "./AutomatonEditor";
-import { GAME_COMMANDS } from "../game/gameConfig";
+import type { Edge, Node } from "../AutomatonReducer";
+import { GAME_COMMANDS } from "../../game/gameConfig";
 import styles from "./Edge.module.css";
 
 const NODE_WIDTH = 60;

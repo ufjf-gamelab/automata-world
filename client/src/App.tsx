@@ -1,9 +1,9 @@
 import { useReducer, useState } from "react";
-import AutomatonEditor from "./components/automataCanvas/AutomatonEditor";
+import AutomatonEditor from "./components/automaton/AutomatonEditor";
 import GameView from "./components/GameView";
 import { gameReducer, createInitialState } from "./components/game/gameReducer";
-import { stagesList } from "./components/game/Stages";
-import type { Stage } from "./components/game/types";
+import { stagesList } from "./components/game/data/Stages";
+import type { Stage } from "./components/game/data/types";
 import "./global.css";
 import "./App.css";
 

@@ -1,7 +1,7 @@
 // Shared component for building a sequence of game commands.
 // Used by both NodeActionModal and TransitionModal.
 import React from "react";
-import { GAME_COMMANDS } from "../game/gameConfig";
+import { GAME_COMMANDS } from "../../game/gameConfig";
 import styles from "./TransitionModal.module.css";
 
 interface CommandSequenceBuilderProps {

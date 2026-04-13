@@ -1,4 +1,4 @@
-import { getLayout, type Node, type Edge, type GraphState } from "./Automatonreducer";
+import { getLayout, type Node, type Edge, type GraphState } from "./AutomatonReducer";
 import type { Dispatch } from "react";
 import type { GameAction } from "../game/gameReducer";
 

@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import * as d3 from "d3";
 import type { RefObject } from "react";
-import type { Node } from "./Automatonreducer";
+import type { Node } from "../AutomatonReducer";
 
 const LONG_PRESS_MS = 450;
 const DRAG_THRESHOLD = 8; // px

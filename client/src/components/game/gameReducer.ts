@@ -1,4 +1,4 @@
-import { type Stage } from "./types";
+import { type Stage } from "./data/types";
 import { MOVEMENT_MODE } from "./gameConfig";
 
 export type GameState = {
