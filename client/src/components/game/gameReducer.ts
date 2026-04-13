@@ -11,6 +11,7 @@ export type GameState = {
     commands: string;
     commandIndex: number;
     isExecuting: boolean;
+    stepCounter: number; // incrementa a cada comando executado — aciona animações no Player
 };
 
 export type GameAction =
@@ -21,7 +22,6 @@ export type GameAction =
     | { type: "NEXT_STEP" }
     | { type: "EXECUTE_ACTION"; payload: string };
 
-// 0 = Sul (+Z), 1 = Leste (+X), 2 = Norte (-Z), 3 = Oeste (-X)
 const DIRECTIONS: [number, number][] = [
     [0, 1],
     [1, 0],
@@ -73,8 +73,6 @@ const countTotalButtons = (gridString: string) => {
     return count;
 };
 
-// Executa um único comando e retorna as partes do estado alteradas.
-// Compartilhado entre NEXT_STEP e EXECUTE_ACTION.
 const applyCommand = (
     char: string,
     state: GameState,
@@ -115,16 +113,27 @@ const applyCommand = (
             break;
 
         case "b": {
-            const rawVal = getRawValue(targetX, targetZ, state.activeStage.floor);
-            const isFrontButton = rawVal > 5 || rawVal === 0;
-            if (isFrontButton && isTargetValid && targetH === currH) {
-                nextX = targetX;
-                nextZ = targetZ;
-                nextH = targetH;
-                const key = `${targetX}-${targetZ}`;
-                currActiveButtons = currActiveButtons.includes(key)
-                    ? currActiveButtons.filter((k) => k !== key)
-                    : [...currActiveButtons, key];
+            if (MOVEMENT_MODE === "relative") {
+                const rawCurr = getRawValue(currX, currZ, state.activeStage.floor);
+                const isCurrentButton = rawCurr > 5 || rawCurr === 0;
+                if (isCurrentButton) {
+                    const key = `${currX}-${currZ}`;
+                    currActiveButtons = currActiveButtons.includes(key)
+                        ? currActiveButtons.filter((k) => k !== key)
+                        : [...currActiveButtons, key];
+                }
+            } else {
+                const rawVal = getRawValue(targetX, targetZ, state.activeStage.floor);
+                const isFrontButton = rawVal > 5 || rawVal === 0;
+                if (isFrontButton && isTargetValid && targetH === currH) {
+                    nextX = targetX;
+                    nextZ = targetZ;
+                    nextH = targetH;
+                    const key = `${targetX}-${targetZ}`;
+                    currActiveButtons = currActiveButtons.includes(key)
+                        ? currActiveButtons.filter((k) => k !== key)
+                        : [...currActiveButtons, key];
+                }
             }
             break;
         }
@@ -169,6 +178,7 @@ export const createInitialState = (initialStage: Stage): GameState => {
         commands: "",
         commandIndex: 0,
         isExecuting: false,
+        stepCounter: 0,
     };
 };
 
@@ -199,15 +209,31 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
             const totalButtons = countTotalButtons(state.activeStage.floor);
             const isVictory =
                 totalButtons > 0 && applied.activeButtons.length === totalButtons && isTapeFinished;
-            return { ...state, ...applied, commandIndex: nextCommandIndex, isVictory };
+            return {
+                ...state,
+                ...applied,
+                commandIndex: nextCommandIndex,
+                stepCounter: state.stepCounter + 1,
+                isVictory,
+            };
         }
 
         case "EXECUTE_ACTION": {
-            const char = action.payload.toLowerCase();
-            const applied = applyCommand(char, state);
+            // Payload may be a single key ("f") or a sequence ("fnb").
+            // Each character is applied in order to produce the final state.
+            let current = state;
+            for (const ch of action.payload.toLowerCase()) {
+                const applied = applyCommand(ch, current);
+                current = { ...current, ...applied };
+            }
             const totalButtons = countTotalButtons(state.activeStage.floor);
-            const isVictory = totalButtons > 0 && applied.activeButtons.length === totalButtons;
-            return { ...state, ...applied, isVictory };
+            const isVictory = totalButtons > 0 && current.activeButtons.length === totalButtons;
+            return {
+                ...state,
+                ...current,
+                stepCounter: state.stepCounter + 1,
+                isVictory,
+            };
         }
 
         default:

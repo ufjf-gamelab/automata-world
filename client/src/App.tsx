@@ -1,12 +1,43 @@
-// src/App.tsx
+import { useReducer, useState } from "react";
 import AutomatonEditor from "./components/automataCanvas/AutomatonEditor";
-import "./global.css"; // Import global styles (body, etc.)
-import "./App.css"; // Import App specific styles (might be empty)
+import GameView from "./components/GameView";
+import { gameReducer, createInitialState } from "./components/game/gameReducer";
+import { stagesList } from "./components/game/Stages";
+import type { Stage } from "./components/game/types";
+import "./global.css";
+import "./App.css";
 
-function App() {
-    // If you need a wrapper div for App specific layout/styling:
-    // return <div className="appRoot"><AutomatonEditor /></div>;
-    return <AutomatonEditor />;
+export default function App() {
+    const [gameState, gameDispatch] = useReducer(gameReducer, stagesList[0], createInitialState);
+    const [currentCommand, setCurrentCommand] = useState("");
+
+    const handleChangeStage = (stage: Stage) => {
+        gameDispatch({ type: "RESET_STAGE", payload: { stage, commands: "" } });
+        setCurrentCommand("");
+    };
+
+    const handleNextStage = () => {
+        const currentIndex = stagesList.findIndex((s) => s.id === gameState.activeStage.id);
+        const nextStage = stagesList[currentIndex + 1] || stagesList[0];
+        gameDispatch({ type: "RESET_STAGE", payload: { stage: nextStage, commands: "" } });
+    };
+
+    return (
+        <div className="appContainer">
+            <div className="automatonWrapper">
+                <AutomatonEditor
+                    gameDispatch={gameDispatch}
+                    setCurrentCommand={setCurrentCommand}
+                />
+            </div>
+            <div className="gameWrapper">
+                <GameView
+                    gameState={gameState}
+                    currentCommand={currentCommand}
+                    onChangeStage={handleChangeStage}
+                    onNextStage={handleNextStage}
+                />
+            </div>
+        </div>
+    );
 }
-
-export default App;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styles from "./TransitionModal.module.css";
-import { GAME_COMMANDS } from "../game/gameConfig";
+import CommandSequenceBuilder from "./CommandSequenceBuilder";
 
 interface TransitionModalProps {
     isOpen: boolean;
@@ -20,11 +20,11 @@ const TransitionModal: React.FC<TransitionModalProps> = ({
     title,
 }) => {
     const [label, setLabel] = useState(initialLabel.toLowerCase());
-    const [action, setAction] = useState(initialAction.toLowerCase());
+    const [sequence, setSequence] = useState(initialAction.toLowerCase());
 
     useEffect(() => {
         setLabel(initialLabel.toLowerCase());
-        setAction(initialAction.toLowerCase());
+        setSequence(initialAction.toLowerCase());
     }, [initialLabel, initialAction, isOpen]);
 
     const handleLabelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -37,7 +37,7 @@ const TransitionModal: React.FC<TransitionModalProps> = ({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (label) onSubmit(label, action || undefined);
+        if (label) onSubmit(label, sequence || undefined);
     };
 
     if (!isOpen) return null;
@@ -48,12 +48,12 @@ const TransitionModal: React.FC<TransitionModalProps> = ({
                 <h4>{title}</h4>
                 <form onSubmit={handleSubmit}>
                     <div className={styles.section}>
-                        <label className={styles.sectionLabel}>Símbolo lido na fita</label>
+                        <label className={styles.sectionLabel}>Tape symbol</label>
                         <input
                             type="text"
                             value={label.toUpperCase()}
                             onChange={handleLabelChange}
-                            placeholder="Qualquer letra (a-z)"
+                            placeholder="Any letter (a–z)"
                             autoFocus
                             className={styles.symbolInput}
                         />
@@ -61,30 +61,18 @@ const TransitionModal: React.FC<TransitionModalProps> = ({
 
                     <div className={styles.section}>
                         <label className={styles.sectionLabel}>
-                            Ação ao percorrer
-                            <span className={styles.optional}>(opcional)</span>
+                            Action sequence on transition
+                            <span className={styles.optional}>(optional)</span>
                         </label>
-                        <div className={styles.commandGrid}>
-                            {GAME_COMMANDS.map((cmd) => (
-                                <button
-                                    key={cmd.key}
-                                    type="button"
-                                    className={`${styles.commandButton} ${action === cmd.key ? styles.commandButtonActive : ""}`}
-                                    onClick={() => setAction(action === cmd.key ? "" : cmd.key)}
-                                >
-                                    <span className={styles.commandKey}>{cmd.label}</span>
-                                    <span className={styles.commandDesc}>{cmd.description}</span>
-                                </button>
-                            ))}
-                        </div>
+                        <CommandSequenceBuilder value={sequence} onChange={setSequence} />
                     </div>
 
                     <div className={styles.modalActions}>
                         <button type="button" onClick={onClose} className={styles.cancelButton}>
-                            Cancelar
+                            Cancel
                         </button>
                         <button type="submit" className={styles.submitButton} disabled={!label}>
-                            Confirmar
+                            Confirm
                         </button>
                     </div>
                 </form>

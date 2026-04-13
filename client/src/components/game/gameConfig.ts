@@ -1,32 +1,35 @@
-// Trocar aqui para mudar o modo de movimento do jogo:
-// "cardinal" → F, P, B, N, S, L, O  (direções absolutas do mapa)
-// "relative" → F, P, B, E, D, T     (virar relativo ao jogador)
+// ─── Movement mode ────────────────────────────────────────────────────────────
+// Switch here to change how the player rotates:
+//   "cardinal" → absolute compass directions (N, S, E, W)
+//   "relative" → relative turns (Left, Right, Back)
 export type MovementMode = "cardinal" | "relative";
 export const MOVEMENT_MODE: MovementMode = "cardinal";
 
+// ─── Command descriptor ───────────────────────────────────────────────────────
+// key     → internal command letter sent to the game reducer
+// display → human-readable name shown in modals and edge labels
 export interface GameCommand {
     key: string;
-    label: string;
-    description: string;
+    display: string;
 }
 
 const COMMANDS_CARDINAL: GameCommand[] = [
-    { key: "f", label: "F", description: "Frente" },
-    { key: "p", label: "P", description: "Pula" },
-    { key: "b", label: "B", description: "Botão" },
-    { key: "n", label: "N", description: "Norte" },
-    { key: "s", label: "S", description: "Sul" },
-    { key: "l", label: "L", description: "Leste" },
-    { key: "o", label: "O", description: "Oeste" },
+    { key: "f", display: "Forward" },
+    { key: "p", display: "Jump" },
+    { key: "b", display: "Button" },
+    { key: "n", display: "North" },
+    { key: "s", display: "South" },
+    { key: "l", display: "East" },
+    { key: "o", display: "West" },
 ];
 
 const COMMANDS_RELATIVE: GameCommand[] = [
-    { key: "f", label: "F", description: "Frente" },
-    { key: "p", label: "P", description: "Pula" },
-    { key: "b", label: "B", description: "Botão" },
-    { key: "e", label: "E", description: "Esquerda" },
-    { key: "d", label: "D", description: "Direita" },
-    { key: "t", label: "T", description: "Trás" },
+    { key: "f", display: "Forward" },
+    { key: "p", display: "Jump" },
+    { key: "b", display: "Button" },
+    { key: "e", display: "Turn Left" },
+    { key: "d", display: "Turn Right" },
+    { key: "t", display: "Turn Back" },
 ];
 
 export const GAME_COMMANDS: GameCommand[] =

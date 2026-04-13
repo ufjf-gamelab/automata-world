@@ -1,15 +1,10 @@
-.appContainer {
-  display: flex;
-  flex-direction: row;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-}
+/* AutomatonEditor ocupa 100% do espaço que o App lhe dá */
 
 .automatonSection {
-  flex: 1;
   display: flex;
   flex-direction: row;
+  width: 100%;
+  height: 100%;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
@@ -24,30 +19,12 @@
   min-height: 0;
 }
 
-.gameWrapper {
-  flex: 1;
-  min-width: 0;
-  min-height: 0;
-  overflow: hidden;
-}
-
 @media (max-width: 768px) {
-  .appContainer {
-    flex-direction: column-reverse;
-  }
-
   .automatonSection {
-    flex: 1 1 0;
     flex-direction: column-reverse;
-    height: 0;
   }
 
   .canvasWrapper {
-    flex: 1 1 0;
-    height: 0;
-  }
-
-  .gameWrapper {
     flex: 1 1 0;
     height: 0;
   }

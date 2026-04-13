@@ -85,7 +85,7 @@ export default function Player({
             playAnim(ANIMS.walk);
             setTimeout(() => {
                 if (!isLockedRef.current) playAnim(ANIMS.idle);
-            }, 350);
+            }, 1000);
         } else if (cmd === "p") {
             isLockedRef.current = true;
             if (ANIMS.jump) {

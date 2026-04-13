@@ -43,7 +43,7 @@ export default function GameView({
         playerRotation,
         blockHeight,
         isVictory,
-        commandIndex,
+        stepCounter,
     } = gameState;
 
     const compassInnerRef = useRef<SVGGElement | null>(null);
@@ -77,7 +77,7 @@ export default function GameView({
                             gridPosition={[visualX, visualZ]}
                             rotationIndex={playerRotation}
                             blockHeight={blockHeight}
-                            stepIndex={commandIndex}
+                            stepIndex={stepCounter}
                             command={currentCommand}
                         />
                     </group>

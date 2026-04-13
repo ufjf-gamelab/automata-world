@@ -1,4 +1,6 @@
 import { getLayout, type Node, type Edge, type GraphState } from "./Automatonreducer";
+import type { Dispatch } from "react";
+import type { GameAction } from "../game/gameReducer";
 
 export type AnimationStatus = "idle" | "running" | "accepted" | "rejected";
 
@@ -7,6 +9,7 @@ export interface AnimationStep {
     activeEdgeId: string | null;
     characterIndex: number;
     failed: boolean;
+    type: "transition" | "state";
 }
 
 export interface ContextMenuData {
@@ -40,6 +43,10 @@ export interface ModalData {
 }
 
 export interface AutomatonEditorProps {
+    // Controle do jogo — injetados pelo App pai
+    gameDispatch: Dispatch<GameAction>;
+    setCurrentCommand: (cmd: string) => void;
+    // Callbacks opcionais de eventos da simulação
     onStartTransition?: (
         edgeId: string,
         fromNodeId: string,
@@ -57,9 +64,9 @@ export interface AutomatonEditorProps {
 }
 
 const initialNodesData: Node[] = [
-    { id: "0", label: "0", x: 0, y: 0, isInitial: true },
-    { id: "1", label: "1", x: 0, y: 0 },
-    { id: "2", label: "2", x: 0, y: 0, isFinal: true },
+    { id: "0", label: "0", x: 0, y: 0, action: "f", isInitial: true },
+    { id: "1", label: "1", x: 0, y: 0, action: "f" },
+    { id: "2", label: "2", x: 0, y: 0, isFinal: true, action: "f" },
 ];
 
 const initialEdgesData: Edge[] = [

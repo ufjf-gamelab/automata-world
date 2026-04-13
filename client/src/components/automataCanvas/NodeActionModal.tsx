@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styles from "./TransitionModal.module.css";
-import { GAME_COMMANDS } from "../game/gameConfig";
+import CommandSequenceBuilder from "./CommandSequenceBuilder";
 
 interface NodeActionModalProps {
     isOpen: boolean;
@@ -17,15 +17,15 @@ const NodeActionModal: React.FC<NodeActionModalProps> = ({
     initialAction = "",
     title,
 }) => {
-    const [action, setAction] = useState(initialAction.toLowerCase());
+    const [sequence, setSequence] = useState(initialAction.toLowerCase());
 
     useEffect(() => {
-        setAction(initialAction.toLowerCase());
+        setSequence(initialAction.toLowerCase());
     }, [initialAction, isOpen]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSubmit(action || undefined);
+        onSubmit(sequence || undefined);
     };
 
     if (!isOpen) return null;
@@ -37,30 +37,18 @@ const NodeActionModal: React.FC<NodeActionModalProps> = ({
                 <form onSubmit={handleSubmit}>
                     <div className={styles.section}>
                         <label className={styles.sectionLabel}>
-                            Ação ao entrar no estado
-                            <span className={styles.optional}>(opcional)</span>
+                            Action sequence on state entry
+                            <span className={styles.optional}>(optional)</span>
                         </label>
-                        <div className={styles.commandGrid}>
-                            {GAME_COMMANDS.map((cmd) => (
-                                <button
-                                    key={cmd.key}
-                                    type="button"
-                                    className={`${styles.commandButton} ${action === cmd.key ? styles.commandButtonActive : ""}`}
-                                    onClick={() => setAction(action === cmd.key ? "" : cmd.key)}
-                                >
-                                    <span className={styles.commandKey}>{cmd.label}</span>
-                                    <span className={styles.commandDesc}>{cmd.description}</span>
-                                </button>
-                            ))}
-                        </div>
+                        <CommandSequenceBuilder value={sequence} onChange={setSequence} />
                     </div>
 
                     <div className={styles.modalActions}>
                         <button type="button" onClick={onClose} className={styles.cancelButton}>
-                            Cancelar
+                            Cancel
                         </button>
                         <button type="submit" className={styles.submitButton}>
-                            Confirmar
+                            Confirm
                         </button>
                     </div>
                 </form>
