@@ -16,8 +16,8 @@ import GameView from "./components/GameView";
 import { gameReducer, createInitialState } from "./components/game/gameReducer";
 import { stagesList } from "./components/game/data/Stages";
 import type { Stage } from "./components/game/data/types";
-import "./global.css";
-import "./App.css";
+import "./styles/global.css";
+import "./styles/App.css";
 
 export default function App() {
     // Estado completo do jogo — posição do jogador, botões ativos, vitória, etc.

@@ -26,6 +26,7 @@ interface UseSimulationParams {
     edges: Edge[];
     gameDispatch: Dispatch<GameAction>; // controla o estado do jogo durante a simulação
     setCurrentCommand: (cmd: string) => void; // informa ao Player qual animação executar
+    simulationSpeed?: number;
     onStartTransition?: (edgeId: string, from: string, to: string, symbol: string) => void;
     onEndTransition?: (edgeId: string, from: string, to: string, symbol: string) => void;
     onStateEnter?: (nodeId: string) => void;
@@ -37,6 +38,7 @@ export function useSimulation({
     edges,
     gameDispatch,
     setCurrentCommand,
+    simulationSpeed = 750,
     onStartTransition,
     onEndTransition,
     onStateEnter,
@@ -77,7 +79,7 @@ export function useSimulation({
         }
         if (!step) return;
 
-        timeoutRef.current = window.setTimeout(() => {
+        timeoutRef.current = window.setTimeout(async () => {
             const { currentNodeId, characterIndex, type } = step;
 
             // ── Fase "state": entrada no nó ──────────────────────────────────
@@ -86,10 +88,14 @@ export function useSimulation({
 
                 // Executa cada comando da sequência de ação do estado no jogo
                 if (currentNode?.action) {
+                    setCurrentCommand(currentNode.action);
+                    const actions = currentNode.action.toLowerCase().split("");
                     for (const ch of currentNode.action.toLowerCase()) {
                         gameDispatch({ type: "EXECUTE_ACTION", payload: ch });
+                        await new Promise((r) =>
+                            setTimeout(r, simulationSpeed / Math.max(actions.length, 1)),
+                        );
                     }
-                    setCurrentCommand(currentNode.action);
                 }
 
                 onEnterRef.current?.(currentNodeId!);
@@ -137,10 +143,12 @@ export function useSimulation({
 
                 // Executa a ação da aresta no jogo (se existir)
                 if (transition.action) {
+                    setCurrentCommand(transition.action);
+                    const actions = transition.action.toLowerCase().split('');
                     for (const ch of transition.action.toLowerCase()) {
                         gameDispatch({ type: "EXECUTE_ACTION", payload: ch });
+                        await new Promise(r => setTimeout(r, simulationSpeed / Math.max(actions.length, 1)));
                     }
-                    setCurrentCommand(transition.action);
                 }
 
                 // Move para o nó destino e reinicia na fase "state"
