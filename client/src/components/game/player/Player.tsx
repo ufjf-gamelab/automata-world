@@ -1,3 +1,20 @@
+/**
+ * Player.tsx — Personagem 3D animado do jogo
+ *
+ * Carrega o modelo GLTF do personagem, aplica a textura corretamente
+ * (contornando o problema de caminho relativo no build do GitHub Pages),
+ * e gerencia as animações e o movimento suave no espaço 3D.
+ *
+ * Funcionamento das animações:
+ *   - stepIndex incrementa a cada comando executado (via gameReducer.stepCounter)
+ *   - Quando stepIndex muda, o useEffect lê `command` para saber qual animação tocar
+ *   - isLockedRef impede que uma nova animação interrompa outra ainda em andamento (ex: jump)
+ *
+ * Funcionamento do movimento:
+ *   - As posições targetX/Y/Z são derivadas do estado lógico do jogo
+ *   - useFrame interpola a posição atual até o alvo a cada frame (lerp)
+ *   - A lógica de "sobe primeiro, desce depois" evita que o personagem atravesse tiles
+ */
 import { useRef, useEffect, useState } from "react";
 import { useFrame, useLoader } from "@react-three/fiber";
 import { useAnimations } from "@react-three/drei";
@@ -15,14 +32,13 @@ export default function Player({
 }: PlayerProps) {
     const groupRef = useRef<Group>(null);
 
-    // Intercepta a URL da textura antes que o GLTFLoader tente buscá-la,
-    // redirecionando para o path gerado pelo Vite (com hash correto).
+    // Carrega o GLTF usando um LoadingManager customizado que intercepta a URL
+    // da textura antes da requisição HTTP, redirecionando para o path com hash
+    // gerado pelo Vite — resolve o erro 404 no deploy do GitHub Pages.
     const gltf = useLoader(GLTFLoader, PLAYER_CONFIG.modelPath, (loader) => {
         const manager = new LoadingManager();
         manager.setURLModifier((url) => {
-            if (url.includes("texture-r")) {
-                return PLAYER_CONFIG.texturePath;
-            }
+            if (url.includes("texture-r")) return PLAYER_CONFIG.texturePath;
             return url;
         });
         loader.manager = manager;
@@ -31,19 +47,23 @@ export default function Player({
     const { scene, animations } = gltf;
     const { actions } = useAnimations(animations, groupRef);
 
-    const currentAnimRef = useRef<string>("");
-    const isLockedRef = useRef(false);
-    const hopProgress = useRef(0);
+    const currentAnimRef = useRef<string>(""); // nome da animação em execução
+    const isLockedRef = useRef(false); // true durante animações que não podem ser interrompidas
+    const hopProgress = useRef(0); // progresso do efeito de "pulo" ao pressionar botão
     const [isHopping, setIsHopping] = useState(false);
 
     const { animations: ANIMS, scale, yOffset } = PLAYER_CONFIG;
 
+    // Posição e rotação alvo derivadas do estado lógico do jogo
     const targetX = gridPosition[0];
     const targetZ = gridPosition[1];
     const targetY = blockHeight * 0.5 + yOffset;
     const targetRotY = rotationIndex * (Math.PI / 2);
 
-    // Troca de animação com crossfade ──────────────────────────────────────
+    /**
+     * Troca a animação atual com crossfade suave de 150ms.
+     * Se `once` for true, a animação toca uma vez e para (ex: pulo, interação).
+     */
     const playAnim = (name: string | null, once = false) => {
         if (!name) return;
         const next = actions[name];
@@ -51,7 +71,7 @@ export default function Player({
             console.warn("Clip não encontrado:", name, "| Disponíveis:", Object.keys(actions));
             return;
         }
-        if (!once && currentAnimRef.current === name) return;
+        if (!once && currentAnimRef.current === name) return; // já tocando
         const prev = actions[currentAnimRef.current];
         next.reset();
         next.setLoop(once ? LoopOnce : LoopRepeat, once ? 1 : Infinity);
@@ -61,14 +81,17 @@ export default function Player({
         currentAnimRef.current = name;
     };
 
-    // Inicia idle ao carregar ───────────────────────────────────────────────
+    // Inicia a animação idle após o modelo carregar (pequeno delay para garantir que
+    // os clips já estão disponíveis no objeto `actions`)
     useEffect(() => {
         const t = setTimeout(() => playAnim(ANIMS.idle), 80);
         return () => clearTimeout(t);
     }, [actions]);
 
+    // Reage a cada mudança de stepIndex (= novo comando executado no jogo)
     useEffect(() => {
         if (stepIndex === 0) {
+            // Reinício: reseta todas as flags e volta ao idle
             currentAnimRef.current = "";
             isLockedRef.current = false;
             setIsHopping(false);
@@ -77,16 +100,18 @@ export default function Player({
             return;
         }
 
-        if (isLockedRef.current) return;
+        if (isLockedRef.current) return; // animação anterior ainda em andamento
 
         const cmd = command.toLowerCase();
 
         if (["f", "e", "d", "t"].includes(cmd)) {
+            // Movimento: toca walk e volta ao idle após ~1s
             playAnim(ANIMS.walk);
             setTimeout(() => {
                 if (!isLockedRef.current) playAnim(ANIMS.idle);
             }, 1000);
         } else if (cmd === "p") {
+            // Pulo: bloqueia outras animações até terminar
             isLockedRef.current = true;
             if (ANIMS.jump) {
                 const jumpAction = actions[ANIMS.jump];
@@ -112,6 +137,7 @@ export default function Player({
                 }, 600);
             }
         } else if (cmd === "b") {
+            // Pressionar botão: animação de interação + efeito de "hop" no eixo Y
             setIsHopping(true);
             hopProgress.current = 0;
             isLockedRef.current = true;
@@ -124,7 +150,8 @@ export default function Player({
         }
     }, [stepIndex, command]);
 
-    // Teleporte ao resetar fase ────────────────────────────────────────────
+    // Teleporte instantâneo quando o personagem muda de posição abruptamente
+    // (ex: troca de fase ou reset). Evita animação de movimento desnecessária.
     useEffect(() => {
         if (!groupRef.current) return;
         const dist = new Vector3(targetX, targetY, targetZ).distanceTo(groupRef.current.position);
@@ -134,12 +161,13 @@ export default function Player({
         }
     }, [targetX, targetY, targetZ]);
 
+    // Interpolação suave da posição e rotação a cada frame
     useFrame((_, delta) => {
         if (!groupRef.current) return;
-
         const speed = 15 * delta;
         const { x, y, z } = groupRef.current.position;
 
+        // Efeito de "hop" ao pressionar botão: sobe e desce suavemente
         let hopOffset = 0;
         if (isHopping) {
             hopProgress.current += delta * 12;
@@ -158,15 +186,19 @@ export default function Player({
         const dY = targetY - y;
         const dXZ = Math.hypot(targetX - x, targetZ - z);
 
+        // Sobe antes de se mover horizontalmente (evita atravessar bordas de tiles)
         if (dY > 0.1 && Math.abs(dY) > 0.05) {
             nx = x;
             nz = z;
-        } else if (dY < -0.1 && dXZ > 0.05) {
+        }
+        // Desce só depois de chegar na posição horizontal correta
+        else if (dY < -0.1 && dXZ > 0.05) {
             ny = y;
         }
 
         groupRef.current.position.set(nx, ny + hopOffset, nz);
 
+        // Rotação suave pelo caminho mais curto (evita giro de 270° quando -90° seria suficiente)
         let diff = targetRotY - groupRef.current.rotation.y;
         while (diff > Math.PI) diff -= Math.PI * 2;
         while (diff < -Math.PI) diff += Math.PI * 2;

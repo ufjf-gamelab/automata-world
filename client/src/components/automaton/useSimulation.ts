@@ -1,5 +1,20 @@
-// Custom hook that owns the automaton simulation loop.
-// Keeps AutomatonEditor focused on layout and UI concerns only.
+/**
+ * useSimulation.ts — Hook que encapsula o loop de simulação do autômato finito
+ *
+ * Isola toda a lógica de "ler uma palavra letra por letra e seguir as transições"
+ * para fora do AutomatonEditor, que fica responsável apenas pelo layout e UI.
+ *
+ * O ciclo de simulação alterna entre duas fases por tick (750ms cada):
+ *
+ *   "state" → Executa a ação de entrada do nó atual no jogo.
+ *             Verifica se a palavra acabou (aceita ou rejeita).
+ *             Se não acabou, avança para a fase "transition".
+ *
+ *   "transition" → Lê o próximo símbolo da palavra.
+ *                  Procura a aresta correspondente que sai do nó atual.
+ *                  Se encontrou: executa a ação da aresta e move para o nó destino (fase "state").
+ *                  Se não encontrou: rejeita a palavra.
+ */
 import { useState, useEffect, useRef, useCallback } from "react";
 import type { Dispatch } from "react";
 import type { Node, Edge } from "./AutomatonReducer";
@@ -9,8 +24,8 @@ import type { GameAction } from "../game/gameReducer";
 interface UseSimulationParams {
     nodes: Node[];
     edges: Edge[];
-    gameDispatch: Dispatch<GameAction>;
-    setCurrentCommand: (cmd: string) => void;
+    gameDispatch: Dispatch<GameAction>; // controla o estado do jogo durante a simulação
+    setCurrentCommand: (cmd: string) => void; // informa ao Player qual animação executar
     onStartTransition?: (edgeId: string, from: string, to: string, symbol: string) => void;
     onEndTransition?: (edgeId: string, from: string, to: string, symbol: string) => void;
     onStateEnter?: (nodeId: string) => void;
@@ -32,7 +47,9 @@ export function useSimulation({
     const [step, setStep] = useState<AnimationStep | null>(null);
     const timeoutRef = useRef<number | null>(null);
 
-    // Refs keep callbacks fresh inside the effect without re-subscribing
+    // Refs evitam closures stale: os callbacks externos podem mudar entre renders,
+    // mas o useEffect do loop sempre lê a versão mais atual sem precisar
+    // ser re-registrado (o que reiniciaria o timer).
     const onStartRef = useRef(onStartTransition);
     const onEndRef = useRef(onEndTransition);
     const onEnterRef = useRef(onStateEnter);
@@ -50,8 +67,10 @@ export function useSimulation({
         onExitRef.current = onStateExit;
     }, [onStateExit]);
 
-    // ── Simulation loop ────────────────────────────────────────────────────────
+    // --- Loop principal ---
+
     useEffect(() => {
+        // Para qualquer timer pendente quando a simulação for pausada ou encerrada
         if (status !== "running") {
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
             return;
@@ -61,12 +80,12 @@ export function useSimulation({
         timeoutRef.current = window.setTimeout(() => {
             const { currentNodeId, characterIndex, type } = step;
 
-            // ── State phase: fire entry action, then decide next step ──────────
+            // ── Fase "state": entrada no nó ──────────────────────────────────
             if (type === "state") {
                 const currentNode = nodes.find((n) => n.id === currentNodeId);
 
+                // Executa cada comando da sequência de ação do estado no jogo
                 if (currentNode?.action) {
-                    // Execute each command in the action sequence
                     for (const ch of currentNode.action.toLowerCase()) {
                         gameDispatch({ type: "EXECUTE_ACTION", payload: ch });
                     }
@@ -75,6 +94,7 @@ export function useSimulation({
 
                 onEnterRef.current?.(currentNodeId!);
 
+                // Palavra consumida: verifica se o estado atual é final
                 if (characterIndex >= inputWord.length) {
                     if (currentNode?.isFinal) {
                         setStatus("accepted");
@@ -85,12 +105,12 @@ export function useSimulation({
                     return;
                 }
 
-                // Advance to transition phase — same character index
+                // Avança para a fase de transição sem consumir símbolo ainda
                 setStep((prev) => (prev ? { ...prev, type: "transition" } : null));
                 return;
             }
 
-            // ── Transition phase: consume one symbol and follow the edge ──────
+            // ── Fase "transition": leitura do símbolo e troca de estado ──────
             if (characterIndex >= inputWord.length) {
                 const currentNode = nodes.find((n) => n.id === currentNodeId);
                 if (currentNode?.isFinal) {
@@ -103,15 +123,19 @@ export function useSimulation({
             }
 
             const symbol = inputWord[characterIndex].toLowerCase();
+
+            // Procura a aresta que sai do nó atual com o símbolo lido
             const transition = edges.find(
                 (e) => e.source === currentNodeId && e.label.toLowerCase() === symbol,
             );
 
             if (transition) {
+                // Dispara os callbacks externos (usados para integrações futuras)
                 onExitRef.current?.(currentNodeId!);
                 onStartRef.current?.(transition.id, currentNodeId!, transition.target, symbol);
                 onEndRef.current?.(transition.id, currentNodeId!, transition.target, symbol);
 
+                // Executa a ação da aresta no jogo (se existir)
                 if (transition.action) {
                     for (const ch of transition.action.toLowerCase()) {
                         gameDispatch({ type: "EXECUTE_ACTION", payload: ch });
@@ -119,6 +143,7 @@ export function useSimulation({
                     setCurrentCommand(transition.action);
                 }
 
+                // Move para o nó destino e reinicia na fase "state"
                 setStep({
                     currentNodeId: transition.target,
                     activeEdgeId: transition.id,
@@ -127,6 +152,7 @@ export function useSimulation({
                     type: "state",
                 });
             } else {
+                // Nenhuma transição encontrada para este símbolo → rejeita
                 setStatus("rejected");
                 setStep((prev) => (prev ? { ...prev, failed: true, activeEdgeId: null } : null));
             }
@@ -137,17 +163,20 @@ export function useSimulation({
         };
     }, [status, step, inputWord, nodes, edges]);
 
-    // ── Controls ───────────────────────────────────────────────────────────────
+    // --- Controles externos ---
 
+    /** Inicia a simulação a partir do estado inicial do autômato */
     const play = () => {
         const initialNode = nodes.find((n) => n.isInitial);
         if (!initialNode) {
-            alert("Define an initial state before running the simulation.");
+            alert("Defina um estado inicial antes de iniciar a simulação.");
             return;
         }
+        // Reinicia o jogo sem herdar comandos anteriores
         gameDispatch({ type: "RESET_STAGE", payload: { commands: "" } });
         setCurrentCommand("");
         setStatus("running");
+        // Começa na fase "state" para executar a ação de entrada do estado inicial
         setStep({
             currentNodeId: initialNode.id,
             activeEdgeId: null,
@@ -157,6 +186,7 @@ export function useSimulation({
         });
     };
 
+    /** Para a simulação e devolve o jogo ao estado inicial */
     const stop = () => {
         setStatus("idle");
         setStep(null);
@@ -164,16 +194,17 @@ export function useSimulation({
         gameDispatch({ type: "RESET_STAGE", payload: { commands: "" } });
     };
 
+    /** Mensagem de status exibida no painel de simulação */
     const getStatusMessage = useCallback(() => {
         switch (status) {
             case "running":
-                return `Reading: "${inputWord}"...`;
+                return `Lendo: "${inputWord}"...`;
             case "accepted":
-                return `"${inputWord}" ACCEPTED!`;
+                return `"${inputWord}" ACEITA!`;
             case "rejected":
-                return `"${inputWord}" REJECTED!`;
+                return `"${inputWord}" REJEITADA!`;
             default:
-                return "Ready to simulate.";
+                return "Pronto para simular.";
         }
     }, [status, inputWord]);
 

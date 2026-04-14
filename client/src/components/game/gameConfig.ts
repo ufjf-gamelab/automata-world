@@ -1,18 +1,27 @@
-// ─── Movement mode ────────────────────────────────────────────────────────────
-// Switch here to change how the player rotates:
-//   "cardinal" → absolute compass directions (N, S, E, W)
-//   "relative" → relative turns (Left, Right, Back)
+/**
+ * gameConfig.ts — Configuração central do modo de movimento do jogo
+ *
+ * Para trocar o modo de movimento, basta alterar MOVEMENT_MODE aqui.
+ * O gameReducer e os modais lêem esta constante automaticamente.
+ *
+ * Modos disponíveis:
+ *   "cardinal" → rotações absolutas (N, S, L, O) — o jogador sempre sabe para onde é Norte
+ *   "relative" → rotações relativas (Esquerda, Direita, Trás) — como um robô que vira em relação a si mesmo
+ */
 export type MovementMode = "cardinal" | "relative";
 export const MOVEMENT_MODE: MovementMode = "cardinal";
 
-// ─── Command descriptor ───────────────────────────────────────────────────────
-// key     → internal command letter sent to the game reducer
-// display → human-readable name shown in modals and edge labels
+/**
+ * Descritor de um comando do jogo.
+ *   key     → letra enviada ao gameReducer (ex: "f")
+ *   display → nome exibido nos modais e nos labels das arestas (ex: "Forward")
+ */
 export interface GameCommand {
     key: string;
     display: string;
 }
 
+/** Comandos disponíveis no modo cardinal (direções absolutas do mapa) */
 const COMMANDS_CARDINAL: GameCommand[] = [
     { key: "f", display: "Forward" },
     { key: "p", display: "Jump" },
@@ -23,6 +32,7 @@ const COMMANDS_CARDINAL: GameCommand[] = [
     { key: "o", display: "West" },
 ];
 
+/** Comandos disponíveis no modo relativo (virar em relação ao jogador) */
 const COMMANDS_RELATIVE: GameCommand[] = [
     { key: "f", display: "Forward" },
     { key: "p", display: "Jump" },
@@ -32,5 +42,6 @@ const COMMANDS_RELATIVE: GameCommand[] = [
     { key: "t", display: "Turn Back" },
 ];
 
+/** Lista de comandos ativos — muda automaticamente com MOVEMENT_MODE */
 export const GAME_COMMANDS: GameCommand[] =
     MOVEMENT_MODE === "cardinal" ? COMMANDS_CARDINAL : COMMANDS_RELATIVE;
