@@ -44,8 +44,8 @@ const SimulationPanel: React.FC<SimulationPanelProps> = ({
                         onClick={() => setSimPanelOpen(true)}
                         className={styles.expandButton}
                         title="Expandir painel de simulação"
-                    >
-                        ▶️
+                    >{">"}
+                        
                     </button>
                 )}
             </div>

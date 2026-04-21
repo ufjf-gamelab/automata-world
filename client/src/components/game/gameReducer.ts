@@ -156,7 +156,8 @@ const applyCommand = (
 
         // Pressionar botão: comportamento difere entre os modos de movimento
         case "b": {
-            if (MOVEMENT_MODE === "relative") {
+            // if (MOVEMENT_MODE === "relative") {
+
                 // Modo relativo: ativa o botão sob o próprio jogador sem se mover
                 const rawCurr = getRawValue(currX, currZ, state.activeStage.floor);
                 const isCurrentButton = rawCurr > 5 || rawCurr === 0;
@@ -166,20 +167,21 @@ const applyCommand = (
                         ? currActiveButtons.filter((k) => k !== key)
                         : [...currActiveButtons, key];
                 }
-            } else {
-                // Modo cardinal: move para o botão à frente e o ativa
-                const rawVal = getRawValue(targetX, targetZ, state.activeStage.floor);
-                const isFrontButton = rawVal > 5 || rawVal === 0;
-                if (isFrontButton && isTargetValid && targetH === currH) {
-                    nextX = targetX;
-                    nextZ = targetZ;
-                    nextH = targetH;
-                    const key = `${targetX}-${targetZ}`;
-                    currActiveButtons = currActiveButtons.includes(key)
-                        ? currActiveButtons.filter((k) => k !== key)
-                        : [...currActiveButtons, key];
-                }
-            }
+            // }
+            //  else {
+            //     // Modo cardinal: move para o botão à frente e o ativa
+            //     const rawVal = getRawValue(targetX, targetZ, state.activeStage.floor);
+            //     const isFrontButton = rawVal > 5 || rawVal === 0;
+            //     if (isFrontButton && isTargetValid && targetH === currH) {
+            //         nextX = targetX;
+            //         nextZ = targetZ;
+            //         nextH = targetH;
+            //         const key = `${targetX}-${targetZ}`;
+            //         currActiveButtons = currActiveButtons.includes(key)
+            //             ? currActiveButtons.filter((k) => k !== key)
+            //             : [...currActiveButtons, key];
+            //     }
+            // }
             break;
         }
 

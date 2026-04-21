@@ -19,6 +19,16 @@ export type Stage = {
     name: string;
     floor: string;
     playerPosition: [number, number];
+    permissions?: {};
+        // Bloquear nós
+        // Arestas
+        // comandos
+        // Alfabeto
+        // Fita
+        // Ação apenas em estado ou na aresta
+        // Limite no tamanho da fita
+        // Bloquear saida mulyiplas saidas com mesmo caractere
+    
 };
 
 export type CommandTapeProps = {
