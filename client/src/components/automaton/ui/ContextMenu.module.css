@@ -37,9 +37,19 @@
     white-space: nowrap;
 }
 
-.contextMenuButton:hover {
+.contextMenuButton:hover:not(.disabled) {
     background-color: #f7fafc;
     color: #2b6cb0;
+}
+
+.disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.lockIcon {
+    margin-left: auto;
+    font-size: 0.75rem;
 }
 
 .contextMenu hr {

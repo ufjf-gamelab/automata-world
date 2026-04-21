@@ -14,21 +14,31 @@ export type FloorProps = {
     activeButtons?: string[];
 };
 
+/**
+ * Restrições de usabilidade que uma fase pode impor ao editor de autômatos.
+ * Campos ausentes = sem restrição para aquele aspecto.
+ */
+export type StagePermissions = {
+    /** Fita de entrada pré-definida; o usuário não pode alterá-la */
+    fixedTape?: string;
+    /** Número máximo de estados permitidos no autômato */
+    maxNodes?: number;
+    /** Símbolos permitidos nas transições (ex: ["f", "n"]) */
+    allowedSymbols?: string[];
+    /** Comandos do jogo disponíveis nos modais (ex: ["f", "b"]) */
+    allowedCommands?: string[];
+    /** false = opção de ação em estados desabilitada */
+    stateActionsAllowed?: boolean;
+    /** false = opção de ação nas transições desabilitada */
+    edgeActionsAllowed?: boolean;
+};
+
 export type Stage = {
     id: number;
     name: string;
     floor: string;
     playerPosition: [number, number];
-    permissions?: {};
-        // Bloquear nós
-        // Arestas
-        // comandos
-        // Alfabeto
-        // Fita
-        // Ação apenas em estado ou na aresta
-        // Limite no tamanho da fita
-        // Bloquear saida mulyiplas saidas com mesmo caractere
-    
+    permissions?: StagePermissions;
 };
 
 export type CommandTapeProps = {

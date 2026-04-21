@@ -8,6 +8,8 @@ interface NodeActionModalProps {
     onSubmit: (action?: string) => void;
     initialAction?: string;
     title: string;
+    /** Lista de comandos permitidos; undefined = sem restrição */
+    allowedCommands?: string[];
 }
 
 const NodeActionModal: React.FC<NodeActionModalProps> = ({
@@ -16,6 +18,7 @@ const NodeActionModal: React.FC<NodeActionModalProps> = ({
     onSubmit,
     initialAction = "",
     title,
+    allowedCommands,
 }) => {
     const [sequence, setSequence] = useState(initialAction.toLowerCase());
 
@@ -37,18 +40,22 @@ const NodeActionModal: React.FC<NodeActionModalProps> = ({
                 <form onSubmit={handleSubmit}>
                     <div className={styles.section}>
                         <label className={styles.sectionLabel}>
-                            Action sequence on state entry
-                            <span className={styles.optional}>(optional)</span>
+                            Ação ao entrar no estado
+                            <span className={styles.optional}>(opcional)</span>
                         </label>
-                        <CommandSequenceBuilder value={sequence} onChange={setSequence} />
+                        <CommandSequenceBuilder
+                            value={sequence}
+                            onChange={setSequence}
+                            allowedCommands={allowedCommands}
+                        />
                     </div>
 
                     <div className={styles.modalActions}>
                         <button type="button" onClick={onClose} className={styles.cancelButton}>
-                            Cancel
+                            Cancelar
                         </button>
                         <button type="submit" className={styles.submitButton}>
-                            Confirm
+                            Confirmar
                         </button>
                     </div>
                 </form>

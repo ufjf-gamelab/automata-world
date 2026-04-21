@@ -1,4 +1,4 @@
-.seletor {
+.selector {
     position: relative;
     display: flex;
     align-items: center;
@@ -33,7 +33,7 @@
     cursor: not-allowed;
 }
 
-.nomeBtn {
+.nameBtn {
     background: #3a3a3a;
     border: none;
     color: white;
@@ -48,11 +48,11 @@
     max-width: 220px;
 }
 
-.nomeBtn:hover {
+.nameBtn:hover {
     background: #555;
 }
 
-.nomeFase {
+.stageName {
     font-size: 0.85rem;
     font-weight: 600;
     white-space: nowrap;
@@ -60,19 +60,18 @@
     text-overflow: ellipsis;
 }
 
-.contador {
+.counter {
     font-size: 0.7rem;
     color: #aaa;
     flex-shrink: 0;
 }
 
-.seta {
+.arrow {
     font-size: 0.65rem;
     color: #aaa;
     flex-shrink: 0;
 }
 
-/* Dropdown de seleção de fases */
 .dropdown {
     position: absolute;
     top: calc(100% + 6px);
@@ -110,18 +109,18 @@
     color: white;
 }
 
-.dropdownItemAtivo {
+.dropdownItemActive {
     background: #646cff22;
     color: #a5a8ff;
     font-weight: 600;
 }
 
-.dropdownItemAtivo:hover {
+.dropdownItemActive:hover {
     background: #646cff33;
     color: #a5a8ff;
 }
 
-.dropdownNumero {
+.dropdownNumber {
     font-size: 0.7rem;
     color: #666;
     min-width: 14px;
@@ -129,7 +128,7 @@
     flex-shrink: 0;
 }
 
-.dropdownNome {
+.dropdownName {
     flex: 1;
     min-width: 0;
     white-space: nowrap;
@@ -137,13 +136,13 @@
     text-overflow: ellipsis;
 }
 
-.cadeado {
+.lock {
     font-size: 0.75rem;
     flex-shrink: 0;
 }
 
 @media (max-width: 768px) {
-    .nomeBtn {
+    .nameBtn {
         max-width: 140px;
     }
 

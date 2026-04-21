@@ -3,7 +3,7 @@ import type { Stage } from "./types";
 export const stagesList: Stage[] = [
     {
         id: 1,
-        name: "Fase meia volta",
+        name: "Fase Meia Volta",
         floor: `-6-1  
 -6-1
 -1-1
@@ -66,5 +66,51 @@ export const stagesList: Stage[] = [
 448-8
 `,
         playerPosition: [0, 0],
+    },
+    {
+        id: 6,
+        name: "🔒 Só Frente",
+        floor: `111116
+`,
+        playerPosition: [0, 0],
+        permissions: {
+            // Apenas o comando "frente" e "botão" são permitidos
+            allowedCommands: ["f", "b"],
+            // Apenas o símbolo "f" pode ser usado nas transições
+            allowedSymbols: ["f"],
+            // Sem ações em estados
+            stateActionsAllowed: false,
+        },
+    },
+    {
+        id: 7,
+        name: "🔒 Fita Fixada",
+        floor: `-1  
+616
+-6
+`,
+        playerPosition: [1, 0],
+        permissions: {
+            // A fita já vem preenchida e não pode ser editada
+            fixedTape: "FNFB",
+            // Máximo 3 estados no autômato
+            maxNodes: 3,
+        },
+    },
+    {
+        id: 8,
+        name: "🔒 Sem Ações",
+        floor: `1111
+1221
+1282
+1626
+`,
+        playerPosition: [1, 1],
+        permissions: {
+            // Não é permitido definir ações em estados nem em transições
+            stateActionsAllowed: false,
+            edgeActionsAllowed: false,
+            maxNodes: 4,
+        },
     },
 ];

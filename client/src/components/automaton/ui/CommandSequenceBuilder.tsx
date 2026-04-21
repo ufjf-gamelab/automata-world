@@ -1,25 +1,28 @@
-/**
- * CommandSequenceBuilder.tsx — Seletor de ação única do jogo
- *
- * Exibe os comandos disponíveis como botões de seleção exclusiva.
- * Clicar num comando selecionado o desmarca (volta para "nenhuma ação").
- */
 import React from "react";
 import { GAME_COMMANDS } from "../../game/gameConfig";
 import styles from "./TransitionModal.module.css";
 
 interface CommandSequenceBuilderProps {
-    value: string; // comando selecionado (ex: "f"), ou "" se nenhum
+    value: string;
     onChange: (cmd: string) => void;
+    /** Filtra os comandos exibidos; undefined = sem restrição */
+    allowedCommands?: string[];
 }
 
-const CommandSequenceBuilder: React.FC<CommandSequenceBuilderProps> = ({ value, onChange }) => {
-    // Clicar no comando já selecionado desmarca; clicar em outro seleciona
+const CommandSequenceBuilder: React.FC<CommandSequenceBuilderProps> = ({
+    value,
+    onChange,
+    allowedCommands,
+}) => {
+    const visibleCommands = allowedCommands
+        ? GAME_COMMANDS.filter((c) => allowedCommands.includes(c.key))
+        : GAME_COMMANDS;
+
     const handleSelect = (key: string) => onChange(value === key ? "" : key);
 
     return (
         <div className={styles.commandGrid}>
-            {GAME_COMMANDS.map((cmd) => (
+            {visibleCommands.map((cmd) => (
                 <button
                     key={cmd.key}
                     type="button"

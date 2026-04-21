@@ -1,5 +1,3 @@
-/* AutomatonEditor ocupa 100% do espaço que o App lhe dá */
-
 .automatonSection {
   display: flex;
   flex-direction: row;
@@ -17,15 +15,18 @@
   overflow: hidden;
   position: relative;
   min-height: 0;
+  min-width: 0;
 }
 
 @media (max-width: 768px) {
   .automatonSection {
-    flex-direction: column-reverse;
+    flex-direction: column;
+    height: 100%;
   }
 
   .canvasWrapper {
     flex: 1 1 0;
     height: 0;
+    min-height: 0;
   }
 }

@@ -7,6 +7,7 @@ export interface MenuItem {
     onClick?: () => void;
     isSeparator?: boolean;
     className?: string;
+    disabled?: boolean;
 }
 
 interface ContextMenuProps {
@@ -18,9 +19,7 @@ interface ContextMenuProps {
 }
 
 const ContextMenu: React.FC<ContextMenuProps> = ({ isVisible, x, y, items, menuRef }) => {
-    if (!isVisible) {
-        return null;
-    }
+    if (!isVisible) return null;
 
     return (
         <div
@@ -35,11 +34,15 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isVisible, x, y, items, menuR
                 ) : (
                     <button
                         key={item.label}
-                        className={`${styles.contextMenuButton} ${item.className || ""}`}
-                        onClick={item.onClick}
+                        className={`${styles.contextMenuButton} ${item.className || ""} ${
+                            item.disabled ? styles.disabled : ""
+                        }`}
+                        onClick={item.disabled ? undefined : item.onClick}
+                        disabled={item.disabled}
                     >
                         {item.icon && <span>{item.icon}</span>}
                         {item.label}
+                        {item.disabled && <span className={styles.lockIcon}>🔒</span>}
                     </button>
                 ),
             )}

@@ -32,6 +32,7 @@ interface Props extends AutomatonEditorProps {
 function AutomatonEditor({
     gameDispatch,
     setCurrentCommand,
+    activeStage,
     onStartTransition,
     onEndTransition,
     onStateEnter,
@@ -66,6 +67,10 @@ function AutomatonEditor({
         title: "",
     });
 
+    const { permissions } = activeStage;
+    const nodeLimitReached =
+        permissions?.maxNodes !== undefined && nodes.length >= permissions.maxNodes;
+
     const simulation = useSimulation({
         nodes,
         edges,
@@ -99,12 +104,15 @@ function AutomatonEditor({
             icon: "✨",
             label: "Add & Link New State",
             onClick: graphActions.handleAddNewStateAndLink,
+            disabled: nodeLimitReached,
         },
         { icon: "🔗", label: "Link to Existing State", onClick: graphActions.handleStartLinking },
         { isSeparator: true },
         { icon: "🚩", label: "Set as Initial State", onClick: graphActions.handleSetInitialState },
         { icon: "🔘", label: "Toggle Final State", onClick: graphActions.handleToggleFinalState },
-        { icon: "⚡", label: "Set State Action", onClick: graphActions.handleSetNodeAction },
+        ...(permissions?.stateActionsAllowed !== false
+            ? [{ icon: "⚡", label: "Set State Action", onClick: graphActions.handleSetNodeAction }]
+            : []),
         { isSeparator: true },
         {
             icon: "🗑️",
@@ -137,6 +145,7 @@ function AutomatonEditor({
                 handlePlayAnimation={simulation.play}
                 handleStopAnimation={simulation.stop}
                 getStatusMessage={simulation.getStatusMessage}
+                permissions={permissions}
             />
 
             <div className={styles.canvasWrapper} onClick={graphActions.handleSvgClick}>
@@ -179,6 +188,9 @@ function AutomatonEditor({
                     initialLabel={modalData.action === "edit" ? modalData.edgeToEdit?.label : ""}
                     initialAction={modalData.action === "edit" ? modalData.edgeToEdit?.action : ""}
                     title={modalData.title}
+                    allowedSymbols={permissions?.allowedSymbols}
+                    allowedCommands={permissions?.allowedCommands}
+                    edgeActionsAllowed={permissions?.edgeActionsAllowed}
                 />
 
                 <NodeActionModal
@@ -187,6 +199,7 @@ function AutomatonEditor({
                     onSubmit={graphActions.handleNodeActionSubmit}
                     initialAction={modalData.nodeForAction?.action}
                     title={modalData.title}
+                    allowedCommands={permissions?.allowedCommands}
                 />
 
                 <ContextMenu
