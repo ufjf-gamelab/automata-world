@@ -182,9 +182,23 @@
     gap: 4px;
 }
 
+.collapsedLabel {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .collapsedLabel {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #495057;
+        flex: 1;
+    }
+}
+
 @media (max-width: 768px) {
     .simulationPanel {
-        width: 100% !important;
+        /* No mobile o painel ocupa 90% da largura e altura variável */
         height: auto;
         border-right: none;
         border-top: 1px solid #dee2e6;
@@ -194,28 +208,32 @@
     }
 
     .simulationPanel.open {
-        max-height: 280px;
+        max-height: 260px;
+        width: 90% !important;
         padding: 12px 15px;
         overflow-y: auto;
+        align-self: center;
     }
 
+    /* Colapsado: mostra apenas a barra com título e botão de expandir */
     .simulationPanel.collapsed {
-        max-height: 48px;
-        width: 100% !important;
+        max-height: 44px;
+        width: 90% !important;
         padding: 0;
         overflow: hidden;
-        border-top: 1px solid #dee2e6;
+        align-self: center;
     }
 
     .simulationPanel.collapsed .panelHeader {
         padding: 0 15px;
         margin-bottom: 0;
-        height: 48px;
+        height: 44px;
         display: flex;
         align-items: center;
         justify-content: space-between;
     }
 
+    /* No mobile colapsado o botão de expandir fica visível na barra */
     .simulationPanel.collapsed .expandButton {
         width: 32px;
         height: 32px;
@@ -228,8 +246,8 @@
 
     .panelContent .playButton,
     .panelContent .danger {
-        padding: 14px;
-        font-size: 16px;
-        min-height: 48px;
+        padding: 12px;
+        font-size: 15px;
+        min-height: 44px;
     }
 }

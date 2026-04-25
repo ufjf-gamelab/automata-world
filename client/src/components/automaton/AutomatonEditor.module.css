@@ -20,7 +20,11 @@
 
 @media (max-width: 768px) {
   .automatonSection {
-    flex-direction: column;
+    /*
+         * SimulationPanel é o 1º no DOM → fica embaixo visualmente (após o canvas)
+         * canvasWrapper é o 2º no DOM → fica no topo visualmente
+         */
+    flex-direction: column-reverse;
     height: 100%;
   }
 
@@ -28,5 +32,6 @@
     flex: 1 1 0;
     height: 0;
     min-height: 0;
+    width: 100%;
   }
 }

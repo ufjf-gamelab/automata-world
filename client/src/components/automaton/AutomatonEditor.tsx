@@ -67,6 +67,11 @@ function AutomatonEditor({
         title: "",
     });
 
+    const toggleSimPanel = (isOpen: boolean) => {
+        setSimPanelOpen(isOpen);
+        // Aguarda a transição CSS terminar antes de recalcular o viewport
+        setTimeout(() => setRecenterTrigger((c) => c + 1), 320);
+    };
     const { permissions } = activeStage;
     const nodeLimitReached =
         permissions?.maxNodes !== undefined && nodes.length >= permissions.maxNodes;
@@ -138,7 +143,7 @@ function AutomatonEditor({
         <div className={styles.automatonSection}>
             <SimulationPanel
                 isSimPanelOpen={isSimPanelOpen}
-                setSimPanelOpen={setSimPanelOpen}
+                setSimPanelOpen={toggleSimPanel}
                 inputWord={simulation.inputWord}
                 setInputWord={simulation.setInputWord}
                 animationStatus={simulation.status}
