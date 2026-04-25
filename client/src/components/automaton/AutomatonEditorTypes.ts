@@ -46,7 +46,7 @@ export interface ModalData {
 export interface AutomatonEditorProps {
     gameDispatch: Dispatch<GameAction>;
     setCurrentCommand: (cmd: string) => void;
-    /** Fase ativa — usada para aplicar restrições de usabilidade */
+    /** Fase ativa — define o grafo inicial e as restrições de usabilidade */
     activeStage: Stage;
     onStartTransition?: (
         edgeId: string,
@@ -64,20 +64,32 @@ export interface AutomatonEditorProps {
     onStateExit?: (nodeId: string) => void;
 }
 
-const initialNodesData: Node[] = [
-    { id: "0", label: "0", x: 0, y: 0, action: "f", isInitial: true },
-    { id: "1", label: "1", x: 0, y: 0, action: "f" },
-    { id: "2", label: "2", x: 0, y: 0, isFinal: true, action: "f" },
-];
+/**
+ * Constrói o GraphState inicial a partir da fase recebida.
+ * Usado como inicializador do useReducer no AutomatonEditor.
+ * Se a fase não definir initialGraph, retorna um grafo vazio.
+ */
+export const createInitialGraphFromStage = (stage: Stage): GraphState => {
+    if (!stage.initialGraph) {
+        return { nodes: [], edges: [], nodeCounter: 0 };
+    }
 
-const initialEdgesData: Edge[] = [
-    { id: crypto.randomUUID(), source: "0", target: "1", label: "f", action: "f" },
-    { id: crypto.randomUUID(), source: "1", target: "2", label: "f", action: "f" },
-    { id: crypto.randomUUID(), source: "2", target: "2", label: "n", action: "n" },
-];
+    const { nodes: nodesData, edges: edgesData } = stage.initialGraph;
 
-export const initialGraphState: GraphState = {
-    nodes: getLayout(initialNodesData, initialEdgesData),
-    edges: initialEdgesData,
-    nodeCounter: initialNodesData.length,
+    const nodes: Node[] = nodesData.map((n) => ({
+        ...n,
+        x: 0,
+        y: 0,
+    }));
+
+    const edges: Edge[] = edgesData.map((e) => ({
+        ...e,
+        id: crypto.randomUUID(),
+    }));
+
+    return {
+        nodes: getLayout(nodes, edges),
+        edges,
+        nodeCounter: nodes.length,
+    };
 };

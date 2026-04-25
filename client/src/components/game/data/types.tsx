@@ -31,6 +31,39 @@ export type StagePermissions = {
     stateActionsAllowed?: boolean;
     /** false = opção de ação nas transições desabilitada */
     edgeActionsAllowed?: boolean;
+    /** false = não é permitido criar self-loops (aresta de um estado para ele mesmo) */
+    allowLoops?: boolean;
+    /**
+     * false = cada estado pode ter no máximo uma aresta saindo dele.
+     * Útil para forçar autômatos determinísticos simples.
+     */
+    allowMultipleOutgoing?: boolean;
+};
+
+/** Estrutura mínima de um nó para definição do grafo inicial da fase */
+export type GraphNodeData = {
+    id: string;
+    label: string;
+    isInitial?: boolean;
+    isFinal?: boolean;
+    action?: string;
+};
+
+/** Estrutura mínima de uma aresta para definição do grafo inicial da fase */
+export type GraphEdgeData = {
+    source: string;
+    target: string;
+    label: string;
+    action?: string;
+};
+
+/**
+ * Grafo inicial do autômato exibido ao entrar na fase.
+ * undefined = grafo vazio (nenhum estado, nenhuma transição).
+ */
+export type GraphData = {
+    nodes: GraphNodeData[];
+    edges: GraphEdgeData[];
 };
 
 export type Stage = {
@@ -38,7 +71,15 @@ export type Stage = {
     name: string;
     floor: string;
     playerPosition: [number, number];
+    /**
+     * Direção inicial do jogador ao entrar na fase.
+     * 0 = Sul, 1 = Leste, 2 = Norte, 3 = Oeste
+     * undefined = padrão (0 = Sul)
+     */
+    initialRotation?: number;
     permissions?: StagePermissions;
+    /** Grafo carregado ao entrar na fase; undefined = começa vazio */
+    initialGraph?: GraphData;
 };
 
 export type CommandTapeProps = {

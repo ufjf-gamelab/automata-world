@@ -25,7 +25,12 @@ export default function App() {
     return (
         <div className="appContainer">
             <div className="automatonWrapper">
+                {/*
+                 * key={activeStage.id} força remontagem completa do AutomatonEditor
+                 * ao trocar de fase, aplicando o grafo inicial definido em cada Stage.
+                 */}
                 <AutomatonEditor
+                    key={gameState.activeStage.id}
                     gameDispatch={gameDispatch}
                     setCurrentCommand={setCurrentCommand}
                     activeStage={gameState.activeStage}

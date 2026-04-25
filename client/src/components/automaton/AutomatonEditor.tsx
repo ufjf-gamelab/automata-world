@@ -11,7 +11,7 @@ import { graphReducer } from "./AutomatonReducer";
 import { useSimulation } from "./useSimulation";
 import { useGraphActions } from "./useGraphActions";
 import {
-    initialGraphState,
+    createInitialGraphFromStage,
     type ContextMenuData,
     type EdgeMenuData,
     type LinkingState,
@@ -38,7 +38,7 @@ function AutomatonEditor({
     onStateEnter,
     onStateExit,
 }: Props) {
-    const [graph, dispatch] = useReducer(graphReducer, initialGraphState);
+    const [graph, dispatch] = useReducer(graphReducer, activeStage, createInitialGraphFromStage);
     const { nodes, edges } = graph;
 
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -67,14 +67,14 @@ function AutomatonEditor({
         title: "",
     });
 
-    const toggleSimPanel = (isOpen: boolean) => {
-        setSimPanelOpen(isOpen);
-        // Aguarda a transição CSS terminar antes de recalcular o viewport
-        setTimeout(() => setRecenterTrigger((c) => c + 1), 320);
-    };
     const { permissions } = activeStage;
     const nodeLimitReached =
         permissions?.maxNodes !== undefined && nodes.length >= permissions.maxNodes;
+
+    const toggleSimPanel = (isOpen: boolean) => {
+        setSimPanelOpen(isOpen);
+        setTimeout(() => setRecenterTrigger((c) => c + 1), 320);
+    };
 
     const simulation = useSimulation({
         nodes,
@@ -94,6 +94,8 @@ function AutomatonEditor({
         dispatch,
         contextMenu,
         edgeMenu,
+        modalData,
+        permissions,
         menuRef,
         fileInputRef,
         setRecenterTrigger,

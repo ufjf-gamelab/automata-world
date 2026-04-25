@@ -11,6 +11,18 @@ export const stagesList: Stage[] = [
 -616
 `,
         playerPosition: [3, 0],
+        initialRotation: 2, // começa olhando para Norte
+        initialGraph: {
+            nodes: [
+                { id: "0", label: "0", isInitial: true },
+                { id: "1", label: "1" },
+                { id: "2", label: "2", isFinal: true },
+            ],
+            edges: [
+                { source: "0", target: "1", label: "f", action: "f" },
+                { source: "1", target: "2", label: "b", action: "b" },
+            ],
+        },
     },
     {
         id: 0,
@@ -20,6 +32,13 @@ export const stagesList: Stage[] = [
 -6
 `,
         playerPosition: [1, 0],
+        initialGraph: {
+            nodes: [
+                { id: "0", label: "0", isInitial: true },
+                { id: "1", label: "1", isFinal: true },
+            ],
+            edges: [{ source: "0", target: "1", label: "f", action: "f" }],
+        },
     },
     {
         id: 2,
@@ -33,6 +52,7 @@ export const stagesList: Stage[] = [
 --6
 `,
         playerPosition: [2, 0],
+        initialGraph: undefined,
     },
     {
         id: 3,
@@ -43,6 +63,7 @@ export const stagesList: Stage[] = [
 1626
 `,
         playerPosition: [1, 1],
+        initialGraph: undefined,
     },
     {
         id: 4,
@@ -54,6 +75,7 @@ export const stagesList: Stage[] = [
 11111
 `,
         playerPosition: [1, 1],
+        initialGraph: undefined,
     },
     {
         id: 5,
@@ -66,6 +88,7 @@ export const stagesList: Stage[] = [
 448-8
 `,
         playerPosition: [0, 0],
+        initialGraph: undefined,
     },
     {
         id: 6,
@@ -73,13 +96,23 @@ export const stagesList: Stage[] = [
         floor: `111116
 `,
         playerPosition: [0, 0],
+        initialRotation:1,
         permissions: {
-            // Apenas o comando "frente" e "botão" são permitidos
             allowedCommands: ["f", "b"],
-            // Apenas o símbolo "f" pode ser usado nas transições
             allowedSymbols: ["f"],
-            // Sem ações em estados
             stateActionsAllowed: false,
+            allowLoops: true,
+            allowMultipleOutgoing: false,
+        },
+        initialGraph: {
+            nodes: [
+                { id: "0", label: "0", isInitial: true },
+                { id: "1", label: "1", isFinal: true },
+            ],
+            edges: [
+                { source: "0", target: "1", label: "f", action: "f" },
+                { source: "1", target: "1", label: "f", action: "f" },
+            ],
         },
     },
     {
@@ -91,11 +124,12 @@ export const stagesList: Stage[] = [
 `,
         playerPosition: [1, 0],
         permissions: {
-            // A fita já vem preenchida e não pode ser editada
             fixedTape: "FNFB",
-            // Máximo 3 estados no autômato
             maxNodes: 3,
+            allowLoops: false,
+            allowMultipleOutgoing: false,
         },
+        initialGraph: undefined,
     },
     {
         id: 8,
@@ -107,10 +141,12 @@ export const stagesList: Stage[] = [
 `,
         playerPosition: [1, 1],
         permissions: {
-            // Não é permitido definir ações em estados nem em transições
             stateActionsAllowed: false,
             edgeActionsAllowed: false,
             maxNodes: 4,
+            allowLoops: false,
+            allowMultipleOutgoing: true,
         },
+        initialGraph: undefined,
     },
 ];
