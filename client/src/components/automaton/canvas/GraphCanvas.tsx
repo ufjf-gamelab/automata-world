@@ -1,17 +1,3 @@
-/**
- * GraphCanvas.tsx — Canvas SVG interativo do autômato finito
- *
- * Responsável por renderizar todos os nós e arestas do grafo em um SVG
- * com suporte a zoom, pan e drag. Usa a biblioteca D3 exclusivamente para
- * zoom/pan — os cliques e drags dos nós são tratados pelos próprios componentes.
- *
- * Funcionalidades:
- *   - Zoom e pan via scroll/pinch (D3 ZoomBehavior)
- *   - Zoom-to-fit animado ao clicar em "Reorganizar"
- *   - Linha tracejada fantasma ao conectar dois nós
- *   - Desvio automático de arestas que passariam por cima de outros nós
- *   - Suporte a arestas paralelas e bidirecionais com curvas separadas
- */
 import React, { useEffect, useRef, useCallback } from "react";
 import * as d3 from "d3";
 import NodeComponent from "./Node";
@@ -28,20 +14,21 @@ interface GraphCanvasProps {
     onNodeLongPress?: (event: TouchEvent, node: Node) => void;
     onEdgeClick: (event: React.MouseEvent, edge: Edge) => void;
     onSvgMouseMove: (x: number, y: number) => void;
-    recenterTrigger: number; // incrementar este valor dispara o zoom-to-fit
+    recenterTrigger: number;
     linkingState: { sourceNode: Node | null };
     mousePosition: { x: number; y: number };
     sourceNodeForLinking: Node | null;
-    activeNodeId: string | null; // nó destacado durante a simulação
-    activeEdgeId: string | null; // aresta destacada durante a simulação
-    failedNodeId: string | null; // nó marcado em vermelho quando a simulação rejeita
+    activeNodeId: string | null;
+    activeEdgeId: string | null;
+    failedNodeId: string | null;
     isSimulating: boolean;
+    /**
+     * Incrementa a cada passo da simulação — usado como activeKey no Node
+     * para forçar re-mount da animação em loops.
+     */
+    activeStepIndex: number;
 }
 
-/**
- * Distância de um ponto P ao segmento de reta AB.
- * Usada para detectar se um nó está "no caminho" de uma aresta.
- */
 function distPointToSegment(
     px: number,
     py: number,
@@ -58,11 +45,6 @@ function distPointToSegment(
     return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
 }
 
-/**
- * Calcula o desvio lateral necessário para que uma aresta evite passar
- * por cima de outros nós. Retorna 0 se a aresta está livre; caso contrário,
- * retorna um offset positivo ou negativo dependendo do lado que tem mais espaço.
- */
 function computeAvoidanceOffset(
     src: Node,
     tgt: Node,
@@ -70,16 +52,16 @@ function computeAvoidanceOffset(
     threshold = NODE_WIDTH * 1.4,
 ): number {
     const radius = NODE_WIDTH / 2;
-    const dx = tgt.x - src.x;
-    const dy = tgt.y - src.y;
+    const dx = tgt.x - src.x,
+        dy = tgt.y - src.y;
     const len = Math.max(1, Math.hypot(dx, dy));
-    const ax = src.x + (dx / len) * radius;
-    const ay = src.y + (dy / len) * radius;
-    const bx = tgt.x - (dx / len) * radius;
-    const by = tgt.y - (dy / len) * radius;
+    const ax = src.x + (dx / len) * radius,
+        ay = src.y + (dy / len) * radius;
+    const bx = tgt.x - (dx / len) * radius,
+        by = tgt.y - (dy / len) * radius;
 
-    let maxPenetration = 0;
-    let sideSign = 1;
+    let maxPenetration = 0,
+        sideSign = 1;
 
     for (const node of allNodes) {
         if (node.id === src.id || node.id === tgt.id) continue;
@@ -88,7 +70,6 @@ function computeAvoidanceOffset(
             const penetration = threshold - dist;
             if (penetration > maxPenetration) {
                 maxPenetration = penetration;
-                // Produto vetorial determina de qual lado o nó está em relação à aresta
                 const cross = (bx - ax) * (node.y - ay) - (by - ay) * (node.x - ax);
                 sideSign = cross > 0 ? -1 : 1;
             }
@@ -114,12 +95,12 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
     activeEdgeId,
     failedNodeId,
     isSimulating,
+    activeStepIndex,
 }) => {
     const svgRef = useRef<SVGSVGElement>(null);
     const gRef = useRef<SVGGElement>(null);
     const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
 
-    // Configura o zoom/pan via D3 uma única vez ao montar o componente
     useEffect(() => {
         if (!svgRef.current || !gRef.current) return;
         const svg = d3.select(svgRef.current);
@@ -129,7 +110,6 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
             .zoom<SVGSVGElement, unknown>()
             .scaleExtent([0.1, 4])
             .filter((event) => {
-                // Ignora eventos de toque que vêm de dentro de um nó (drag do nó tem prioridade)
                 if (event.type === "touchstart" || event.type === "touchmove") {
                     const target = event.target as Element;
                     if (target.closest?.("." + styles.nodeGroup)) return false;
@@ -142,7 +122,6 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
         zoomRef.current = zoom;
     }, []);
 
-    // Zoom-to-fit animado: disparado sempre que recenterTrigger muda
     useEffect(() => {
         if (recenterTrigger === 0 || !svgRef.current || !zoomRef.current || nodes.length === 0)
             return;
@@ -153,7 +132,6 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
         const height = svgNode.clientHeight;
         if (width === 0 || height === 0) return;
 
-        // Calcula o bounding box de todos os nós
         let minX = Infinity,
             minY = Infinity,
             maxX = -Infinity,
@@ -179,10 +157,6 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
         (svg.transition().duration(750) as any).call(zoomRef.current.transform, transform);
     }, [recenterTrigger]);
 
-    /**
-     * Converte coordenadas da tela (pixels) para o espaço do grafo
-     * levando em conta o zoom e pan atuais. Necessário para o drag por toque.
-     */
     const screenToWorld = useCallback((clientX: number, clientY: number) => {
         if (!svgRef.current) return { x: 0, y: 0 };
         const rect = svgRef.current.getBoundingClientRect();
@@ -196,7 +170,6 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
         onSvgMouseMove(x, y);
     };
 
-    // Mapa de nós por id para lookup O(1) na renderização das arestas
     const nodesById = new Map(nodes.map((n) => [n.id, n]));
 
     return (
@@ -208,7 +181,6 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
             className={styles.graphCanvas}
         >
             <defs>
-                {/* Ponta de seta padrão para arestas comuns */}
                 <marker
                     id="arrowhead"
                     viewBox="0 0 10 10"
@@ -220,7 +192,6 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
                 >
                     <path d="M 0 0 L 10 5 L 0 10 z" className="arrow-head" />
                 </marker>
-                {/* Ponta de seta verde para a seta de "estado inicial" */}
                 <marker
                     id="arrowhead-initial"
                     viewBox="-0 -5 10 10"
@@ -234,16 +205,13 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
                 </marker>
             </defs>
 
-            {/* Grupo principal — recebe a transformação de zoom/pan do D3 */}
             <g ref={gRef}>
-                {/* Arestas são renderizadas antes dos nós para ficarem atrás deles */}
                 <g>
                     {edges.map((edge) => {
                         const sourceNode = nodesById.get(edge.source);
                         const targetNode = nodesById.get(edge.target);
                         if (!sourceNode || !targetNode) return null;
 
-                        // Calcula informações de agrupamento para arestas paralelas e bidirecionais
                         const parallelEdges = edges.filter(
                             (e) => e.source === edge.source && e.target === edge.target,
                         );
@@ -279,7 +247,6 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
                     })}
                 </g>
 
-                {/* Linha tracejada que acompanha o mouse no modo de conexão entre nós */}
                 {sourceNodeForLinking && (
                     <path
                         d={`M ${sourceNodeForLinking.x} ${sourceNodeForLinking.y} L ${mousePosition.x} ${mousePosition.y}`}
@@ -287,7 +254,6 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
                     />
                 )}
 
-                {/* Nós são renderizados por cima das arestas */}
                 <g>
                     {nodes.map((node) => (
                         <NodeComponent
@@ -299,6 +265,7 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
                             screenToWorld={screenToWorld}
                             isActive={node.id === activeNodeId}
                             isFailed={node.id === failedNodeId}
+                            activeKey={activeStepIndex}
                         />
                     ))}
                 </g>

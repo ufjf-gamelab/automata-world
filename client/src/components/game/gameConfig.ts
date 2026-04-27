@@ -1,47 +1,41 @@
-/**
- * gameConfig.ts — Configuração central do modo de movimento do jogo
- *
- * Para trocar o modo de movimento, basta alterar MOVEMENT_MODE aqui.
- * O gameReducer e os modais lêem esta constante automaticamente.
- *
- * Modos disponíveis:
- *   "cardinal" → rotações absolutas (N, S, L, O) — o jogador sempre sabe para onde é Norte
- *   "relative" → rotações relativas (Esquerda, Direita, Trás) — como um robô que vira em relação a si mesmo
- */
 export type MovementMode = "cardinal" | "relative";
 export const MOVEMENT_MODE: MovementMode = "cardinal";
 
-/**
- * Descritor de um comando do jogo.
- *   key     → letra enviada ao gameReducer (ex: "f")
- *   display → nome exibido nos modais e nos labels das arestas (ex: "Forward")
- */
 export interface GameCommand {
     key: string;
     display: string;
+    /** Palavra completa usada como identificador de animação no Player */
+    word: string;
 }
 
-/** Comandos disponíveis no modo cardinal (direções absolutas do mapa) */
 const COMMANDS_CARDINAL: GameCommand[] = [
-    { key: "f", display: "Forward" },
-    { key: "p", display: "Jump" },
-    { key: "b", display: "Button" },
-    { key: "n", display: "North" },
-    { key: "s", display: "South" },
-    { key: "l", display: "East" },
-    { key: "o", display: "West" },
+    { key: "f", display: "Forward", word: "forward" },
+    { key: "p", display: "Jump",    word: "jump"    },
+    { key: "b", display: "Button",  word: "button"  },
+    { key: "n", display: "North",   word: "north"   },
+    { key: "s", display: "South",   word: "south"   },
+    { key: "l", display: "East",    word: "east"    },
+    { key: "o", display: "West",    word: "west"    },
 ];
 
-/** Comandos disponíveis no modo relativo (virar em relação ao jogador) */
 const COMMANDS_RELATIVE: GameCommand[] = [
-    { key: "f", display: "Forward" },
-    { key: "p", display: "Jump" },
-    { key: "b", display: "Button" },
-    { key: "e", display: "Turn Left" },
-    { key: "d", display: "Turn Right" },
-    { key: "t", display: "Turn Back" },
+    { key: "f", display: "Forward",    word: "forward"  },
+    { key: "p", display: "Jump",       word: "jump"     },
+    { key: "b", display: "Button",     word: "button"   },
+    { key: "e", display: "Turn Left",  word: "turnLeft" },
+    { key: "d", display: "Turn Right", word: "turnRight"},
+    { key: "t", display: "Turn Back",  word: "turnBack" },
 ];
 
-/** Lista de comandos ativos — muda automaticamente com MOVEMENT_MODE */
 export const GAME_COMMANDS: GameCommand[] =
     MOVEMENT_MODE === "cardinal" ? COMMANDS_CARDINAL : COMMANDS_RELATIVE;
+
+/** Converte char interno (ex: "f") para palavra de animação (ex: "forward") */
+export const CHAR_TO_COMMAND: Record<string, string> = Object.fromEntries(
+    GAME_COMMANDS.map((c) => [c.key, c.word]),
+);
+
+/** Converte palavra de animação de volta para char interno */
+export const COMMAND_TO_CHAR: Record<string, string> = Object.fromEntries(
+    GAME_COMMANDS.map((c) => [c.word, c.key]),
+);

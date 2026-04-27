@@ -4,7 +4,6 @@
     height: 100%;
     width: 100%;
     overflow: hidden;
-    background-color: #6ebcbb80;
     color: white;
     font-family: Arial, sans-serif;
 }
@@ -24,6 +23,5 @@
     flex: 1;
     min-height: 0;
     overflow: hidden;
-    background-color: #1a1a1a;
     position: relative;
 }

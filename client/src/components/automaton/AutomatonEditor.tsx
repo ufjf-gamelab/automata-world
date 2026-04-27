@@ -1,7 +1,7 @@
 import { useState, useReducer, useRef } from "react";
 import type { Dispatch } from "react";
 import GraphCanvas from "./canvas/GraphCanvas";
-import SimulationPanel from "./ui/SimulationPanel";
+import SimulationPanel, { SPEED_PRESETS } from "./ui/SimulationPanel";
 import TransitionModal from "./ui/TransitionModal";
 import NodeActionModal from "./ui/NodeActionModal";
 import ControlPanel from "./ui/ControlPanel";
@@ -47,6 +47,18 @@ function AutomatonEditor({
     const [recenterTrigger, setRecenterTrigger] = useState(1);
     const [isSimPanelOpen, setSimPanelOpen] = useState(true);
 
+    /*
+     * ONDE MUDAR A VELOCIDADE:
+     * `simulationSpeed` controla o intervalo entre fases da simulação (ms).
+     * - "Normal" (1200ms): walk do Player termina com ~200ms de folga
+     * - "Lento"  (2000ms): animações confortáveis para apresentações
+     * - "Rápido"  (700ms): não espera a animação de walk terminar
+     *
+     * Para calibrar, ajuste os valores em SPEED_PRESETS (SimulationPanel.tsx)
+     * e ANIM_DURATION (useSimulation.ts) conforme as animações do seu modelo 3D.
+     */
+    const [simulationSpeed, setSimulationSpeed] = useState<number>(SPEED_PRESETS[1].value);
+
     const [contextMenu, setContextMenu] = useState<ContextMenuData>({
         visible: false,
         x: 0,
@@ -81,6 +93,7 @@ function AutomatonEditor({
         edges,
         gameDispatch,
         setCurrentCommand,
+        simulationSpeed,
         onStartTransition,
         onEndTransition,
         onStateEnter,
@@ -153,6 +166,8 @@ function AutomatonEditor({
                 handleStopAnimation={simulation.stop}
                 getStatusMessage={simulation.getStatusMessage}
                 permissions={permissions}
+                simulationSpeed={simulationSpeed}
+                onSpeedChange={setSimulationSpeed}
             />
 
             <div className={styles.canvasWrapper} onClick={graphActions.handleSvgClick}>
@@ -186,6 +201,7 @@ function AutomatonEditor({
                     activeEdgeId={simulation.step?.activeEdgeId ?? null}
                     failedNodeId={simulation.step?.failed ? simulation.step.currentNodeId : null}
                     isSimulating={simulation.status === "running"}
+                    activeStepIndex={simulation.step?.characterIndex ?? 0}
                 />
 
                 <TransitionModal

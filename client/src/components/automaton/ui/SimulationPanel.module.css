@@ -16,7 +16,6 @@
     padding: 15px;
 }
 
-/* Mantém largura suficiente para exibir o botão de expandir */
 .simulationPanel.collapsed {
     width: 44px;
     padding: 0;
@@ -89,6 +88,9 @@
     width: 270px;
     opacity: 1;
     transition: opacity 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .simulationPanel.collapsed .panelContent {
@@ -99,11 +101,11 @@
 .panelContent input[type="text"] {
     width: 100%;
     padding: 10px 12px;
-    margin-bottom: 10px;
     border-radius: 6px;
     border: 1px solid #ced4da;
     box-sizing: border-box;
     font-size: max(16px, 1em);
+    margin: 0;
 }
 
 .panelContent input[type="text"]:focus {
@@ -118,8 +120,66 @@
     cursor: not-allowed;
 }
 
-.panelContent .playButton,
-.panelContent .danger {
+/* ── Controle de velocidade ── */
+
+.speedRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.speedLabel {
+    font-size: 0.75rem;
+    color: #6c757d;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.speedBtns {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+}
+
+.speedBtn {
+    flex: 1;
+    padding: 5px 4px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    background: #f8f9fa;
+    color: #495057;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    white-space: nowrap;
+}
+
+.speedBtn:hover:not(:disabled) {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.speedBtn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.speedBtnActive {
+    background: #dbeafe;
+    border-color: #3b82f6;
+    color: #1d4ed8;
+    font-weight: 700;
+}
+
+.speedBtnActive:hover:not(:disabled) {
+    background: #bfdbfe;
+}
+
+/* ── Botões de ação ── */
+
+.playButton,
+.danger {
     width: 100%;
     padding: 12px 15px;
     font-size: 15px;
@@ -128,28 +188,27 @@
     cursor: pointer;
     transition: background-color 0.2s;
     color: white;
-    font-weight: 500;
+    font-weight: 600;
 }
 
-.panelContent .playButton {
+.playButton {
     background-color: #28a745;
 }
 
-.panelContent .playButton:hover {
+.playButton:hover {
     background-color: #218838;
 }
 
-.panelContent .danger {
+.danger {
     background-color: #dc3545;
 }
 
-.panelContent .danger:hover {
+.danger:hover {
     background-color: #c82333;
 }
 
 .statusBar {
     padding: 10px;
-    margin-top: 10px;
     border-radius: 6px;
     text-align: center;
     font-weight: 500;
@@ -176,7 +235,7 @@
 .fixedTapeLabel {
     font-size: 0.75rem;
     color: #6c757d;
-    margin: 0 0 6px 0;
+    margin: 0;
     display: flex;
     align-items: center;
     gap: 4px;
@@ -186,19 +245,10 @@
     display: none;
 }
 
-@media (max-width: 768px) {
-    .collapsedLabel {
-        display: block;
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: #495057;
-        flex: 1;
-    }
-}
+/* ── Mobile ── */
 
 @media (max-width: 768px) {
     .simulationPanel {
-        /* No mobile o painel ocupa 90% da largura e altura variável */
         height: auto;
         border-right: none;
         border-top: 1px solid #dee2e6;
@@ -208,14 +258,13 @@
     }
 
     .simulationPanel.open {
-        max-height: 260px;
+        max-height: 320px;
         width: 90% !important;
         padding: 12px 15px;
         overflow-y: auto;
         align-self: center;
     }
 
-    /* Colapsado: mostra apenas a barra com título e botão de expandir */
     .simulationPanel.collapsed {
         max-height: 44px;
         width: 90% !important;
@@ -233,19 +282,20 @@
         justify-content: space-between;
     }
 
-    /* No mobile colapsado o botão de expandir fica visível na barra */
-    .simulationPanel.collapsed .expandButton {
-        width: 32px;
-        height: 32px;
-        font-size: 14px;
+    .collapsedLabel {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #495057;
+        flex: 1;
     }
 
     .panelContent {
         width: 100%;
     }
 
-    .panelContent .playButton,
-    .panelContent .danger {
+    .playButton,
+    .danger {
         padding: 12px;
         font-size: 15px;
         min-height: 44px;

@@ -11,7 +11,7 @@ export const stagesList: Stage[] = [
 -616
 `,
         playerPosition: [3, 0],
-        initialRotation: 2, // começa olhando para Norte
+        initialRotation: 4, // começa olhando para Norte
         initialGraph: {
             nodes: [
                 { id: "0", label: "0", isInitial: true },

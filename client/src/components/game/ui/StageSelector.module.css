@@ -1,5 +1,6 @@
+/* ── Barra compacta ── */
+
 .selector {
-    position: relative;
     display: flex;
     align-items: center;
     gap: 4px;
@@ -13,7 +14,6 @@
     height: 28px;
     border-radius: 6px;
     font-size: 18px;
-    line-height: 1;
     cursor: pointer;
     transition: background-color 0.15s, color 0.15s;
     flex-shrink: 0;
@@ -45,7 +45,7 @@
     gap: 6px;
     transition: background-color 0.15s;
     min-width: 0;
-    max-width: 220px;
+    max-width: 240px;
 }
 
 .nameBtn:hover {
@@ -66,89 +66,214 @@
     flex-shrink: 0;
 }
 
-.arrow {
-    font-size: 0.65rem;
+.gridIcon {
+    font-size: 0.8rem;
     color: #aaa;
     flex-shrink: 0;
 }
 
-.dropdown {
-    position: absolute;
-    top: calc(100% + 6px);
-    left: 50%;
-    transform: translateX(-50%);
-    background: #1e1e1e;
-    border: 1px solid #444;
-    border-radius: 8px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
-    min-width: 220px;
-    max-height: 320px;
-    overflow-y: auto;
-    z-index: 200;
-    padding: 4px;
-}
+/* ── Modal overlay ── */
 
-.dropdownItem {
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
+    z-index: 500;
+    padding: 16px;
+    animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.modal {
+    background: #1a1a2e;
+    border: 1px solid #333;
+    border-radius: 12px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
     width: 100%;
-    padding: 8px 10px;
-    background: none;
-    border: none;
-    color: #ccc;
-    text-align: left;
-    cursor: pointer;
-    border-radius: 6px;
-    transition: background-color 0.15s;
-    font-size: 0.85rem;
+    max-width: 680px;
+    max-height: 85dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideUp 0.2s ease;
 }
 
-.dropdownItem:hover {
-    background: #333;
-    color: white;
+@keyframes slideUp {
+    from { transform: translateY(16px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
 }
 
-.dropdownItemActive {
-    background: #646cff22;
-    color: #a5a8ff;
-    font-weight: 600;
-}
-
-.dropdownItemActive:hover {
-    background: #646cff33;
-    color: #a5a8ff;
-}
-
-.dropdownNumber {
-    font-size: 0.7rem;
-    color: #666;
-    min-width: 14px;
-    text-align: right;
+.modalHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #333;
     flex-shrink: 0;
 }
 
-.dropdownName {
+.modalTitle {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: white;
+}
+
+.closeBtn {
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: color 0.15s, background 0.15s;
+}
+
+.closeBtn:hover {
+    color: white;
+    background: #333;
+}
+
+/* ── Grade de fases ── */
+
+.stageGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+    padding: 16px;
+    overflow-y: auto;
+}
+
+.stageCard {
+    background: #252540;
+    border: 2px solid #333;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    transition: border-color 0.15s, background 0.15s, transform 0.1s;
+    overflow: hidden;
+    text-align: left;
+}
+
+.stageCard:hover {
+    border-color: #646cff;
+    background: #2a2a50;
+    transform: translateY(-2px);
+}
+
+.stageCardActive {
+    border-color: #646cff;
+    background: #2a2a50;
+    box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.35);
+}
+
+/* ── Preview do mapa ── */
+
+.cardPreview {
+    background: #111122;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80px;
+}
+
+.mapPreview {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    max-width: 100%;
+}
+
+.mapRow {
+    display: flex;
+    gap: 1px;
+}
+
+.cell {
+    width: 8px;
+    height: 8px;
+    border-radius: 1px;
+    flex-shrink: 0;
+}
+
+.cellEmpty {
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+}
+
+.cellButton {
+    outline: 1px solid rgba(255, 200, 50, 0.6);
+    outline-offset: -1px;
+}
+
+/* ── Info da fase ── */
+
+.cardInfo {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 8px;
+    border-top: 1px solid #333;
+}
+
+.cardNumber {
+    font-size: 0.65rem;
+    color: #666;
+    flex-shrink: 0;
+    min-width: 12px;
+    text-align: right;
+}
+
+.cardName {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #ccc;
     flex: 1;
-    min-width: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.lock {
-    font-size: 0.75rem;
+.stageCardActive .cardName {
+    color: #a5a8ff;
+}
+
+.cardLock {
+    font-size: 0.7rem;
     flex-shrink: 0;
 }
 
+/* ── Mobile ── */
+
 @media (max-width: 768px) {
     .nameBtn {
-        max-width: 140px;
+        max-width: 160px;
     }
 
-    .dropdown {
-        left: 0;
-        transform: none;
-        min-width: 200px;
+    .stageGrid {
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 8px;
+        padding: 12px;
+    }
+
+    .cell, .cellEmpty {
+        width: 6px;
+        height: 6px;
+    }
+
+    .cardPreview {
+        min-height: 60px;
     }
 }

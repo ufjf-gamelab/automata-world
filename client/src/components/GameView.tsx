@@ -4,6 +4,7 @@ import { OrbitControls } from "@react-three/drei";
 
 import Floor from "./game/world/Floor";
 import Player from "./game/player/Player";
+import GameEnvironment from "./game/world/GameEnvironment";
 import VictoryModal from "./game/ui/VictoryModal";
 import CompassRose from "./CompassRose";
 import StageSelector from "./game/ui/StageSelector";
@@ -56,9 +57,12 @@ export default function GameView({
 
             <div className={styles.canvasFrame}>
                 <Canvas key={activeStage.id} shadows camera={{ position: [8, 8, 8], fov: 50 }}>
-                    <ambientLight intensity={0.3} />
-                    <directionalLight position={[10, 15, 5]} intensity={1.5} castShadow />
-                    <pointLight position={[-10, -5, -10]} intensity={0.2} />
+                    <ambientLight intensity={0.5} />
+                    <directionalLight position={[10, 15, 5]} intensity={1.2} castShadow />
+                    <pointLight position={[-10, -5, -10]} intensity={0.15} />
+
+                    {/* Cenário de fundo: céu, chão, árvores e nuvens */}
+                    <GameEnvironment />
 
                     <group position={[0, 0, 0]}>
                         <Floor grid={activeStage.floor} activeButtons={activeButtons} />
@@ -71,7 +75,7 @@ export default function GameView({
                         />
                     </group>
 
-                    <OrbitControls enablePan={false} enableZoom={false} />
+                    <OrbitControls enablePan={false} enableZoom={false}/>
                     <CameraWatcher compassRef={compassInnerRef} />
                 </Canvas>
 

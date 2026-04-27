@@ -1,5 +1,5 @@
 import { type Stage } from "./data/types";
-import { MOVEMENT_MODE } from "./gameConfig";
+import { MOVEMENT_MODE, COMMAND_TO_CHAR } from "./gameConfig";
 
 // --- Tipos ---
 
@@ -27,8 +27,8 @@ export type GameAction =
 // --- Constantes de direção ---
 
 const DIRECTIONS: [number, number][] = [
-    [0, 1],  // 0 = Sul
-    [1, 0],  // 1 = Leste
+    [0, 1], // 0 = Sul
+    [1, 0], // 1 = Leste
     [0, -1], // 2 = Norte
     [-1, 0], // 3 = Oeste
 ];
@@ -79,6 +79,20 @@ const countTotalButtons = (gridString: string) => {
     return count;
 };
 
+/**
+ * Normaliza o payload de EXECUTE_ACTION para sempre ser um char de um caractere.
+ * Aceita tanto chars ("f") quanto palavras ("forward") — converte palavras via COMMAND_TO_CHAR.
+ * Retorna array de chars para processar em sequência.
+ */
+const normalizePayloadToChars = (payload: string): string[] => {
+    if (!payload) return [];
+    // Se é uma palavra conhecida, converte para char
+    const asChar = COMMAND_TO_CHAR[payload.toLowerCase()];
+    if (asChar) return [asChar];
+    // Caso contrário, trata como string de chars (ex: "fn")
+    return payload.toLowerCase().split("");
+};
+
 const applyCommand = (
     char: string,
     state: GameState,
@@ -86,17 +100,21 @@ const applyCommand = (
     const heightMatrix = parseGridToHeights(state.activeStage.floor);
     const currX = state.playerGridPos[0];
     const currZ = state.playerGridPos[1];
-    let currRot = state.playerRotation;
-    const currH = state.blockHeight;
-    let currActiveButtons = [...state.activeButtons];
+    let currRot = state.playerRotation ?? 0;
+    const currH = state.blockHeight ?? 0;
+    // Fix defensivo: garante que activeButtons seja sempre um array
+    let currActiveButtons = [...(state.activeButtons ?? [])];
 
-    const [dx, dz] = DIRECTIONS[currRot];
+    const [dx, dz] = DIRECTIONS[currRot] ?? [0, 1];
     const targetX = currX + dx;
     const targetZ = currZ + dz;
     const targetH = getBlockHeight(targetX, targetZ, heightMatrix);
     const isTargetValid = targetH > 0;
 
-    let nextX = currX, nextZ = currZ, nextH = currH, nextRot = currRot;
+    let nextX = currX,
+        nextZ = currZ,
+        nextH = currH,
+        nextRot = currRot;
 
     switch (char) {
         case "f":
@@ -163,7 +181,6 @@ export const createInitialState = (initialStage: Stage): GameState => {
         activeStage: initialStage,
         activeButtons: [],
         playerGridPos: initialStage.playerPosition,
-        // Usa a direção inicial definida pela fase; padrão = 0 (Sul)
         playerRotation: initialStage.initialRotation ?? 0,
         blockHeight: h === -1 ? 0 : h,
         isVictory: false,
@@ -190,7 +207,6 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
 
         case "START_EXECUTION":
             return { ...state, isExecuting: true };
-
         case "STOP_EXECUTION":
             return { ...state, isExecuting: false };
 
@@ -213,8 +229,13 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
         }
 
         case "EXECUTE_ACTION": {
+            /*
+             * Aceita tanto chars ("f") quanto palavras ("forward").
+             * normalizePayloadToChars converte para array de chars antes de processar.
+             */
+            const chars = normalizePayloadToChars(action.payload);
             let current = state;
-            for (const ch of action.payload.toLowerCase()) {
+            for (const ch of chars) {
                 const applied = applyCommand(ch, current);
                 current = { ...current, ...applied };
             }
