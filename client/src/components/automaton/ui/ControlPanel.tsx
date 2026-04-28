@@ -3,30 +3,27 @@ import styles from "./ControlPanel.module.css";
 
 interface ControlPanelProps {
     onRelayout: () => void;
+    onCenter: () => void;
     onImportClick: () => void;
     onExport: () => void;
 }
 
-const ControlPanel: React.FC<ControlPanelProps> = ({ onRelayout, onImportClick, onExport }) => {
+const ControlPanel: React.FC<ControlPanelProps> = ({ onRelayout, onCenter }) => {
     return (
         <div className={styles.controlPanel}>
-            {/* Reorganize Button */}
             <button
                 onClick={onRelayout}
-                className={styles.recenterButton}
-                title="Reorganizar & Centralizar"
+                className={styles.relayoutButton}
+                title="Reorganizar layout"
             >
                 Reorganizar
             </button>
-
-            {/* Import Button */}
-            <button onClick={onImportClick} className={styles.importButton} title="Importar JSON">
-                Importar
-            </button>
-
-            {/* Export Button */}
-            <button onClick={onExport} className={styles.exportButton} title="Exportar JSON">
-                Exportar
+            <button
+                onClick={onCenter}
+                className={styles.centerButton}
+                title="Centralizar grafo na tela"
+            >
+                Centralizar
             </button>
         </div>
     );

@@ -46,17 +46,6 @@ function AutomatonEditor({
 
     const [recenterTrigger, setRecenterTrigger] = useState(1);
     const [isSimPanelOpen, setSimPanelOpen] = useState(true);
-
-    /*
-     * ONDE MUDAR A VELOCIDADE:
-     * `simulationSpeed` controla o intervalo entre fases da simulação (ms).
-     * - "Normal" (1200ms): walk do Player termina com ~200ms de folga
-     * - "Lento"  (2000ms): animações confortáveis para apresentações
-     * - "Rápido"  (700ms): não espera a animação de walk terminar
-     *
-     * Para calibrar, ajuste os valores em SPEED_PRESETS (SimulationPanel.tsx)
-     * e ANIM_DURATION (useSimulation.ts) conforme as animações do seu modelo 3D.
-     */
     const [simulationSpeed, setSimulationSpeed] = useState<number>(SPEED_PRESETS[1].value);
 
     const [contextMenu, setContextMenu] = useState<ContextMenuData>({
@@ -87,6 +76,15 @@ function AutomatonEditor({
         setSimPanelOpen(isOpen);
         setTimeout(() => setRecenterTrigger((c) => c + 1), 320);
     };
+
+    // Reorganiza o layout E centraliza
+    const handleRelayout = () => {
+        dispatch({ type: "RELAYOUT" });
+        setRecenterTrigger((c) => c + 1);
+    };
+
+    // Apenas centraliza, sem reorganizar
+    const handleCenter = () => setRecenterTrigger((c) => c + 1);
 
     const simulation = useSimulation({
         nodes,
@@ -172,7 +170,8 @@ function AutomatonEditor({
 
             <div className={styles.canvasWrapper} onClick={graphActions.handleSvgClick}>
                 <ControlPanel
-                    onRelayout={graphActions.handleRelayout}
+                    onRelayout={handleRelayout}
+                    onCenter={handleCenter}
                     onImportClick={graphActions.handleImportClick}
                     onExport={graphActions.handleExport}
                 />

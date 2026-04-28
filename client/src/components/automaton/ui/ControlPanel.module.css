@@ -10,12 +10,11 @@
   right: 15px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   width: max-content;
 }
 
 .controlPanel button {
-  background-color: #007bff;
   color: white;
   border: none;
   padding: 10px 14px;
@@ -29,36 +28,24 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.controlPanel button:hover {
-  background-color: #0056b3;
-}
-
 .controlPanel button:active {
   transform: scale(0.96);
 }
 
-.recenterButton {
+.relayoutButton {
   background-color: #6c757d !important;
 }
 
-.recenterButton:hover {
+.relayoutButton:hover {
   background-color: #5a6268 !important;
 }
 
-.importButton {
-  background-color: #28a745 !important;
+.centerButton {
+  background-color: #007bff !important;
 }
 
-.importButton:hover {
-  background-color: #218838 !important;
-}
-
-.exportButton {
-  background-color: #17a2b8 !important;
-}
-
-.exportButton:hover {
-  background-color: #117a8b !important;
+.centerButton:hover {
+  background-color: #0056b3 !important;
 }
 
 @media (max-width: 768px) {
@@ -69,16 +56,15 @@
     right: auto;
     transform: translateX(-50%);
     flex-direction: row;
-    gap: 10px;
-    padding: 10px 14px;
+    gap: 8px;
+    padding: 8px 12px;
     border-radius: 30px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   }
 
   .controlPanel button {
     font-size: 13px;
-    padding: 10px 14px;
-    min-height: 44px;
+    padding: 8px 12px;
+    min-height: 40px;
     border-radius: 8px;
   }
 }

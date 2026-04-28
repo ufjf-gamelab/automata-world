@@ -26,6 +26,9 @@ interface GameViewProps {
     currentCommand: string;
     onChangeStage: (stage: Stage) => void;
     onNextStage: () => void;
+    customStages: Stage[];
+    onSaveCustomStage: (stage: Stage) => void;
+    onDeleteCustomStage: (id: number) => void;
 }
 
 export default function GameView({
@@ -33,6 +36,9 @@ export default function GameView({
     currentCommand,
     onChangeStage,
     onNextStage,
+    customStages,
+    onSaveCustomStage,
+    onDeleteCustomStage,
 }: GameViewProps) {
     const {
         activeStage,
@@ -52,7 +58,13 @@ export default function GameView({
             <VictoryModal isOpen={isVictory} onNextStage={onNextStage} />
 
             <div className={styles.stageBar}>
-                <StageSelector activeStage={activeStage} onChangeStage={onChangeStage} />
+                <StageSelector
+                    activeStage={activeStage}
+                    onChangeStage={onChangeStage}
+                    customStages={customStages}
+                    onSaveCustomStage={onSaveCustomStage}
+                    onDeleteCustomStage={onDeleteCustomStage}
+                />
             </div>
 
             <div className={styles.canvasFrame}>
@@ -61,7 +73,6 @@ export default function GameView({
                     <directionalLight position={[10, 15, 5]} intensity={1.2} castShadow />
                     <pointLight position={[-10, -5, -10]} intensity={0.15} />
 
-                    {/* Cenário de fundo: céu, chão, árvores e nuvens */}
                     <GameEnvironment />
 
                     <group position={[0, 0, 0]}>
@@ -75,7 +86,7 @@ export default function GameView({
                         />
                     </group>
 
-                    <OrbitControls enablePan={false} enableZoom={false}/>
+                    <OrbitControls enablePan={false} enableZoom={false} />
                     <CameraWatcher compassRef={compassInnerRef} />
                 </Canvas>
 
