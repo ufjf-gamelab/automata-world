@@ -3,6 +3,7 @@ import { stagesList } from "../data/Stages";
 import type { Stage } from "../data/types";
 import MapEditorModal from "./MapEditorModal";
 import styles from "./StageSelector.module.css";
+import { useModal } from "../../../contexts/ModalContext";
 
 interface StageSelectorProps {
     activeStage: Stage;
@@ -68,6 +69,8 @@ export default function StageSelector({
     const [isListOpen, setIsListOpen] = useState(false);
     const [editorState, setEditorState] = useState<EditorState>(undefined);
 
+    const { showConfirm } = useModal();
+
     const allStages = [...stagesList, ...customStages];
     const currentIndex = allStages.findIndex((s) => s.id === activeStage.id);
 
@@ -97,9 +100,10 @@ export default function StageSelector({
         setEditorState(stage);
     };
 
-    const handleDelete = (id: number, e: React.MouseEvent) => {
+    const handleDelete = async (id: number, e: React.MouseEvent) => {
         e.stopPropagation();
-        if (!confirm("Excluir este mapa permanentemente?")) return;
+        const userConfirmed = await showConfirm("Deseja mesmo apagar este item?", "Atenção");
+        if (!userConfirmed) return;
         onDeleteCustomStage(id);
         if (activeStage.id === id) onChangeStage(stagesList[0]);
     };

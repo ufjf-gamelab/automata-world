@@ -4,6 +4,7 @@ import type { Node, Edge } from "./AutomatonReducer";
 import type { AnimationStatus, AnimationStep } from "./AutomatonEditorTypes";
 import type { GameAction } from "../game/gameReducer";
 import { CHAR_TO_COMMAND } from "../game/gameConfig";
+import { useModal } from "../../contexts/ModalContext";
 
 interface UseSimulationParams {
     nodes: Node[];
@@ -93,6 +94,7 @@ export function useSimulation({
     const [status, setStatus] = useState<AnimationStatus>("idle");
     const [step, setStep] = useState<AnimationStep | null>(null);
 
+    const { showAlert } = useModal();
     const generationRef = useRef(0);
 
     const onStartRef = useRef(onStartTransition);
@@ -218,7 +220,7 @@ export function useSimulation({
     const play = () => {
         const initialNode = nodes.find((n) => n.isInitial);
         if (!initialNode) {
-            alert("Defina um estado inicial antes de iniciar a simulação.");
+            showAlert("Defina um estado inicial antes de iniciar a simulação.");
             return;
         }
         gameDispatch({ type: "RESET_STAGE", payload: { commands: "" } });

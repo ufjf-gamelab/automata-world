@@ -6,6 +6,7 @@ import TransitionModal from "./ui/TransitionModal";
 import NodeActionModal from "./ui/NodeActionModal";
 import ControlPanel from "./ui/ControlPanel";
 import ContextMenu, { MenuItem } from "./ui/ContextMenu";
+import StageRestrictionsInfo from "./ui/StageRestrictionsInfo";
 import styles from "./AutomatonEditor.module.css";
 import { graphReducer } from "./AutomatonReducer";
 import { useSimulation } from "./useSimulation";
@@ -77,13 +78,11 @@ function AutomatonEditor({
         setTimeout(() => setRecenterTrigger((c) => c + 1), 320);
     };
 
-    // Reorganiza o layout E centraliza
     const handleRelayout = () => {
         dispatch({ type: "RELAYOUT" });
         setRecenterTrigger((c) => c + 1);
     };
 
-    // Apenas centraliza, sem reorganizar
     const handleCenter = () => setRecenterTrigger((c) => c + 1);
 
     const simulation = useSimulation({
@@ -202,6 +201,11 @@ function AutomatonEditor({
                     isSimulating={simulation.status === "running"}
                     activeStepIndex={simulation.step?.characterIndex ?? 0}
                 />
+
+                {/* Botão "i" com restrições da fase — aparece apenas quando há permissões */}
+                {permissions && Object.keys(permissions).length > 0 && (
+                    <StageRestrictionsInfo permissions={permissions} stageName={activeStage.name} />
+                )}
 
                 <TransitionModal
                     isOpen={modalData.isOpen && modalData.action !== "nodeAction"}

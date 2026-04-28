@@ -6,13 +6,11 @@ import styles from "./MapEditorModal.module.css";
 // ── Tipos internos ────────────────────────────────────────────────────────────
 
 type CellType = "empty" | "tile" | "button";
-
 interface Cell {
     type: CellType;
     height: number;
 }
-
-type Tab = "map" | "player" | "automaton" | "tape";
+type Tab = "map" | "player" | "permissions" | "automaton" | "tape";
 
 // ── Helpers de mapa ───────────────────────────────────────────────────────────
 
@@ -50,27 +48,51 @@ function cellBg(cell: Cell, isPlayer: boolean): string {
     if (isPlayer) return "#facc15";
     if (cell.type === "empty") return "transparent";
     const brightness = 35 + cell.height * 10;
-    if (cell.type === "button") return `hsl(211, 80%, ${brightness}%)`;
-    return `hsl(211, 61%, ${brightness}%)`;
+    return cell.type === "button"
+        ? `hsl(211, 80%, ${brightness}%)`
+        : `hsl(211, 61%, ${brightness}%)`;
 }
 
-// ── Direções ──────────────────────────────────────────────────────────────────
+// ── Constantes ────────────────────────────────────────────────────────────────
 
 const DIRECTIONS = [
-    { index: 0, label: "Sul ↓", icon: "⬇" },
-    { index: 1, label: "Leste →", icon: "➡" },
-    { index: 2, label: "Norte ↑", icon: "⬆" },
-    { index: 3, label: "Oeste ←", icon: "⬅" },
+    { index: 2, label: "Norte", icon: "⬆" },
+    { index: 0, label: "Sul", icon: "⬇" },
+    { index: 1, label: "Leste", icon: "➡" },
+    { index: 3, label: "Oeste", icon: "⬅" },
 ];
 
-// ── Estado default de permissões ──────────────────────────────────────────────
+const NONE_OPTION = "— nenhuma —";
 
-const defaultPermissions = (): StagePermissions => ({
-    allowLoops: true,
-    allowMultipleOutgoing: true,
-    stateActionsAllowed: true,
-    edgeActionsAllowed: true,
-});
+/** Dropdown de ação reutilizável */
+function ActionSelect({
+    value,
+    onChange,
+    allowedCommands,
+}: {
+    value: string | undefined;
+    onChange: (v: string | undefined) => void;
+    allowedCommands?: string[];
+}) {
+    const commands = allowedCommands
+        ? GAME_COMMANDS.filter((c) => allowedCommands.includes(c.key))
+        : GAME_COMMANDS;
+
+    return (
+        <select
+            className={styles.fieldSelect}
+            value={value ?? ""}
+            onChange={(e) => onChange(e.target.value || undefined)}
+        >
+            <option value="">{NONE_OPTION}</option>
+            {commands.map((cmd) => (
+                <option key={cmd.key} value={cmd.key}>
+                    {cmd.display} ({cmd.key})
+                </option>
+            ))}
+        </select>
+    );
+}
 
 // ── Componente principal ──────────────────────────────────────────────────────
 
@@ -85,9 +107,8 @@ const MAX_SIZE = 12;
 
 export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModalProps) {
     const isEditing = stage !== undefined;
-
-    // ── Aba ativa ──
     const [activeTab, setActiveTab] = useState<Tab>("map");
+    const [error, setError] = useState("");
 
     // ── Nome ──
     const [name, setName] = useState(stage?.name ?? "Novo Mapa");
@@ -110,44 +131,49 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
     const [initialRotation, setInitialRotation] = useState(stage?.initialRotation ?? 0);
 
     // ── Permissões ──
-    const [permissions, setPermissions] = useState<StagePermissions>(
-        stage?.permissions ?? defaultPermissions(),
+    const existingPerms = stage?.permissions;
+    const [allowLoops, setAllowLoops] = useState(existingPerms?.allowLoops !== false);
+    const [allowMultipleOutgoing, setAllowMultipleOutgoing] = useState(
+        existingPerms?.allowMultipleOutgoing !== false,
     );
-    const [usePermissions, setUsePermissions] = useState(stage?.permissions !== undefined);
+    const [stateActionsAllowed, setStateActionsAllowed] = useState(
+        existingPerms?.stateActionsAllowed !== false,
+    );
+    const [edgeActionsAllowed, setEdgeActionsAllowed] = useState(
+        existingPerms?.edgeActionsAllowed !== false,
+    );
+    const [maxNodesInput, setMaxNodesInput] = useState(existingPerms?.maxNodes?.toString() ?? "");
     const [allowedSymbolsInput, setAllowedSymbolsInput] = useState(
-        stage?.permissions?.allowedSymbols?.join(", ") ?? "",
+        existingPerms?.allowedSymbols?.join(", ") ?? "",
     );
-    const [maxNodesInput, setMaxNodesInput] = useState(
-        stage?.permissions?.maxNodes?.toString() ?? "",
+    // Comandos permitidos: undefined = todos; array = lista
+    const [allowedCommands, setAllowedCommands] = useState<string[] | undefined>(
+        existingPerms?.allowedCommands,
     );
 
-    // ── Autômato inicial ──
+    // ── Fita ──
+    const [useFixedTape, setUseFixedTape] = useState(existingPerms?.fixedTape !== undefined);
+    const [tapeValue, setTapeValue] = useState(existingPerms?.fixedTape ?? "");
+
+    // ── Autômato ──
     const [autoNodes, setAutoNodes] = useState<GraphNodeData[]>(stage?.initialGraph?.nodes ?? []);
     const [autoEdges, setAutoEdges] = useState<GraphEdgeData[]>(stage?.initialGraph?.edges ?? []);
-    // Formulário de novo nó
+
     const [newNode, setNewNode] = useState<GraphNodeData>({
         id: "",
         label: "",
         isInitial: false,
         isFinal: false,
-        action: "",
+        action: undefined,
     });
-    // Formulário de nova aresta
     const [newEdge, setNewEdge] = useState<GraphEdgeData>({
         source: "",
         target: "",
         label: "",
-        action: "",
+        action: undefined,
     });
 
-    // ── Fita inicial ──
-    const [useFixedTape, setUseFixedTape] = useState(stage?.permissions?.fixedTape !== undefined);
-    const [fixedTapeValue, setFixedTapeValue] = useState(stage?.permissions?.fixedTape ?? "");
-
-    // ── Erro geral ──
-    const [error, setError] = useState("");
-
-    // Redimensiona grid
+    // Redimensiona o grid quando o tamanho muda
     useEffect(() => {
         setGrid((prev) =>
             Array.from({ length: size.rows }, (_, r) =>
@@ -160,7 +186,7 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
         setPlayerPos(([px, pz]) => [Math.min(px, size.cols - 1), Math.min(pz, size.rows - 1)]);
     }, [size.cols, size.rows]);
 
-    // ── Handlers de mapa ──────────────────────────────────────────────────────
+    // ── Handlers mapa ─────────────────────────────────────────────────────────
 
     const handleCellClick = (col: number, row: number) => {
         if (placingPlayer) {
@@ -171,13 +197,10 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
         }
         setGrid((prev) => {
             const next = prev.map((r) => [...r]);
-            const current = next[row][col];
             next[row][col] =
-                selectedType === "empty" || current.type !== "empty"
-                    ? { type: selectedType, height: selectedHeight }
+                selectedType === "empty"
+                    ? { type: "empty", height: 1 }
                     : { type: selectedType, height: selectedHeight };
-            if (selectedType === "empty") next[row][col] = { type: "empty", height: 1 };
-            else next[row][col] = { type: selectedType, height: selectedHeight };
             return next;
         });
     };
@@ -188,21 +211,19 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
             [axis]: Math.max(MIN_SIZE, Math.min(MAX_SIZE, prev[axis] + delta)),
         }));
 
-    // ── Handlers de permissões ────────────────────────────────────────────────
-
-    const updatePerm = <K extends keyof StagePermissions>(key: K, value: StagePermissions[K]) =>
-        setPermissions((prev) => ({ ...prev, [key]: value }));
-
-    // ── Handlers de autômato ──────────────────────────────────────────────────
+    // ── Handlers autômato ─────────────────────────────────────────────────────
 
     const addNode = () => {
-        if (!newNode.id.trim() || !newNode.label.trim()) return;
+        if (!newNode.id.trim() || !newNode.label.trim()) {
+            setError("ID e label são obrigatórios.");
+            return;
+        }
         if (autoNodes.find((n) => n.id === newNode.id)) {
             setError("ID de estado já existe.");
             return;
         }
-        setAutoNodes((prev) => [...prev, { ...newNode, action: newNode.action || undefined }]);
-        setNewNode({ id: "", label: "", isInitial: false, isFinal: false, action: "" });
+        setAutoNodes((prev) => [...prev, { ...newNode }]);
+        setNewNode({ id: "", label: "", isInitial: false, isFinal: false, action: undefined });
         setError("");
     };
 
@@ -212,9 +233,13 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
     };
 
     const addEdge = () => {
-        if (!newEdge.source || !newEdge.target || !newEdge.label) return;
-        setAutoEdges((prev) => [...prev, { ...newEdge, action: newEdge.action || undefined }]);
-        setNewEdge({ source: "", target: "", label: "", action: "" });
+        if (!newEdge.source || !newEdge.target || !newEdge.label) {
+            setError("Preencha os campos da transição.");
+            return;
+        }
+        setAutoEdges((prev) => [...prev, { ...newEdge }]);
+        setNewEdge({ source: "", target: "", label: "", action: undefined });
+        setError("");
     };
 
     const removeEdge = (i: number) => setAutoEdges((prev) => prev.filter((_, idx) => idx !== i));
@@ -227,50 +252,63 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
             setError("O mapa precisa de um nome.");
             return;
         }
+
         const startCell = grid[playerPos[1]]?.[playerPos[0]];
         if (!startCell || startCell.type === "empty") {
             setError("A posição inicial do jogador deve estar em um tile válido.");
             return;
         }
 
-        const floor = gridToFloor(grid, size.cols, size.rows);
+        // Constrói as permissões a partir dos estados individuais
+        const parsedMaxNodes = maxNodesInput ? parseInt(maxNodesInput) : undefined;
+        const parsedSymbols = allowedSymbolsInput
+            ? allowedSymbolsInput
+                  .split(",")
+                  .map((s) => s.trim().toLowerCase())
+                  .filter(Boolean)
+            : undefined;
 
-        const resolvedPermissions: StagePermissions | undefined = usePermissions
+        // Só inclui permissões no Stage se alguma restrição foi configurada
+        const hasRestrictions =
+            !allowLoops ||
+            !allowMultipleOutgoing ||
+            !stateActionsAllowed ||
+            !edgeActionsAllowed ||
+            parsedMaxNodes !== undefined ||
+            (parsedSymbols && parsedSymbols.length > 0) ||
+            allowedCommands !== undefined ||
+            useFixedTape;
+
+        const permissions: StagePermissions | undefined = hasRestrictions
             ? {
-                  ...permissions,
-                  maxNodes: maxNodesInput ? parseInt(maxNodesInput) : undefined,
-                  allowedSymbols: allowedSymbolsInput
-                      ? allowedSymbolsInput
-                            .split(",")
-                            .map((s) => s.trim().toLowerCase())
-                            .filter(Boolean)
-                      : undefined,
-                  allowedCommands: permissions.allowedCommands,
-                  fixedTape: useFixedTape ? fixedTapeValue.toUpperCase() || undefined : undefined,
+                  allowLoops: allowLoops || undefined,
+                  allowMultipleOutgoing: allowMultipleOutgoing || undefined,
+                  stateActionsAllowed: stateActionsAllowed || undefined,
+                  edgeActionsAllowed: edgeActionsAllowed || undefined,
+                  maxNodes: parsedMaxNodes,
+                  allowedSymbols: parsedSymbols,
+                  allowedCommands: allowedCommands,
+                  fixedTape: useFixedTape ? tapeValue.toUpperCase() || undefined : undefined,
               }
-            : useFixedTape
-              ? { fixedTape: fixedTapeValue.toUpperCase() || undefined }
-              : undefined;
-
-        const initialGraph =
-            autoNodes.length > 0 ? { nodes: autoNodes, edges: autoEdges } : undefined;
+            : undefined;
 
         onSave({
             id: stage?.id ?? -Date.now(),
             name: trimmedName,
-            floor,
+            floor: gridToFloor(grid, size.cols, size.rows),
             playerPosition: playerPos,
-            initialRotation,
-            permissions: resolvedPermissions,
-            initialGraph,
+            initialRotation: initialRotation !== 0 ? initialRotation : undefined,
+            permissions,
+            initialGraph: autoNodes.length > 0 ? { nodes: autoNodes, edges: autoEdges } : undefined,
         });
     };
 
-    // ── Render ────────────────────────────────────────────────────────────────
+    // ── Abas ──────────────────────────────────────────────────────────────────
 
     const tabs: { id: Tab; label: string }[] = [
         { id: "map", label: "🗺 Mapa" },
         { id: "player", label: "🧍 Jogador" },
+        { id: "permissions", label: "🔒 Permissões" },
         { id: "automaton", label: "⚙ Autômato" },
         { id: "tape", label: "📼 Fita" },
     ];
@@ -278,7 +316,7 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
     return (
         <div className={styles.overlay} onClick={onClose}>
             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-                {/* ── Header ── */}
+                {/* Header */}
                 <div className={styles.header}>
                     <input
                         className={styles.nameInput}
@@ -292,7 +330,7 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                     </button>
                 </div>
 
-                {/* ── Abas ── */}
+                {/* Abas */}
                 <div className={styles.tabs}>
                     {tabs.map((t) => (
                         <button
@@ -305,9 +343,8 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                     ))}
                 </div>
 
-                {/* ── Conteúdo das abas ── */}
                 <div className={styles.body}>
-                    {/* ══ Aba Mapa ══ */}
+                    {/* ══ Mapa ══ */}
                     {activeTab === "map" && (
                         <div className={styles.tabContent}>
                             <div className={styles.toolbar}>
@@ -428,7 +465,7 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                         </div>
                     )}
 
-                    {/* ══ Aba Jogador + Permissões ══ */}
+                    {/* ══ Jogador ══ */}
                     {activeTab === "player" && (
                         <div className={styles.scrollContent}>
                             <section className={styles.section}>
@@ -446,179 +483,160 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                                     ))}
                                 </div>
                             </section>
+                        </div>
+                    )}
 
+                    {/* ══ Permissões ══ */}
+                    {activeTab === "permissions" && (
+                        <div className={styles.scrollContent}>
                             <section className={styles.section}>
-                                <div className={styles.sectionHeader}>
-                                    <h4 className={styles.sectionTitle}>Permissões da fase</h4>
-                                    <label className={styles.toggleLabel}>
+                                <h4 className={styles.sectionTitle}>Restrições do autômato</h4>
+                                <p className={styles.hint}>
+                                    Defina o que o aluno pode ou não fazer ao construir o autômato
+                                    para esta fase. Restrições não configuradas ficam liberadas.
+                                </p>
+
+                                <div className={styles.permGrid}>
+                                    <label className={styles.permRow}>
                                         <input
                                             type="checkbox"
-                                            checked={usePermissions}
-                                            onChange={(e) => setUsePermissions(e.target.checked)}
+                                            checked={allowLoops}
+                                            onChange={(e) => setAllowLoops(e.target.checked)}
                                         />
-                                        Ativar restrições
+                                        Permitir self-loops (aresta de um estado para ele mesmo)
                                     </label>
-                                </div>
+                                    <label className={styles.permRow}>
+                                        <input
+                                            type="checkbox"
+                                            checked={allowMultipleOutgoing}
+                                            onChange={(e) =>
+                                                setAllowMultipleOutgoing(e.target.checked)
+                                            }
+                                        />
+                                        Permitir múltiplas arestas saindo do mesmo estado
+                                    </label>
+                                    <label className={styles.permRow}>
+                                        <input
+                                            type="checkbox"
+                                            checked={stateActionsAllowed}
+                                            onChange={(e) =>
+                                                setStateActionsAllowed(e.target.checked)
+                                            }
+                                        />
+                                        Permitir ações nos estados
+                                    </label>
+                                    <label className={styles.permRow}>
+                                        <input
+                                            type="checkbox"
+                                            checked={edgeActionsAllowed}
+                                            onChange={(e) =>
+                                                setEdgeActionsAllowed(e.target.checked)
+                                            }
+                                        />
+                                        Permitir ações nas transições
+                                    </label>
 
-                                {usePermissions && (
-                                    <div className={styles.permGrid}>
-                                        <label className={styles.permRow}>
-                                            <input
-                                                type="checkbox"
-                                                checked={permissions.allowLoops !== false}
-                                                onChange={(e) =>
-                                                    updatePerm("allowLoops", e.target.checked)
-                                                }
-                                            />
-                                            Permitir self-loops (aresta de um estado para si mesmo)
+                                    <div className={styles.permField}>
+                                        <label className={styles.fieldLabel}>
+                                            Máximo de estados (vazio = sem limite)
                                         </label>
+                                        <input
+                                            type="number"
+                                            min={1}
+                                            className={styles.fieldInput}
+                                            value={maxNodesInput}
+                                            onChange={(e) => setMaxNodesInput(e.target.value)}
+                                            placeholder="ex: 3"
+                                        />
+                                    </div>
 
-                                        <label className={styles.permRow}>
-                                            <input
-                                                type="checkbox"
-                                                checked={
-                                                    permissions.allowMultipleOutgoing !== false
-                                                }
-                                                onChange={(e) =>
-                                                    updatePerm(
-                                                        "allowMultipleOutgoing",
-                                                        e.target.checked,
-                                                    )
-                                                }
-                                            />
-                                            Permitir múltiplas arestas saindo do mesmo estado
+                                    <div className={styles.permField}>
+                                        <label className={styles.fieldLabel}>
+                                            Símbolos permitidos nas transições (vazio = todos,
+                                            separe por vírgula)
                                         </label>
+                                        <input
+                                            type="text"
+                                            className={styles.fieldInput}
+                                            value={allowedSymbolsInput}
+                                            onChange={(e) => setAllowedSymbolsInput(e.target.value)}
+                                            placeholder="ex: f, n, b"
+                                        />
+                                    </div>
 
-                                        <label className={styles.permRow}>
-                                            <input
-                                                type="checkbox"
-                                                checked={permissions.stateActionsAllowed !== false}
-                                                onChange={(e) =>
-                                                    updatePerm(
-                                                        "stateActionsAllowed",
-                                                        e.target.checked,
-                                                    )
-                                                }
-                                            />
-                                            Permitir ações nos estados
+                                    <div className={styles.permField}>
+                                        <label className={styles.fieldLabel}>
+                                            Comandos de jogo disponíveis nos modais
                                         </label>
-
-                                        <label className={styles.permRow}>
-                                            <input
-                                                type="checkbox"
-                                                checked={permissions.edgeActionsAllowed !== false}
-                                                onChange={(e) =>
-                                                    updatePerm(
-                                                        "edgeActionsAllowed",
-                                                        e.target.checked,
-                                                    )
-                                                }
-                                            />
-                                            Permitir ações nas transições
-                                        </label>
-
-                                        <div className={styles.permField}>
-                                            <label className={styles.fieldLabel}>
-                                                Máximo de estados (vazio = sem limite)
-                                            </label>
-                                            <input
-                                                type="number"
-                                                min={1}
-                                                className={styles.fieldInput}
-                                                value={maxNodesInput}
-                                                onChange={(e) => setMaxNodesInput(e.target.value)}
-                                                placeholder="ex: 3"
-                                            />
-                                        </div>
-
-                                        <div className={styles.permField}>
-                                            <label className={styles.fieldLabel}>
-                                                Símbolos permitidos nas transições (vazio = todos)
-                                            </label>
-                                            <input
-                                                type="text"
-                                                className={styles.fieldInput}
-                                                value={allowedSymbolsInput}
-                                                onChange={(e) =>
-                                                    setAllowedSymbolsInput(e.target.value)
-                                                }
-                                                placeholder="ex: f, n, b"
-                                            />
-                                        </div>
-
-                                        <div className={styles.permField}>
-                                            <label className={styles.fieldLabel}>
-                                                Comandos disponíveis nos modais
-                                            </label>
-                                            <div className={styles.commandCheckGrid}>
-                                                {GAME_COMMANDS.map((cmd) => {
-                                                    const allowed = permissions.allowedCommands;
-                                                    const isChecked =
-                                                        !allowed || allowed.includes(cmd.key);
-                                                    return (
-                                                        <label
-                                                            key={cmd.key}
-                                                            className={styles.permRow}
-                                                        >
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={isChecked}
-                                                                onChange={(e) => {
-                                                                    const current =
-                                                                        permissions.allowedCommands ??
-                                                                        GAME_COMMANDS.map(
-                                                                            (c) => c.key,
-                                                                        );
-                                                                    const next = e.target.checked
-                                                                        ? [...current, cmd.key]
-                                                                        : current.filter(
-                                                                              (k) => k !== cmd.key,
-                                                                          );
-                                                                    updatePerm(
-                                                                        "allowedCommands",
-                                                                        next.length ===
-                                                                            GAME_COMMANDS.length
-                                                                            ? undefined
-                                                                            : next,
-                                                                    );
-                                                                }}
-                                                            />
-                                                            {cmd.display} ({cmd.key})
-                                                        </label>
-                                                    );
-                                                })}
-                                            </div>
+                                        <div className={styles.commandCheckGrid}>
+                                            {GAME_COMMANDS.map((cmd) => {
+                                                const isChecked =
+                                                    !allowedCommands ||
+                                                    allowedCommands.includes(cmd.key);
+                                                return (
+                                                    <label key={cmd.key} className={styles.permRow}>
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={isChecked}
+                                                            onChange={(e) => {
+                                                                const current =
+                                                                    allowedCommands ??
+                                                                    GAME_COMMANDS.map((c) => c.key);
+                                                                const next = e.target.checked
+                                                                    ? [...current, cmd.key]
+                                                                    : current.filter(
+                                                                          (k) => k !== cmd.key,
+                                                                      );
+                                                                setAllowedCommands(
+                                                                    next.length ===
+                                                                        GAME_COMMANDS.length
+                                                                        ? undefined
+                                                                        : next,
+                                                                );
+                                                            }}
+                                                        />
+                                                        {cmd.display} <em>({cmd.key})</em>
+                                                    </label>
+                                                );
+                                            })}
                                         </div>
                                     </div>
-                                )}
+                                </div>
                             </section>
                         </div>
                     )}
 
-                    {/* ══ Aba Autômato ══ */}
+                    {/* ══ Autômato ══ */}
                     {activeTab === "automaton" && (
                         <div className={styles.scrollContent}>
-                            <section className={styles.section}>
-                                <h4 className={styles.sectionTitle}>
-                                    Estados iniciais do autômato
-                                </h4>
-                                <p className={styles.hint}>
-                                    Deixe vazio para o autômato começar sem estados (aluno constrói
-                                    do zero).
-                                </p>
+                            <p className={styles.hint}>
+                                Defina estados e transições que já estarão no canvas ao entrar na
+                                fase. Deixe vazio para o aluno construir do zero.
+                            </p>
 
-                                {/* Lista de nós */}
+                            {/* Estados */}
+                            <section className={styles.section}>
+                                <h4 className={styles.sectionTitle}>Estados</h4>
+
                                 {autoNodes.length > 0 && (
                                     <div className={styles.itemList}>
                                         {autoNodes.map((n) => (
                                             <div key={n.id} className={styles.item}>
                                                 <span className={styles.itemBadge}>
-                                                    {n.isInitial ? "▶" : ""}
+                                                    {n.isInitial ? "▶ " : ""}
                                                     {n.isFinal ? "◎" : "○"}
                                                 </span>
                                                 <span className={styles.itemMain}>
                                                     <b>{n.label}</b> (id: {n.id})
-                                                    {n.action && <em> → {n.action}</em>}
+                                                    {n.action && (
+                                                        <em>
+                                                            {" "}
+                                                            →{" "}
+                                                            {GAME_COMMANDS.find(
+                                                                (c) => c.key === n.action,
+                                                            )?.display ?? n.action}
+                                                        </em>
+                                                    )}
                                                 </span>
                                                 <button
                                                     className={styles.removeBtn}
@@ -631,7 +649,6 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                                     </div>
                                 )}
 
-                                {/* Formulário de novo nó */}
                                 <div className={styles.addForm}>
                                     <div className={styles.formRow}>
                                         <input
@@ -653,23 +670,24 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                                                 setNewNode((p) => ({ ...p, label: e.target.value }))
                                             }
                                         />
-                                        <input
-                                            className={styles.fieldInput}
-                                            placeholder="Ação (ex: f)"
-                                            value={newNode.action ?? ""}
-                                            onChange={(e) =>
-                                                setNewNode((p) => ({
-                                                    ...p,
-                                                    action: e.target.value,
-                                                }))
-                                            }
-                                        />
+                                        <div className={styles.fieldGroup}>
+                                            <label className={styles.fieldLabel}>
+                                                Ação ao entrar
+                                            </label>
+                                            <ActionSelect
+                                                value={newNode.action}
+                                                onChange={(v) =>
+                                                    setNewNode((p) => ({ ...p, action: v }))
+                                                }
+                                                allowedCommands={allowedCommands}
+                                            />
+                                        </div>
                                     </div>
                                     <div className={styles.formRow}>
                                         <label className={styles.permRow}>
                                             <input
                                                 type="checkbox"
-                                                checked={newNode.isInitial}
+                                                checked={newNode.isInitial ?? false}
                                                 onChange={(e) =>
                                                     setNewNode((p) => ({
                                                         ...p,
@@ -682,7 +700,7 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                                         <label className={styles.permRow}>
                                             <input
                                                 type="checkbox"
-                                                checked={newNode.isFinal}
+                                                checked={newNode.isFinal ?? false}
                                                 onChange={(e) =>
                                                     setNewNode((p) => ({
                                                         ...p,
@@ -699,8 +717,9 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                                 </div>
                             </section>
 
+                            {/* Transições */}
                             <section className={styles.section}>
-                                <h4 className={styles.sectionTitle}>Transições iniciais</h4>
+                                <h4 className={styles.sectionTitle}>Transições</h4>
 
                                 {autoEdges.length > 0 && (
                                     <div className={styles.itemList}>
@@ -709,7 +728,16 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                                                 <span className={styles.itemMain}>
                                                     {e.source} <b>–{e.label.toUpperCase()}→</b>{" "}
                                                     {e.target}
-                                                    {e.action && <em> ({e.action})</em>}
+                                                    {e.action && (
+                                                        <em>
+                                                            {" "}
+                                                            (
+                                                            {GAME_COMMANDS.find(
+                                                                (c) => c.key === e.action,
+                                                            )?.display ?? e.action}
+                                                            )
+                                                        </em>
+                                                    )}
                                                 </span>
                                                 <button
                                                     className={styles.removeBtn}
@@ -748,7 +776,7 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                                         />
                                         <input
                                             className={styles.fieldInput}
-                                            placeholder="Símbolo (ex: f)"
+                                            placeholder="Símbolo"
                                             maxLength={1}
                                             value={newEdge.label}
                                             onChange={(e) =>
@@ -758,17 +786,16 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                                                 }))
                                             }
                                         />
-                                        <input
-                                            className={styles.fieldInput}
-                                            placeholder="Ação (ex: b)"
-                                            value={newEdge.action ?? ""}
-                                            onChange={(e) =>
-                                                setNewEdge((p) => ({
-                                                    ...p,
-                                                    action: e.target.value,
-                                                }))
-                                            }
-                                        />
+                                        <div className={styles.fieldGroup}>
+                                            <label className={styles.fieldLabel}>Ação</label>
+                                            <ActionSelect
+                                                value={newEdge.action}
+                                                onChange={(v) =>
+                                                    setNewEdge((p) => ({ ...p, action: v }))
+                                                }
+                                                allowedCommands={allowedCommands}
+                                            />
+                                        </div>
                                     </div>
                                     <button className={styles.addBtn} onClick={addEdge}>
                                         ＋ Adicionar transição
@@ -778,14 +805,14 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                         </div>
                     )}
 
-                    {/* ══ Aba Fita ══ */}
+                    {/* ══ Fita ══ */}
                     {activeTab === "tape" && (
                         <div className={styles.scrollContent}>
                             <section className={styles.section}>
                                 <h4 className={styles.sectionTitle}>Fita de entrada</h4>
                                 <p className={styles.hint}>
-                                    Configure se a fita deve vir pré-preenchida e travada para o
-                                    aluno.
+                                    Configure se a fita vem pré-preenchida e travada, ou apenas como
+                                    sugestão editável.
                                 </p>
 
                                 <label className={styles.toggleLabel}>
@@ -797,54 +824,33 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                                     Fixar a fita (aluno não pode editar)
                                 </label>
 
-                                {useFixedTape && (
-                                    <div className={styles.permField}>
-                                        <label className={styles.fieldLabel}>Valor da fita</label>
-                                        <input
-                                            type="text"
-                                            className={`${styles.fieldInput} ${styles.tapeInput}`}
-                                            value={fixedTapeValue}
-                                            onChange={(e) =>
-                                                setFixedTapeValue(
-                                                    e.target.value
-                                                        .toUpperCase()
-                                                        .replace(/[^A-Z]/g, ""),
-                                                )
-                                            }
-                                            placeholder="ex: FNFB"
-                                        />
-                                        <span className={styles.hint}>
-                                            Use apenas as letras dos símbolos do autômato (A–Z).
-                                        </span>
-                                    </div>
-                                )}
-
-                                {!useFixedTape && (
-                                    <div className={styles.permField}>
-                                        <label className={styles.fieldLabel}>
-                                            Sugestão inicial de fita (não travada)
-                                        </label>
-                                        <input
-                                            type="text"
-                                            className={`${styles.fieldInput} ${styles.tapeInput}`}
-                                            value={fixedTapeValue}
-                                            onChange={(e) =>
-                                                setFixedTapeValue(
-                                                    e.target.value
-                                                        .toUpperCase()
-                                                        .replace(/[^A-Z]/g, ""),
-                                                )
-                                            }
-                                            placeholder="ex: FFFFF (aluno pode alterar)"
-                                        />
-                                    </div>
-                                )}
+                                <div className={styles.permField}>
+                                    <label className={styles.fieldLabel}>
+                                        {useFixedTape
+                                            ? "Valor fixo da fita"
+                                            : "Sugestão inicial (aluno pode alterar)"}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        className={`${styles.fieldInput} ${styles.tapeInput}`}
+                                        value={tapeValue}
+                                        onChange={(e) =>
+                                            setTapeValue(
+                                                e.target.value.toUpperCase().replace(/[^A-Z]/g, ""),
+                                            )
+                                        }
+                                        placeholder="ex: FNFB"
+                                    />
+                                    <span className={styles.hint}>
+                                        Apenas letras A–Z (símbolos do alfabeto do autômato).
+                                    </span>
+                                </div>
                             </section>
                         </div>
                     )}
                 </div>
 
-                {/* ── Footer ── */}
+                {/* Footer */}
                 {error && <p className={styles.error}>{error}</p>}
                 <div className={styles.footer}>
                     <button className={styles.cancelBtn} onClick={onClose}>

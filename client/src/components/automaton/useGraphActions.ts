@@ -2,6 +2,7 @@ import React, { useCallback } from "react";
 import type { Dispatch, RefObject } from "react";
 import { getLayout, type Node, type Edge } from "./AutomatonReducer";
 import type { GraphAction, GraphState } from "./AutomatonReducer";
+import { useModal } from "../../contexts/ModalContext";
 import type {
     ContextMenuData,
     EdgeMenuData,
@@ -53,6 +54,8 @@ export function useGraphActions({
         setEdgeMenu({ visible: false, x: 0, y: 0, selectedEdge: null });
         setLinkingState({ sourceNode: null });
     }, [setContextMenu, setEdgeMenu, setLinkingState]);
+
+    const { showAlert } = useModal();
 
     const calculateMenuPosition = (clientX: number, clientY: number) => {
         const padding = 10;
@@ -231,7 +234,7 @@ export function useGraphActions({
 
             const edgeError = validateEdge(sourceId, newId);
             if (edgeError) {
-                alert(edgeError);
+                showAlert(edgeError);
                 return;
             }
 
@@ -239,14 +242,14 @@ export function useGraphActions({
                 (e) => e.source === sourceId && e.target === newId && e.label === label,
             );
             if (isDuplicate) {
-                alert(`Erro: Transição (${sourceId} -${label}-> ${newId}) já existe.`);
+                showAlert(`Erro: Transição (${sourceId} -${label}-> ${newId}) já existe.`);
                 return;
             }
             dispatch({ type: "ADD_NODE_AND_EDGE", sourceId, label, action });
         } else if (modalAction === "link" && sourceId && targetId) {
             const edgeError = validateEdge(sourceId, targetId);
             if (edgeError) {
-                alert(edgeError);
+                showAlert(edgeError);
                 return;
             }
 
@@ -254,7 +257,7 @@ export function useGraphActions({
                 (e) => e.source === sourceId && e.target === targetId && e.label === label,
             );
             if (isDuplicate) {
-                alert(`Erro: Transição (${sourceId} -${label}-> ${targetId}) já existe.`);
+                showAlert(`Erro: Transição (${sourceId} -${label}-> ${targetId}) já existe.`);
                 return;
             }
             dispatch({ type: "ADD_EDGE", sourceId, targetId, label, action });
@@ -267,7 +270,7 @@ export function useGraphActions({
                     e.label === label,
             );
             if (isDuplicate) {
-                alert(
+                showAlert(
                     `Erro: Transição (${edgeToEdit.source} -${label}-> ${edgeToEdit.target}) já existe.`,
                 );
                 return;
@@ -330,7 +333,7 @@ export function useGraphActions({
                 setRecenterTrigger((c) => c + 1);
                 closeAllMenus();
             } catch (error) {
-                alert(`Erro ao importar: ${error}`);
+                showAlert(`Erro ao importar: ${error}`);
             }
         };
         reader.readAsText(file);

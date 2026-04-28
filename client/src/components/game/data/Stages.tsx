@@ -92,11 +92,11 @@ export const stagesList: Stage[] = [
     },
     {
         id: 6,
-        name: "🔒 Só Frente",
+        name: "Só Frente",
         floor: `111116
 `,
         playerPosition: [0, 0],
-        initialRotation:1,
+        initialRotation: 1,
         permissions: {
             allowedCommands: ["f", "b"],
             allowedSymbols: ["f"],
@@ -117,7 +117,7 @@ export const stagesList: Stage[] = [
     },
     {
         id: 7,
-        name: "🔒 Fita Fixada",
+        name: "Fita Fixada",
         floor: `-1  
 616
 -6
@@ -133,7 +133,7 @@ export const stagesList: Stage[] = [
     },
     {
         id: 8,
-        name: "🔒 Sem Ações",
+        name: "Sem Ações",
         floor: `1111
 1221
 1282

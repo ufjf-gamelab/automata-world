@@ -1,0 +1,117 @@
+.wrapper {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    z-index: 20;
+}
+
+.infoBtn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid #f59e0b;
+    background: rgba(30, 20, 5, 0.85);
+    color: #f59e0b;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, transform 0.1s;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.infoBtn:hover {
+    background: rgba(60, 40, 5, 0.9);
+    transform: scale(1.08);
+}
+
+.infoBtnActive {
+    background: rgba(245, 158, 11, 0.2);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.3);
+}
+
+/* ── Painel ── */
+.panel {
+    position: absolute;
+    bottom: 42px;
+    left: 0;
+    width: 280px;
+    background: rgba(20, 18, 40, 0.97);
+    border: 1px solid #f59e0b55;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    animation: popUp 0.15s ease;
+    overflow: hidden;
+}
+
+@keyframes popUp {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.panelHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px 8px;
+    border-bottom: 1px solid #2a2a3a;
+}
+
+.panelTitle {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #f59e0b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.panelClose {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 2px 5px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.panelClose:hover {
+    color: #ccc;
+    background: #2a2a3a;
+}
+
+.list {
+    margin: 0;
+    padding: 8px 12px 8px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.listItem {
+    font-size: 0.8rem;
+    color: #ccc;
+    line-height: 1.4;
+}
+
+.footer {
+    margin: 0;
+    padding: 6px 12px 10px;
+    font-size: 0.68rem;
+    color: #555;
+    border-top: 1px solid #1e1e2e;
+    font-style: italic;
+}
