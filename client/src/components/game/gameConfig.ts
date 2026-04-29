@@ -1,5 +1,15 @@
 export type MovementMode = "cardinal" | "relative";
-export const MOVEMENT_MODE: MovementMode = "cardinal";
+
+/**
+ * Define o modo de rotação do jogador.
+ *
+ * "relative" → girar à esquerda (e), à direita (d) ou meia-volta (t) em relação
+ *              à direção atual do boneco. Mais intuitivo para autômatos simples.
+ *
+ * "cardinal"  → apontar diretamente para Norte (n), Sul (s), Leste (l), Oeste (o).
+ *               Útil quando o mapa exige controle absoluto de orientação.
+ */
+export const MOVEMENT_MODE: MovementMode = "relative";
 
 export interface GameCommand {
     key: string;
@@ -8,29 +18,29 @@ export interface GameCommand {
     word: string;
 }
 
-const COMMANDS_CARDINAL: GameCommand[] = [
+const COMMANDS_RELATIVE: GameCommand[] = [
     { key: "f", display: "Forward", word: "forward" },
-    { key: "p", display: "Jump",    word: "jump"    },
-    { key: "b", display: "Button",  word: "button"  },
-    { key: "n", display: "North",   word: "north"   },
-    { key: "s", display: "South",   word: "south"   },
-    { key: "l", display: "East",    word: "east"    },
-    { key: "o", display: "West",    word: "west"    },
+    { key: "p", display: "Jump", word: "jump" },
+    { key: "b", display: "Button", word: "button" },
+    { key: "e", display: "Turn Left ↺", word: "turnLeft" },
+    { key: "d", display: "Turn Right ↻", word: "turnRight" },
+    { key: "t", display: "Turn Back ↩", word: "turnBack" },
 ];
 
-const COMMANDS_RELATIVE: GameCommand[] = [
-    { key: "f", display: "Forward",    word: "forward"  },
-    { key: "p", display: "Jump",       word: "jump"     },
-    { key: "b", display: "Button",     word: "button"   },
-    { key: "e", display: "Turn Left",  word: "turnLeft" },
-    { key: "d", display: "Turn Right", word: "turnRight"},
-    { key: "t", display: "Turn Back",  word: "turnBack" },
+const COMMANDS_CARDINAL: GameCommand[] = [
+    { key: "f", display: "Forward", word: "forward" },
+    { key: "p", display: "Jump", word: "jump" },
+    { key: "b", display: "Button", word: "button" },
+    { key: "n", display: "North", word: "north" },
+    { key: "s", display: "South", word: "south" },
+    { key: "l", display: "East", word: "east" },
+    { key: "o", display: "West", word: "west" },
 ];
 
 export const GAME_COMMANDS: GameCommand[] =
-    MOVEMENT_MODE === "cardinal" ? COMMANDS_CARDINAL : COMMANDS_RELATIVE;
+    MOVEMENT_MODE === "relative" ? COMMANDS_RELATIVE : COMMANDS_CARDINAL;
 
-/** Converte char interno (ex: "f") para palavra de animação (ex: "forward") */
+/** Converte char interno (ex: "e") para palavra de animação (ex: "turnLeft") */
 export const CHAR_TO_COMMAND: Record<string, string> = Object.fromEntries(
     GAME_COMMANDS.map((c) => [c.key, c.word]),
 );

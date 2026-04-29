@@ -492,7 +492,7 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                             <section className={styles.section}>
                                 <h4 className={styles.sectionTitle}>Restrições do autômato</h4>
                                 <p className={styles.hint}>
-                                    Defina o que o aluno pode ou não fazer ao construir o autômato
+                                    Defina o que o jogador pode ou não fazer ao construir o autômato
                                     para esta fase. Restrições não configuradas ficam liberadas.
                                 </p>
 
@@ -611,7 +611,7 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                         <div className={styles.scrollContent}>
                             <p className={styles.hint}>
                                 Defina estados e transições que já estarão no canvas ao entrar na
-                                fase. Deixe vazio para o aluno construir do zero.
+                                fase. Deixe vazio para o jogador construir do zero.
                             </p>
 
                             {/* Estados */}
@@ -821,14 +821,14 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                                         checked={useFixedTape}
                                         onChange={(e) => setUseFixedTape(e.target.checked)}
                                     />
-                                    Fixar a fita (aluno não pode editar)
+                                    Fixar a fita (jogador não pode editar)
                                 </label>
 
                                 <div className={styles.permField}>
                                     <label className={styles.fieldLabel}>
                                         {useFixedTape
                                             ? "Valor fixo da fita"
-                                            : "Sugestão inicial (aluno pode alterar)"}
+                                            : "Sugestão inicial (jogador pode alterar)"}
                                     </label>
                                     <input
                                         type="text"

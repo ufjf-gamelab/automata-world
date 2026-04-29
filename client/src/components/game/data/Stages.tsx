@@ -11,7 +11,7 @@ export const stagesList: Stage[] = [
 -616
 `,
         playerPosition: [3, 0],
-        initialRotation: 4, // começa olhando para Norte
+        initialRotation: 2, // Norte (índice válido: 0=Sul, 1=Leste, 2=Norte, 3=Oeste)
         initialGraph: {
             nodes: [
                 { id: "0", label: "0", isInitial: true },
@@ -96,8 +96,9 @@ export const stagesList: Stage[] = [
         floor: `111116
 `,
         playerPosition: [0, 0],
-        initialRotation: 1,
+        initialRotation: 1, // Leste
         permissions: {
+            // Apenas "frente" e "botão" permitidos (sem rotações)
             allowedCommands: ["f", "b"],
             allowedSymbols: ["f"],
             stateActionsAllowed: false,

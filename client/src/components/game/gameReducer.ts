@@ -26,6 +26,10 @@ export type GameAction =
 
 // --- Constantes de direção ---
 
+/**
+ * Mapeamento de índice de rotação para vetor (dx, dz).
+ * 0 = Sul, 1 = Leste, 2 = Norte, 3 = Oeste
+ */
 const DIRECTIONS: [number, number][] = [
     [0, 1], // 0 = Sul
     [1, 0], // 1 = Leste
@@ -33,6 +37,7 @@ const DIRECTIONS: [number, number][] = [
     [-1, 0], // 3 = Oeste
 ];
 
+/** Mapeamento de char cardinal para índice de rotação (usado apenas no modo cardinal) */
 const CARDINAL_MAP: Record<string, number> = { s: 0, l: 1, n: 2, o: 3 };
 
 // --- Funções auxiliares ---
@@ -80,16 +85,13 @@ const countTotalButtons = (gridString: string) => {
 };
 
 /**
- * Normaliza o payload de EXECUTE_ACTION para sempre ser um char de um caractere.
- * Aceita tanto chars ("f") quanto palavras ("forward") — converte palavras via COMMAND_TO_CHAR.
- * Retorna array de chars para processar em sequência.
+ * Normaliza o payload de EXECUTE_ACTION para array de chars internos.
+ * Aceita chars ("f", "e") ou palavras ("forward", "turnLeft").
  */
 const normalizePayloadToChars = (payload: string): string[] => {
     if (!payload) return [];
-    // Se é uma palavra conhecida, converte para char
     const asChar = COMMAND_TO_CHAR[payload.toLowerCase()];
     if (asChar) return [asChar];
-    // Caso contrário, trata como string de chars (ex: "fn")
     return payload.toLowerCase().split("");
 };
 
@@ -102,7 +104,6 @@ const applyCommand = (
     const currZ = state.playerGridPos[1];
     let currRot = state.playerRotation ?? 0;
     const currH = state.blockHeight ?? 0;
-    // Fix defensivo: garante que activeButtons seja sempre um array
     let currActiveButtons = [...(state.activeButtons ?? [])];
 
     const [dx, dz] = DIRECTIONS[currRot] ?? [0, 1];
@@ -135,8 +136,7 @@ const applyCommand = (
 
         case "b": {
             const rawCurr = getRawValue(currX, currZ, state.activeStage.floor);
-            const isCurrentButton = rawCurr > 5 || rawCurr === 0;
-            if (isCurrentButton) {
+            if (rawCurr > 5 || rawCurr === 0) {
                 const key = `${currX}-${currZ}`;
                 currActiveButtons = currActiveButtons.includes(key)
                     ? currActiveButtons.filter((k) => k !== key)
@@ -145,21 +145,26 @@ const applyCommand = (
             break;
         }
 
+        // ── Rotações relativas ─────────────────────────────────────────────
+        case "e":
+            // Gira 90° anti-horário (esquerda)
+            if (MOVEMENT_MODE === "relative") nextRot = (currRot + 3) % 4;
+            break;
+        case "d":
+            // Gira 90° horário (direita)
+            if (MOVEMENT_MODE === "relative") nextRot = (currRot + 1) % 4;
+            break;
+        case "t":
+            // Meia-volta (180°)
+            if (MOVEMENT_MODE === "relative") nextRot = (currRot + 2) % 4;
+            break;
+
+        // ── Rotações cardinais (modo cardinal) ────────────────────────────
         case "n":
         case "s":
         case "l":
         case "o":
             if (MOVEMENT_MODE === "cardinal") nextRot = CARDINAL_MAP[char];
-            break;
-
-        case "e":
-            if (MOVEMENT_MODE === "relative") nextRot = (currRot + 1) % 4;
-            break;
-        case "d":
-            if (MOVEMENT_MODE === "relative") nextRot = (currRot + 3) % 4;
-            break;
-        case "t":
-            if (MOVEMENT_MODE === "relative") nextRot = (currRot + 2) % 4;
             break;
     }
 
@@ -229,10 +234,6 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
         }
 
         case "EXECUTE_ACTION": {
-            /*
-             * Aceita tanto chars ("f") quanto palavras ("forward").
-             * normalizePayloadToChars converte para array de chars antes de processar.
-             */
             const chars = normalizePayloadToChars(action.payload);
             let current = state;
             for (const ch of chars) {
