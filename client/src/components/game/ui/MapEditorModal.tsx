@@ -1,5 +1,11 @@
 import { useState, useEffect } from "react";
-import type { Stage, StagePermissions, GraphNodeData, GraphEdgeData } from "../data/types";
+import type {
+    Stage,
+    StagePermissions,
+    GraphNodeData,
+    GraphEdgeData,
+    TutorialSlide,
+} from "../data/types";
 import { GAME_COMMANDS } from "../gameConfig";
 import styles from "./MapEditorModal.module.css";
 
@@ -10,7 +16,7 @@ interface Cell {
     type: CellType;
     height: number;
 }
-type Tab = "map" | "player" | "permissions" | "automaton" | "tape";
+type Tab = "map" | "player" | "permissions" | "automaton" | "tape" | "tutorial";
 
 // ── Helpers de mapa ───────────────────────────────────────────────────────────
 
@@ -62,9 +68,6 @@ const DIRECTIONS = [
     { index: 3, label: "Oeste", icon: "⬅" },
 ];
 
-const NONE_OPTION = "— nenhuma —";
-
-/** Dropdown de ação reutilizável */
 function ActionSelect({
     value,
     onChange,
@@ -77,14 +80,13 @@ function ActionSelect({
     const commands = allowedCommands
         ? GAME_COMMANDS.filter((c) => allowedCommands.includes(c.key))
         : GAME_COMMANDS;
-
     return (
         <select
             className={styles.fieldSelect}
             value={value ?? ""}
             onChange={(e) => onChange(e.target.value || undefined)}
         >
-            <option value="">{NONE_OPTION}</option>
+            <option value="">— nenhuma —</option>
             {commands.map((cmd) => (
                 <option key={cmd.key} value={cmd.key}>
                     {cmd.display} ({cmd.key})
@@ -110,10 +112,8 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
     const [activeTab, setActiveTab] = useState<Tab>("map");
     const [error, setError] = useState("");
 
-    // ── Nome ──
     const [name, setName] = useState(stage?.name ?? "Novo Mapa");
 
-    // ── Grid ──
     const [size, setSize] = useState(() => {
         if (!stage) return { cols: 5, rows: 5 };
         const lines = stage.floor.split("\n");
@@ -125,12 +125,9 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
     const [selectedHeight, setSelectedHeight] = useState(1);
     const [selectedType, setSelectedType] = useState<CellType>("tile");
     const [placingPlayer, setPlacingPlayer] = useState(false);
-
-    // ── Jogador ──
     const [playerPos, setPlayerPos] = useState<[number, number]>(stage?.playerPosition ?? [0, 0]);
     const [initialRotation, setInitialRotation] = useState(stage?.initialRotation ?? 0);
 
-    // ── Permissões ──
     const existingPerms = stage?.permissions;
     const [allowLoops, setAllowLoops] = useState(existingPerms?.allowLoops !== false);
     const [allowMultipleOutgoing, setAllowMultipleOutgoing] = useState(
@@ -146,34 +143,29 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
     const [allowedSymbolsInput, setAllowedSymbolsInput] = useState(
         existingPerms?.allowedSymbols?.join(", ") ?? "",
     );
-    // Comandos permitidos: undefined = todos; array = lista
     const [allowedCommands, setAllowedCommands] = useState<string[] | undefined>(
         existingPerms?.allowedCommands,
     );
 
-    // ── Fita ──
     const [useFixedTape, setUseFixedTape] = useState(existingPerms?.fixedTape !== undefined);
     const [tapeValue, setTapeValue] = useState(existingPerms?.fixedTape ?? "");
 
-    // ── Autômato ──
     const [autoNodes, setAutoNodes] = useState<GraphNodeData[]>(stage?.initialGraph?.nodes ?? []);
     const [autoEdges, setAutoEdges] = useState<GraphEdgeData[]>(stage?.initialGraph?.edges ?? []);
-
     const [newNode, setNewNode] = useState<GraphNodeData>({
         id: "",
         label: "",
         isInitial: false,
         isFinal: false,
-        action: undefined,
     });
-    const [newEdge, setNewEdge] = useState<GraphEdgeData>({
-        source: "",
-        target: "",
-        label: "",
-        action: undefined,
-    });
+    const [newEdge, setNewEdge] = useState<GraphEdgeData>({ source: "", target: "", label: "" });
 
-    // Redimensiona o grid quando o tamanho muda
+    // ── Tutorial ──
+    const [tutorialSlides, setTutorialSlides] = useState<TutorialSlide[]>(stage?.tutorial ?? []);
+    const [newSlideText, setNewSlideText] = useState("");
+    const [newSlideImage, setNewSlideImage] = useState("");
+    const [editingSlideIdx, setEditingSlideIdx] = useState<number | null>(null);
+
     useEffect(() => {
         setGrid((prev) =>
             Array.from({ length: size.rows }, (_, r) =>
@@ -185,8 +177,6 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
         );
         setPlayerPos(([px, pz]) => [Math.min(px, size.cols - 1), Math.min(pz, size.rows - 1)]);
     }, [size.cols, size.rows]);
-
-    // ── Handlers mapa ─────────────────────────────────────────────────────────
 
     const handleCellClick = (col: number, row: number) => {
         if (placingPlayer) {
@@ -211,19 +201,17 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
             [axis]: Math.max(MIN_SIZE, Math.min(MAX_SIZE, prev[axis] + delta)),
         }));
 
-    // ── Handlers autômato ─────────────────────────────────────────────────────
-
     const addNode = () => {
         if (!newNode.id.trim() || !newNode.label.trim()) {
             setError("ID e label são obrigatórios.");
             return;
         }
         if (autoNodes.find((n) => n.id === newNode.id)) {
-            setError("ID de estado já existe.");
+            setError("ID já existe.");
             return;
         }
         setAutoNodes((prev) => [...prev, { ...newNode }]);
-        setNewNode({ id: "", label: "", isInitial: false, isFinal: false, action: undefined });
+        setNewNode({ id: "", label: "", isInitial: false, isFinal: false });
         setError("");
     };
 
@@ -238,13 +226,61 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
             return;
         }
         setAutoEdges((prev) => [...prev, { ...newEdge }]);
-        setNewEdge({ source: "", target: "", label: "", action: undefined });
+        setNewEdge({ source: "", target: "", label: "" });
         setError("");
     };
 
     const removeEdge = (i: number) => setAutoEdges((prev) => prev.filter((_, idx) => idx !== i));
 
-    // ── Salvar ────────────────────────────────────────────────────────────────
+    // ── Tutorial handlers ──
+
+    const addSlide = () => {
+        if (!newSlideText.trim()) {
+            setError("O texto do slide é obrigatório.");
+            return;
+        }
+        const slide: TutorialSlide = {
+            text: newSlideText.trim(),
+            image: newSlideImage.trim() || undefined,
+        };
+        if (editingSlideIdx !== null) {
+            setTutorialSlides((prev) => prev.map((s, i) => (i === editingSlideIdx ? slide : s)));
+            setEditingSlideIdx(null);
+        } else {
+            setTutorialSlides((prev) => [...prev, slide]);
+        }
+        setNewSlideText("");
+        setNewSlideImage("");
+        setError("");
+    };
+
+    const editSlide = (i: number) => {
+        const s = tutorialSlides[i];
+        setNewSlideText(s.text);
+        setNewSlideImage(s.image ?? "");
+        setEditingSlideIdx(i);
+    };
+
+    const removeSlide = (i: number) => {
+        setTutorialSlides((prev) => prev.filter((_, idx) => idx !== i));
+        if (editingSlideIdx === i) {
+            setEditingSlideIdx(null);
+            setNewSlideText("");
+            setNewSlideImage("");
+        }
+    };
+
+    const moveSlide = (i: number, dir: -1 | 1) => {
+        setTutorialSlides((prev) => {
+            const next = [...prev];
+            const j = i + dir;
+            if (j < 0 || j >= next.length) return prev;
+            [next[i], next[j]] = [next[j], next[i]];
+            return next;
+        });
+    };
+
+    // ── Save ──
 
     const handleSave = () => {
         const trimmedName = name.trim();
@@ -252,14 +288,12 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
             setError("O mapa precisa de um nome.");
             return;
         }
-
         const startCell = grid[playerPos[1]]?.[playerPos[0]];
         if (!startCell || startCell.type === "empty") {
             setError("A posição inicial do jogador deve estar em um tile válido.");
             return;
         }
 
-        // Constrói as permissões a partir dos estados individuais
         const parsedMaxNodes = maxNodesInput ? parseInt(maxNodesInput) : undefined;
         const parsedSymbols = allowedSymbolsInput
             ? allowedSymbolsInput
@@ -268,7 +302,6 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                   .filter(Boolean)
             : undefined;
 
-        // Só inclui permissões no Stage se alguma restrição foi configurada
         const hasRestrictions =
             !allowLoops ||
             !allowMultipleOutgoing ||
@@ -300,10 +333,11 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
             initialRotation: initialRotation !== 0 ? initialRotation : undefined,
             permissions,
             initialGraph: autoNodes.length > 0 ? { nodes: autoNodes, edges: autoEdges } : undefined,
+            tutorial: tutorialSlides.length > 0 ? tutorialSlides : undefined,
         });
     };
 
-    // ── Abas ──────────────────────────────────────────────────────────────────
+    // ── Abas ──
 
     const tabs: { id: Tab; label: string }[] = [
         { id: "map", label: "🗺 Mapa" },
@@ -311,12 +345,12 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
         { id: "permissions", label: "🔒 Permissões" },
         { id: "automaton", label: "⚙ Autômato" },
         { id: "tape", label: "📼 Fita" },
+        { id: "tutorial", label: "📖 Tutorial" },
     ];
 
     return (
         <div className={styles.overlay} onClick={onClose}>
             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-                {/* Header */}
                 <div className={styles.header}>
                     <input
                         className={styles.nameInput}
@@ -330,7 +364,6 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                     </button>
                 </div>
 
-                {/* Abas */}
                 <div className={styles.tabs}>
                     {tabs.map((t) => (
                         <button
@@ -364,7 +397,6 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                                         </button>
                                     ))}
                                 </div>
-
                                 {selectedType !== "empty" && (
                                     <>
                                         <span className={styles.toolLabel}>
@@ -383,7 +415,6 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                                         </div>
                                     </>
                                 )}
-
                                 <span className={styles.toolLabel}>Tamanho</span>
                                 <div className={styles.sizeRow}>
                                     <span className={styles.sizeLabel}>Cols: {size.cols}</span>
@@ -413,21 +444,17 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                                         +
                                     </button>
                                 </div>
-
                                 <button
                                     className={`${styles.playerBtn} ${placingPlayer ? styles.playerBtnActive : ""}`}
                                     onClick={() => setPlacingPlayer((p) => !p)}
                                 >
                                     🧍 {placingPlayer ? "Clique em um tile…" : "Posição do jogador"}
                                 </button>
-
                                 <div className={styles.legend}>
                                     <span>🟨 posição inicial</span>
                                     <span>◉ botão</span>
-                                    <span>Claro = maior altura</span>
                                 </div>
                             </div>
-
                             <div className={styles.gridWrapper}>
                                 <div
                                     className={styles.grid}
@@ -491,11 +518,6 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                         <div className={styles.scrollContent}>
                             <section className={styles.section}>
                                 <h4 className={styles.sectionTitle}>Restrições do autômato</h4>
-                                <p className={styles.hint}>
-                                    Defina o que o jogador pode ou não fazer ao construir o autômato
-                                    para esta fase. Restrições não configuradas ficam liberadas.
-                                </p>
-
                                 <div className={styles.permGrid}>
                                     <label className={styles.permRow}>
                                         <input
@@ -503,7 +525,7 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                                             checked={allowLoops}
                                             onChange={(e) => setAllowLoops(e.target.checked)}
                                         />
-                                        Permitir self-loops (aresta de um estado para ele mesmo)
+                                        Permitir self-loops
                                     </label>
                                     <label className={styles.permRow}>
                                         <input
@@ -535,7 +557,6 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                                         />
                                         Permitir ações nas transições
                                     </label>
-
                                     <div className={styles.permField}>
                                         <label className={styles.fieldLabel}>
                                             Máximo de estados (vazio = sem limite)
@@ -549,11 +570,9 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                                             placeholder="ex: 3"
                                         />
                                     </div>
-
                                     <div className={styles.permField}>
                                         <label className={styles.fieldLabel}>
-                                            Símbolos permitidos nas transições (vazio = todos,
-                                            separe por vírgula)
+                                            Símbolos permitidos (vazio = todos, separe por vírgula)
                                         </label>
                                         <input
                                             type="text"
@@ -563,10 +582,9 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                                             placeholder="ex: f, n, b"
                                         />
                                     </div>
-
                                     <div className={styles.permField}>
                                         <label className={styles.fieldLabel}>
-                                            Comandos de jogo disponíveis nos modais
+                                            Comandos disponíveis nos modais
                                         </label>
                                         <div className={styles.commandCheckGrid}>
                                             {GAME_COMMANDS.map((cmd) => {
@@ -610,14 +628,11 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                     {activeTab === "automaton" && (
                         <div className={styles.scrollContent}>
                             <p className={styles.hint}>
-                                Defina estados e transições que já estarão no canvas ao entrar na
-                                fase. Deixe vazio para o jogador construir do zero.
+                                Estados e transições que já estarão no canvas ao entrar. Deixe vazio
+                                para o aluno construir do zero.
                             </p>
-
-                            {/* Estados */}
                             <section className={styles.section}>
                                 <h4 className={styles.sectionTitle}>Estados</h4>
-
                                 {autoNodes.length > 0 && (
                                     <div className={styles.itemList}>
                                         {autoNodes.map((n) => (
@@ -648,12 +663,11 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                                         ))}
                                     </div>
                                 )}
-
                                 <div className={styles.addForm}>
                                     <div className={styles.formRow}>
                                         <input
                                             className={styles.fieldInput}
-                                            placeholder="ID (ex: 0)"
+                                            placeholder="ID"
                                             value={newNode.id}
                                             onChange={(e) =>
                                                 setNewNode((p) => ({
@@ -664,16 +678,14 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                                         />
                                         <input
                                             className={styles.fieldInput}
-                                            placeholder="Label (ex: q0)"
+                                            placeholder="Label"
                                             value={newNode.label}
                                             onChange={(e) =>
                                                 setNewNode((p) => ({ ...p, label: e.target.value }))
                                             }
                                         />
                                         <div className={styles.fieldGroup}>
-                                            <label className={styles.fieldLabel}>
-                                                Ação ao entrar
-                                            </label>
+                                            <label className={styles.fieldLabel}>Ação</label>
                                             <ActionSelect
                                                 value={newNode.action}
                                                 onChange={(v) =>
@@ -716,11 +728,8 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                                     </div>
                                 </div>
                             </section>
-
-                            {/* Transições */}
                             <section className={styles.section}>
                                 <h4 className={styles.sectionTitle}>Transições</h4>
-
                                 {autoEdges.length > 0 && (
                                     <div className={styles.itemList}>
                                         {autoEdges.map((e, i) => (
@@ -749,7 +758,6 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                                         ))}
                                     </div>
                                 )}
-
                                 <div className={styles.addForm}>
                                     <div className={styles.formRow}>
                                         <input
@@ -810,25 +818,19 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                         <div className={styles.scrollContent}>
                             <section className={styles.section}>
                                 <h4 className={styles.sectionTitle}>Fita de entrada</h4>
-                                <p className={styles.hint}>
-                                    Configure se a fita vem pré-preenchida e travada, ou apenas como
-                                    sugestão editável.
-                                </p>
-
                                 <label className={styles.toggleLabel}>
                                     <input
                                         type="checkbox"
                                         checked={useFixedTape}
                                         onChange={(e) => setUseFixedTape(e.target.checked)}
                                     />
-                                    Fixar a fita (jogador não pode editar)
+                                    Fixar a fita (aluno não pode editar)
                                 </label>
-
                                 <div className={styles.permField}>
                                     <label className={styles.fieldLabel}>
                                         {useFixedTape
-                                            ? "Valor fixo da fita"
-                                            : "Sugestão inicial (jogador pode alterar)"}
+                                            ? "Valor fixo"
+                                            : "Sugestão inicial (aluno pode alterar)"}
                                     </label>
                                     <input
                                         type="text"
@@ -841,16 +843,146 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                                         }
                                         placeholder="ex: FNFB"
                                     />
-                                    <span className={styles.hint}>
-                                        Apenas letras A–Z (símbolos do alfabeto do autômato).
-                                    </span>
+                                </div>
+                            </section>
+                        </div>
+                    )}
+
+                    {/* ══ Tutorial ══ */}
+                    {activeTab === "tutorial" && (
+                        <div className={styles.scrollContent}>
+                            <section className={styles.section}>
+                                <h4 className={styles.sectionTitle}>Slides do tutorial</h4>
+                                <p className={styles.hint}>
+                                    Os slides serão exibidos em ordem ao jogador ao entrar na fase.
+                                    Cada slide tem um texto obrigatório e uma imagem opcional (URL).
+                                </p>
+
+                                {/* Lista de slides */}
+                                {tutorialSlides.length > 0 && (
+                                    <div className={styles.itemList}>
+                                        {tutorialSlides.map((s, i) => (
+                                            <div key={i} className={styles.tutorialSlideItem}>
+                                                <div className={styles.tutorialSlidePreview}>
+                                                    {s.image ? (
+                                                        <img
+                                                            src={s.image}
+                                                            alt=""
+                                                            className={styles.tutorialThumb}
+                                                        />
+                                                    ) : (
+                                                        <span className={styles.tutorialNoImg}>
+                                                            📄
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className={styles.tutorialSlideInfo}>
+                                                    <span className={styles.tutorialSlideNum}>
+                                                        Slide {i + 1}
+                                                    </span>
+                                                    <p className={styles.tutorialSlideText}>
+                                                        {s.text.slice(0, 80)}
+                                                        {s.text.length > 80 ? "…" : ""}
+                                                    </p>
+                                                </div>
+                                                <div className={styles.tutorialSlideBtns}>
+                                                    <button
+                                                        className={styles.slideOrderBtn}
+                                                        onClick={() => moveSlide(i, -1)}
+                                                        disabled={i === 0}
+                                                        title="Mover para cima"
+                                                    >
+                                                        ↑
+                                                    </button>
+                                                    <button
+                                                        className={styles.slideOrderBtn}
+                                                        onClick={() => moveSlide(i, 1)}
+                                                        disabled={i === tutorialSlides.length - 1}
+                                                        title="Mover para baixo"
+                                                    >
+                                                        ↓
+                                                    </button>
+                                                    <button
+                                                        className={styles.editSlideBtn}
+                                                        onClick={() => editSlide(i)}
+                                                        title="Editar"
+                                                    >
+                                                        ✏️
+                                                    </button>
+                                                    <button
+                                                        className={styles.removeBtn}
+                                                        onClick={() => removeSlide(i)}
+                                                        title="Remover"
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Formulário de novo/editar slide */}
+                                <div className={styles.addForm}>
+                                    <div className={styles.permField}>
+                                        <label className={styles.fieldLabel}>
+                                            URL da imagem (opcional)
+                                        </label>
+                                        <input
+                                            type="text"
+                                            className={styles.fieldInput}
+                                            value={newSlideImage}
+                                            onChange={(e) => setNewSlideImage(e.target.value)}
+                                            placeholder="https://… ou /images/tutorial1.png"
+                                        />
+                                        {newSlideImage && (
+                                            <img
+                                                src={newSlideImage}
+                                                alt="preview"
+                                                className={styles.tutorialImgPreview}
+                                                onError={(e) =>
+                                                    (e.currentTarget.style.display = "none")
+                                                }
+                                            />
+                                        )}
+                                    </div>
+                                    <div className={styles.permField}>
+                                        <label className={styles.fieldLabel}>
+                                            Texto do slide *
+                                        </label>
+                                        <textarea
+                                            className={styles.slideTextarea}
+                                            value={newSlideText}
+                                            onChange={(e) => setNewSlideText(e.target.value)}
+                                            placeholder="Explique o objetivo ou mecânica desta fase…"
+                                            rows={4}
+                                        />
+                                    </div>
+                                    <div className={styles.formRow}>
+                                        {editingSlideIdx !== null && (
+                                            <button
+                                                className={styles.cancelEditBtn}
+                                                onClick={() => {
+                                                    setEditingSlideIdx(null);
+                                                    setNewSlideText("");
+                                                    setNewSlideImage("");
+                                                }}
+                                            >
+                                                Cancelar edição
+                                            </button>
+                                        )}
+                                        <button className={styles.addBtn} onClick={addSlide}>
+                                            {editingSlideIdx !== null
+                                                ? "💾 Salvar slide"
+                                                : "＋ Adicionar slide"}
+                                        </button>
+                                    </div>
                                 </div>
                             </section>
                         </div>
                     )}
                 </div>
 
-                {/* Footer */}
                 {error && <p className={styles.error}>{error}</p>}
                 <div className={styles.footer}>
                     <button className={styles.cancelBtn} onClick={onClose}>

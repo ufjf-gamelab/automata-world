@@ -11,7 +11,22 @@ export const stagesList: Stage[] = [
 -616
 `,
         playerPosition: [3, 0],
-        initialRotation: 2, // Norte (índice válido: 0=Sul, 1=Leste, 2=Norte, 3=Oeste)
+        initialRotation: 2,
+        tutorial: [
+            {
+                // Substitua pela URL ou caminho real da imagem (ex: "/tutorial/automato.png")
+                image: undefined,
+                text: "Bem-vindo ao Automata World! 🤖\n\nAqui você controla um personagem usando um autômato finito. Cada símbolo da fita dispara uma transição que executa um comando no jogo.",
+            },
+            {
+                image: undefined,
+                text: "✏️ Como funciona\n\nNo editor à esquerda, construa um autômato. Cada estado pode ter uma ação (ex: Frente, Girar). A fita de entrada define a sequência de símbolos lida.",
+            },
+            {
+                image: undefined,
+                text: "🎯 Objetivo desta fase\n\nChegue ao botão azul e pressione-o. Use os comandos Forward (f) e Button (b) para montar seu autômato e completar o percurso!",
+            },
+        ],
         initialGraph: {
             nodes: [
                 { id: "0", label: "0", isInitial: true },
@@ -32,6 +47,12 @@ export const stagesList: Stage[] = [
 -6
 `,
         playerPosition: [1, 0],
+        tutorial: [
+            {
+                image: undefined,
+                text: "🔵 Fase simples!\n\nO botão está logo à frente. Construa um autômato com dois estados e uma transição 'f' para avançar e pressionar o botão.",
+            },
+        ],
         initialGraph: {
             nodes: [
                 { id: "0", label: "0", isInitial: true },
@@ -96,9 +117,14 @@ export const stagesList: Stage[] = [
         floor: `111116
 `,
         playerPosition: [0, 0],
-        initialRotation: 1, // Leste
+        initialRotation: 1,
+        tutorial: [
+            {
+                image: undefined,
+                text: "🔒 Fase com restrições!\n\nNesta fase você só pode usar o comando Forward (f). Gire a câmera e veja que o boneco já está apontado na direção certa. Monte um autômato que avance até o botão.",
+            },
+        ],
         permissions: {
-            // Apenas "frente" e "botão" permitidos (sem rotações)
             allowedCommands: ["f", "b"],
             allowedSymbols: ["f"],
             stateActionsAllowed: false,

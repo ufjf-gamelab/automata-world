@@ -3,12 +3,12 @@ import styles from "./SimulationPanel.module.css";
 import type { StagePermissions } from "../../game/data/types";
 
 export const SPEED_PRESETS = [
-    { label: "Lento",  value: 2000, icon: "🐢" },
+    { label: "Lento", value: 2000, icon: "🐢" },
     { label: "Normal", value: 1200, icon: "🚶" },
-    { label: "Rápido", value: 700,  icon: "🏃" },
+    { label: "Rápido", value: 700, icon: "🏃" },
 ] as const;
 
-export type SpeedPreset = typeof SPEED_PRESETS[number]["value"];
+export type SpeedPreset = (typeof SPEED_PRESETS)[number]["value"];
 
 interface SimulationPanelProps {
     isSimPanelOpen: boolean;
@@ -48,7 +48,7 @@ function TapeDisplay({
                 const isLetter = /[A-Za-z]/.test(ch);
                 const hue = isLetter ? letterHue(ch) : null;
 
-                const isRead    = isSimulating && i < activeCharIndex;
+                const isRead = isSimulating && i < activeCharIndex;
                 const isCurrent = isSimulating && i === activeCharIndex;
                 const isPending = isSimulating && i > activeCharIndex;
 
@@ -60,20 +60,31 @@ function TapeDisplay({
                 const pendFg = hue !== null ? `hsl(${hue}, 15%, 72%)` : "#ced4da";
 
                 let bg: string, fg: string;
-                if (isRead)         { bg = readBg; fg = readFg; }
-                else if (isCurrent) { bg = baseBg; fg = baseFg; }
-                else if (isPending) { bg = pendBg; fg = pendFg; }
-                else                { bg = baseBg; fg = baseFg; }
+                if (isRead) {
+                    bg = readBg;
+                    fg = readFg;
+                } else if (isCurrent) {
+                    bg = baseBg;
+                    fg = baseFg;
+                } else if (isPending) {
+                    bg = pendBg;
+                    fg = pendFg;
+                } else {
+                    bg = baseBg;
+                    fg = baseFg;
+                }
 
                 return (
                     <span
                         key={i}
                         className={[
                             styles.tapeCell,
-                            isRead    ? styles.tapeCellRead    : "",
+                            isRead ? styles.tapeCellRead : "",
                             isCurrent ? styles.tapeCellCurrent : "",
                             isPending ? styles.tapeCellPending : "",
-                        ].filter(Boolean).join(" ")}
+                        ]
+                            .filter(Boolean)
+                            .join(" ")}
                         style={{ backgroundColor: bg, color: fg }}
                     >
                         {isRead ? <span className={styles.checkMark}>✓</span> : ch.toUpperCase()}
@@ -85,12 +96,12 @@ function TapeDisplay({
     );
 }
 
-const STATUS_META: Record<string, { icon: string }> = {
-    idle:     { icon: "⏸"  },
-    running:  { icon: "⚙"  },
-    accepted: { icon: "✅" },
-    rejected: { icon: "❌" },
-};
+// const STATUS_META: Record<string, { icon: string }> = {
+//     idle:     { icon: "⏸"  },
+//     running:  { icon: "⚙"  },
+//     accepted: { icon: "✅" },
+//     rejected: { icon: "❌" },
+// };
 
 const SimulationPanel: React.FC<SimulationPanelProps> = ({
     isSimPanelOpen,
@@ -101,14 +112,14 @@ const SimulationPanel: React.FC<SimulationPanelProps> = ({
     activeCharIndex,
     handlePlayAnimation,
     handleStopAnimation,
-    getStatusMessage,
+    // getStatusMessage,
     permissions,
     simulationSpeed,
     onSpeedChange,
 }) => {
     const fixedTape = permissions?.fixedTape;
     const isRunning = animationStatus === "running";
-    const meta = STATUS_META[animationStatus] ?? STATUS_META.idle;
+    // const meta = STATUS_META[animationStatus] ?? STATUS_META.idle;
 
     useEffect(() => {
         if (fixedTape !== undefined) setInputWord(fixedTape.toUpperCase());
@@ -162,7 +173,11 @@ const SimulationPanel: React.FC<SimulationPanelProps> = ({
                 />
 
                 {inputWord && (
-                    <TapeDisplay word={inputWord} activeCharIndex={activeCharIndex} status={animationStatus} />
+                    <TapeDisplay
+                        word={inputWord}
+                        activeCharIndex={activeCharIndex}
+                        status={animationStatus}
+                    />
                 )}
 
                 {isRunning && inputWord && (
@@ -212,8 +227,6 @@ const SimulationPanel: React.FC<SimulationPanelProps> = ({
                     </button>
                 )}
             </section>
-
-
         </div>
     );
 };

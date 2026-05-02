@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 
@@ -6,6 +6,7 @@ import Floor from "./game/world/Floor";
 import Player from "./game/player/Player";
 import GameEnvironment from "./game/world/GameEnvironment";
 import VictoryModal from "./game/ui/VictoryModal";
+import TutorialModal from "./game/ui/TutorialModal";
 import CompassRose from "./CompassRose";
 import StageSelector from "./game/ui/StageSelector";
 import type { Stage } from "./game/data/types";
@@ -53,9 +54,25 @@ export default function GameView({
     const compassInnerRef = useRef<SVGGElement | null>(null);
     const [visualX, visualZ] = getVisualPosition(playerGridPos, activeStage.floor);
 
+    const [showTutorial, setShowTutorial] = useState(() =>
+        Boolean(activeStage.tutorial && activeStage.tutorial.length > 0),
+    );
+
+    useEffect(() => {
+        setShowTutorial(Boolean(activeStage.tutorial && activeStage.tutorial.length > 0));
+    }, [activeStage.id]);
+
     return (
         <div className={styles.gameView}>
             <VictoryModal isOpen={isVictory} onNextStage={onNextStage} />
+
+            {showTutorial && activeStage.tutorial && (
+                <TutorialModal
+                    steps={activeStage.tutorial}
+                    stageName={activeStage.name}
+                    onClose={() => setShowTutorial(false)}
+                />
+            )}
 
             <div className={styles.stageBar}>
                 <StageSelector
