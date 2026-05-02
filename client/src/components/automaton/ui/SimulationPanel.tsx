@@ -2,20 +2,13 @@ import React, { useEffect } from "react";
 import styles from "./SimulationPanel.module.css";
 import type { StagePermissions } from "../../game/data/types";
 
-/**
- * Presets de velocidade da simulação.
- * O valor é o `simulationSpeed` em ms passado ao useSimulation.
- * Lento  = 2000ms por fase → animações confortáveis de assistir
- * Normal = 1200ms por fase → padrão, walk (1000ms) termina com folga
- * Rápido =  700ms por fase → não dá tempo para walk terminar, mas é mais ágil
- */
 export const SPEED_PRESETS = [
-    { label: "Lento", value: 2000 },
-    { label: "Normal", value: 1200 },
-    { label: "Rápido", value: 700 },
+    { label: "Lento",  value: 2000, icon: "🐢" },
+    { label: "Normal", value: 1200, icon: "🚶" },
+    { label: "Rápido", value: 700,  icon: "🏃" },
 ] as const;
 
-export type SpeedPreset = (typeof SPEED_PRESETS)[number]["value"];
+export type SpeedPreset = typeof SPEED_PRESETS[number]["value"];
 
 interface SimulationPanelProps {
     isSimPanelOpen: boolean;
@@ -23,15 +16,81 @@ interface SimulationPanelProps {
     inputWord: string;
     setInputWord: (word: string) => void;
     animationStatus: "idle" | "running" | "accepted" | "rejected";
+    activeCharIndex: number;
     handlePlayAnimation: () => void;
     handleStopAnimation: () => void;
     getStatusMessage: () => string;
     permissions?: StagePermissions;
-    /** Velocidade atual da simulação em ms */
     simulationSpeed: number;
-    /** Callback para alterar a velocidade */
     onSpeedChange: (speed: number) => void;
 }
+
+function letterHue(ch: string): number {
+    const code = ch.toUpperCase().charCodeAt(0);
+    return ((code - 65) * (360 / 26)) % 360;
+}
+
+function TapeDisplay({
+    word,
+    activeCharIndex,
+    status,
+}: {
+    word: string;
+    activeCharIndex: number;
+    status: string;
+}) {
+    if (!word) return null;
+    const isSimulating = status === "running";
+
+    return (
+        <div className={styles.tapeDisplay}>
+            {word.split("").map((ch, i) => {
+                const isLetter = /[A-Za-z]/.test(ch);
+                const hue = isLetter ? letterHue(ch) : null;
+
+                const isRead    = isSimulating && i < activeCharIndex;
+                const isCurrent = isSimulating && i === activeCharIndex;
+                const isPending = isSimulating && i > activeCharIndex;
+
+                const baseBg = hue !== null ? `hsl(${hue}, 68%, 86%)` : "#e9ecef";
+                const baseFg = hue !== null ? `hsl(${hue}, 55%, 26%)` : "#495057";
+                const readBg = hue !== null ? `hsl(${hue}, 40%, 92%)` : "#f1f3f5";
+                const readFg = hue !== null ? `hsl(${hue}, 30%, 60%)` : "#adb5bd";
+                const pendBg = hue !== null ? `hsl(${hue}, 20%, 95%)` : "#f8f9fa";
+                const pendFg = hue !== null ? `hsl(${hue}, 15%, 72%)` : "#ced4da";
+
+                let bg: string, fg: string;
+                if (isRead)         { bg = readBg; fg = readFg; }
+                else if (isCurrent) { bg = baseBg; fg = baseFg; }
+                else if (isPending) { bg = pendBg; fg = pendFg; }
+                else                { bg = baseBg; fg = baseFg; }
+
+                return (
+                    <span
+                        key={i}
+                        className={[
+                            styles.tapeCell,
+                            isRead    ? styles.tapeCellRead    : "",
+                            isCurrent ? styles.tapeCellCurrent : "",
+                            isPending ? styles.tapeCellPending : "",
+                        ].filter(Boolean).join(" ")}
+                        style={{ backgroundColor: bg, color: fg }}
+                    >
+                        {isRead ? <span className={styles.checkMark}>✓</span> : ch.toUpperCase()}
+                        {isCurrent && <span className={styles.cursor} />}
+                    </span>
+                );
+            })}
+        </div>
+    );
+}
+
+const STATUS_META: Record<string, { icon: string }> = {
+    idle:     { icon: "⏸"  },
+    running:  { icon: "⚙"  },
+    accepted: { icon: "✅" },
+    rejected: { icon: "❌" },
+};
 
 const SimulationPanel: React.FC<SimulationPanelProps> = ({
     isSimPanelOpen,
@@ -39,6 +98,7 @@ const SimulationPanel: React.FC<SimulationPanelProps> = ({
     inputWord,
     setInputWord,
     animationStatus,
+    activeCharIndex,
     handlePlayAnimation,
     handleStopAnimation,
     getStatusMessage,
@@ -47,101 +107,113 @@ const SimulationPanel: React.FC<SimulationPanelProps> = ({
     onSpeedChange,
 }) => {
     const fixedTape = permissions?.fixedTape;
+    const isRunning = animationStatus === "running";
+    const meta = STATUS_META[animationStatus] ?? STATUS_META.idle;
 
     useEffect(() => {
         if (fixedTape !== undefined) setInputWord(fixedTape.toUpperCase());
     }, [fixedTape]);
 
-    const isRunning = animationStatus === "running";
+    if (!isSimPanelOpen) {
+        return (
+            <button
+                className={styles.collapsedPill}
+                onClick={() => setSimPanelOpen(true)}
+                title="Abrir painel de simulação"
+            >
+                🤖 Simulação
+            </button>
+        );
+    }
 
     return (
-        <div
-            className={`${styles.simulationPanel} ${isSimPanelOpen ? styles.open : styles.collapsed}`}
-        >
-            <div className={styles.panelHeader}>
-                {isSimPanelOpen && <h4>Simulação</h4>}
-
-                {isSimPanelOpen && (
-                    <button
-                        onClick={() => setSimPanelOpen(false)}
-                        className={styles.toggleButton}
-                        title="Recolher painel"
-                    >
-                        ‹
-                    </button>
-                )}
-
-                {!isSimPanelOpen && (
-                    <>
-                        <span className={styles.collapsedLabel}>Painel de simulação</span>
-                        <button
-                            onClick={() => setSimPanelOpen(true)}
-                            className={styles.expandButton}
-                            title="Expandir painel de simulação"
-                        >
-                            ▶
-                        </button>
-                    </>
-                )}
+        <div className={styles.panel} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.header}>
+                <div className={styles.headerLeft}>
+                    <span className={styles.headerIcon}>🤖</span>
+                    <span className={styles.headerTitle}>Simulação</span>
+                </div>
+                <button
+                    className={styles.collapseBtn}
+                    onClick={() => setSimPanelOpen(false)}
+                    title="Minimizar painel"
+                >
+                    ✕
+                </button>
             </div>
 
-            {isSimPanelOpen && (
-                <div className={styles.panelContent}>
+            {/* Fita */}
+            <section className={styles.section}>
+                <label className={styles.sectionLabel}>
+                    📼 Fita
                     {fixedTape !== undefined && (
-                        <p className={styles.fixedTapeLabel}>🔒 Fita fixada pela fase</p>
+                        <span className={styles.lockedBadge}>🔒 fixada</span>
                     )}
+                </label>
 
-                    <input
-                        type="text"
-                        value={inputWord}
-                        onChange={(e) => setInputWord(e.target.value.toUpperCase())}
-                        placeholder="Palavra de entrada"
-                        disabled={isRunning || fixedTape !== undefined}
-                    />
+                <input
+                    type="text"
+                    className={styles.tapeInput}
+                    value={inputWord}
+                    onChange={(e) => setInputWord(e.target.value.toUpperCase())}
+                    placeholder="Ex: FEDF…"
+                    disabled={isRunning || fixedTape !== undefined}
+                    spellCheck={false}
+                />
 
-                    {/* ── Controle de velocidade ────────────────────────────
-                        Para ajustar a velocidade das animações, basta clicar
-                        em Lento / Normal / Rápido aqui no painel.
-                        O valor numérico é o simulationSpeed em ms passado ao
-                        useSimulation — altere SPEED_PRESETS acima para
-                        calibrar conforme as animações do seu Player.
-                    ─────────────────────────────────────────────────────── */}
-                    <div className={styles.speedRow}>
-                        <span className={styles.speedLabel}>⏱ Velocidade</span>
-                        <div className={styles.speedBtns}>
-                            {SPEED_PRESETS.map((preset) => (
-                                <button
-                                    key={preset.value}
-                                    className={`${styles.speedBtn} ${
-                                        simulationSpeed === preset.value
-                                            ? styles.speedBtnActive
-                                            : ""
-                                    }`}
-                                    onClick={() => onSpeedChange(preset.value)}
-                                    disabled={isRunning}
-                                    title={`${preset.value}ms por fase`}
-                                >
-                                    {preset.label}
-                                </button>
-                            ))}
-                        </div>
+                {inputWord && (
+                    <TapeDisplay word={inputWord} activeCharIndex={activeCharIndex} status={animationStatus} />
+                )}
+
+                {isRunning && inputWord && (
+                    <div className={styles.tapeLegend}>
+                        <span className={styles.legendRead}>✓ lidas</span>
+                        <span className={styles.legendCurrent}>● lendo</span>
+                        <span className={styles.legendPending}>○ pendentes</span>
                     </div>
+                )}
+            </section>
 
-                    {!isRunning ? (
-                        <button onClick={handlePlayAnimation} className={styles.playButton}>
-                            ▶ Play
-                        </button>
-                    ) : (
-                        <button onClick={handleStopAnimation} className={styles.danger}>
-                            ■ Stop
-                        </button>
-                    )}
+            <div className={styles.divider} />
 
-                    <div className={`${styles.statusBar} ${styles[animationStatus]}`}>
-                        {getStatusMessage()}
-                    </div>
-                </div>
-            )}
+            {/* Velocidade — botão único que cicla entre os presets */}
+            <section className={styles.sectionRow}>
+                <span className={styles.sectionLabel}>⏱ Velocidade</span>
+                <button
+                    className={styles.speedCycleBtn}
+                    onClick={() => {
+                        const idx = SPEED_PRESETS.findIndex((p) => p.value === simulationSpeed);
+                        const next = SPEED_PRESETS[(idx + 1) % SPEED_PRESETS.length];
+                        onSpeedChange(next.value);
+                    }}
+                    disabled={isRunning}
+                    title="Clique para mudar a velocidade"
+                >
+                    {SPEED_PRESETS.find((p) => p.value === simulationSpeed)?.icon}{" "}
+                    {SPEED_PRESETS.find((p) => p.value === simulationSpeed)?.label}
+                </button>
+            </section>
+
+            <div className={styles.divider} />
+
+            {/* Play / Stop */}
+            <section className={styles.section}>
+                {!isRunning ? (
+                    <button
+                        className={styles.playBtn}
+                        onClick={handlePlayAnimation}
+                        disabled={!inputWord.trim()}
+                    >
+                        ▶ Executar
+                    </button>
+                ) : (
+                    <button className={styles.stopBtn} onClick={handleStopAnimation}>
+                        ■ Parar
+                    </button>
+                )}
+            </section>
+
+
         </div>
     );
 };

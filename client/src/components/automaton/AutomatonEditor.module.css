@@ -6,10 +6,12 @@
   min-width: 0;
   min-height: 0;
   overflow: hidden;
+  /* Contexto de posicionamento para o painel absoluto no desktop */
+  position: relative;
 }
 
 .canvasWrapper {
-  flex-grow: 1;
+  flex: 1;
   height: 100%;
   background-color: #fdfdfd;
   overflow: hidden;
@@ -20,10 +22,6 @@
 
 @media (max-width: 768px) {
   .automatonSection {
-    /*
-         * SimulationPanel é o 1º no DOM → fica embaixo visualmente (após o canvas)
-         * canvasWrapper é o 2º no DOM → fica no topo visualmente
-         */
     flex-direction: column-reverse;
     height: 100%;
   }

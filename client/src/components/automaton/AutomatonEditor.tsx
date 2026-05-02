@@ -73,11 +73,6 @@ function AutomatonEditor({
     const nodeLimitReached =
         permissions?.maxNodes !== undefined && nodes.length >= permissions.maxNodes;
 
-    const toggleSimPanel = (isOpen: boolean) => {
-        setSimPanelOpen(isOpen);
-        setTimeout(() => setRecenterTrigger((c) => c + 1), 320);
-    };
-
     const handleRelayout = () => {
         dispatch({ type: "RELAYOUT" });
         setRecenterTrigger((c) => c + 1);
@@ -151,14 +146,22 @@ function AutomatonEditor({
 
     const closeModal = () => setModalData({ isOpen: false, action: null, title: "" });
 
+    const activeCharIndex = simulation.step?.characterIndex ?? -1;
+
     return (
         <div className={styles.automatonSection}>
+            {/*
+             * SimulationPanel é irmão do canvasWrapper — fica fora do overflow:hidden.
+             * No desktop: position:absolute sobre o canvas via CSS.
+             * No mobile:  aparece no fluxo normal (column-reverse coloca embaixo do canvas).
+             */}
             <SimulationPanel
                 isSimPanelOpen={isSimPanelOpen}
-                setSimPanelOpen={toggleSimPanel}
+                setSimPanelOpen={setSimPanelOpen}
                 inputWord={simulation.inputWord}
                 setInputWord={simulation.setInputWord}
                 animationStatus={simulation.status}
+                activeCharIndex={activeCharIndex}
                 handlePlayAnimation={simulation.play}
                 handleStopAnimation={simulation.stop}
                 getStatusMessage={simulation.getStatusMessage}
@@ -168,21 +171,6 @@ function AutomatonEditor({
             />
 
             <div className={styles.canvasWrapper} onClick={graphActions.handleSvgClick}>
-                <ControlPanel
-                    onRelayout={handleRelayout}
-                    onCenter={handleCenter}
-                    onImportClick={graphActions.handleImportClick}
-                    onExport={graphActions.handleExport}
-                />
-
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={graphActions.handleFileChange}
-                    accept=".json"
-                    style={{ display: "none" }}
-                />
-
                 <GraphCanvas
                     nodes={nodes}
                     edges={edges}
@@ -202,7 +190,21 @@ function AutomatonEditor({
                     activeStepIndex={simulation.step?.characterIndex ?? 0}
                 />
 
-                {/* Botão "i" com restrições da fase — aparece apenas quando há permissões */}
+                <ControlPanel
+                    onRelayout={handleRelayout}
+                    onCenter={handleCenter}
+                    onImportClick={graphActions.handleImportClick}
+                    onExport={graphActions.handleExport}
+                />
+
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={graphActions.handleFileChange}
+                    accept=".json"
+                    style={{ display: "none" }}
+                />
+
                 {permissions && Object.keys(permissions).length > 0 && (
                     <StageRestrictionsInfo permissions={permissions} stageName={activeStage.name} />
                 )}
