@@ -56,11 +56,6 @@ export default function TutorialModal({ steps, stageName, onClose }: TutorialMod
                             <span className={styles.placeholderLabel}>{stageName}</span>
                         </div>
                     )}
-
-                    {/* Badge de progresso sobre a imagem */}
-                    <div className={styles.progressBadge}>
-                        {currentStep + 1} / {steps.length}
-                    </div>
                 </div>
 
                 {/* ── Balão de fala (parte inferior) ── */}

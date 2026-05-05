@@ -148,11 +148,11 @@ const applyCommand = (
         // ── Rotações relativas ─────────────────────────────────────────────
         case "e":
             // Gira 90° anti-horário (esquerda)
-            if (MOVEMENT_MODE === "relative") nextRot = (currRot + 3) % 4;
+            if (MOVEMENT_MODE === "relative") nextRot = (currRot + 1) % 4;
             break;
         case "d":
             // Gira 90° horário (direita)
-            if (MOVEMENT_MODE === "relative") nextRot = (currRot + 1) % 4;
+            if (MOVEMENT_MODE === "relative") nextRot = (currRot + 3) % 4;
             break;
         case "t":
             // Meia-volta (180°)
