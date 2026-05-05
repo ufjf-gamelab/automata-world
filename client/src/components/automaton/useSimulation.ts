@@ -90,7 +90,7 @@ export function useSimulation({
     onStateEnter,
     onStateExit,
 }: UseSimulationParams) {
-    const [inputWord, setInputWord] = useState("FFFFF");
+    const [inputWord, setInputWord] = useState("");
     const [status, setStatus] = useState<AnimationStatus>("idle");
     const [step, setStep] = useState<AnimationStep | null>(null);
 

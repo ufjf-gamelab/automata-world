@@ -66,8 +66,12 @@ export interface AutomatonEditorProps {
 
 /**
  * Constrói o GraphState inicial a partir da fase recebida.
- * Usado como inicializador do useReducer no AutomatonEditor.
- * Se a fase não definir initialGraph, retorna um grafo vazio.
+ *
+ * CORREÇÃO DE BUG:
+ * nodeCounter era definido como `nodes.length`. Se os IDs dos nós não forem
+ * sequenciais a partir de 0 (ex: usuário criou nós com id "1", "2", "3"),
+ * o próximo gerado seria "1", causando colisão de ID → nó some e aresta
+ * vira self-loop. A correção calcula max(id numérico) + 1.
  */
 export const createInitialGraphFromStage = (stage: Stage): GraphState => {
     if (!stage.initialGraph) {
@@ -87,9 +91,15 @@ export const createInitialGraphFromStage = (stage: Stage): GraphState => {
         id: crypto.randomUUID(),
     }));
 
+    // Garante que o próximo ID gerado nunca colide com um existente
+    const maxNumericId = nodes.reduce((max, n) => {
+        const numeric = parseInt(n.id, 10);
+        return isNaN(numeric) ? max : Math.max(max, numeric);
+    }, -1);
+
     return {
         nodes: getLayout(nodes, edges),
         edges,
-        nodeCounter: nodes.length,
+        nodeCounter: maxNumericId + 1,
     };
 };
