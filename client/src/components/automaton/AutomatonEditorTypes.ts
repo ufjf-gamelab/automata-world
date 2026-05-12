@@ -10,7 +10,15 @@ export interface AnimationStep {
     activeEdgeId: string | null;
     characterIndex: number;
     failed: boolean;
-    type: "transition" | "state";
+    /**
+     * waiting     — 2s de espera após reset antes de iniciar
+     * state       — autômato entrou num estado; executa ação do nó
+     * transition  — lê símbolo da fita; encontra aresta; destaca aresta
+     * edge_action — aresta já destacada; executa ação e avança para próximo estado
+     */
+    type: "waiting" | "state" | "transition" | "edge_action";
+    /** Preenchido apenas na fase edge_action */
+    pendingEdge?: { id: string; target: string; action?: string };
 }
 
 export interface ContextMenuData {
@@ -46,32 +54,31 @@ export interface ModalData {
 export interface AutomatonEditorProps {
     gameDispatch: Dispatch<GameAction>;
     setCurrentCommand: (cmd: string) => void;
-    /** Fase ativa — define o grafo inicial e as restrições de usabilidade */
     activeStage: Stage;
-    onStartTransition?: (
-        edgeId: string,
-        fromNodeId: string,
-        toNodeId: string,
-        symbol: string,
-    ) => void;
-    onEndTransition?: (
-        edgeId: string,
-        fromNodeId: string,
-        toNodeId: string,
-        symbol: string,
-    ) => void;
+    /** Botões ativos no momento — usado para checar vitória no fim da fita */
+    activeButtons: string[];
+    onStartTransition?: (edgeId: string, from: string, to: string, symbol: string) => void;
+    onEndTransition?: (edgeId: string, from: string, to: string, symbol: string) => void;
     onStateEnter?: (nodeId: string) => void;
     onStateExit?: (nodeId: string) => void;
 }
 
+const initialNodesData: Node[] = [
+    { id: "0", label: "0", x: 0, y: 0, isInitial: true },
+    { id: "1", label: "1", x: 0, y: 0, isFinal: true },
+];
+
+const initialEdgesData: Edge[] = [];
+
+export const initialGraphState: GraphState = {
+    nodes: getLayout(initialNodesData, initialEdgesData),
+    edges: initialEdgesData,
+    nodeCounter: initialNodesData.length,
+};
+
 /**
- * Constrói o GraphState inicial a partir da fase recebida.
- *
- * CORREÇÃO DE BUG:
- * nodeCounter era definido como `nodes.length`. Se os IDs dos nós não forem
- * sequenciais a partir de 0 (ex: usuário criou nós com id "1", "2", "3"),
- * o próximo gerado seria "1", causando colisão de ID → nó some e aresta
- * vira self-loop. A correção calcula max(id numérico) + 1.
+ * Constrói GraphState a partir da fase.
+ * nodeCounter é baseado no maior id numérico existente para evitar colisão.
  */
 export const createInitialGraphFromStage = (stage: Stage): GraphState => {
     if (!stage.initialGraph) {
@@ -80,18 +87,9 @@ export const createInitialGraphFromStage = (stage: Stage): GraphState => {
 
     const { nodes: nodesData, edges: edgesData } = stage.initialGraph;
 
-    const nodes: Node[] = nodesData.map((n) => ({
-        ...n,
-        x: 0,
-        y: 0,
-    }));
+    const nodes: Node[] = nodesData.map((n) => ({ ...n, x: 0, y: 0 }));
+    const edges: Edge[] = edgesData.map((e) => ({ ...e, id: crypto.randomUUID() }));
 
-    const edges: Edge[] = edgesData.map((e) => ({
-        ...e,
-        id: crypto.randomUUID(),
-    }));
-
-    // Garante que o próximo ID gerado nunca colide com um existente
     const maxNumericId = nodes.reduce((max, n) => {
         const numeric = parseInt(n.id, 10);
         return isNaN(numeric) ? max : Math.max(max, numeric);

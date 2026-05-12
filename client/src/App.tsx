@@ -36,6 +36,7 @@ export default function App() {
                         gameDispatch={gameDispatch}
                         setCurrentCommand={setCurrentCommand}
                         activeStage={gameState.activeStage}
+                        activeButtons={gameState.activeButtons}
                     />
                 </div>
 

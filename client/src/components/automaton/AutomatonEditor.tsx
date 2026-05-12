@@ -34,6 +34,7 @@ function AutomatonEditor({
     gameDispatch,
     setCurrentCommand,
     activeStage,
+    activeButtons,
     onStartTransition,
     onEndTransition,
     onStateEnter,
@@ -86,6 +87,8 @@ function AutomatonEditor({
         gameDispatch,
         setCurrentCommand,
         simulationSpeed,
+        activeButtons,
+        activeStageFloor: activeStage.floor,
         onStartTransition,
         onEndTransition,
         onStateEnter,
@@ -146,15 +149,15 @@ function AutomatonEditor({
 
     const closeModal = () => setModalData({ isOpen: false, action: null, title: "" });
 
-    const activeCharIndex = simulation.step?.characterIndex ?? -1;
+    const activeCharIndex =
+        simulation.step?.type === "edge_action"
+            ? simulation.step.characterIndex
+            : simulation.step?.type === "state"
+              ? simulation.step.characterIndex - 1
+              : -1;
 
     return (
         <div className={styles.automatonSection}>
-            {/*
-             * SimulationPanel é irmão do canvasWrapper — fica fora do overflow:hidden.
-             * No desktop: position:absolute sobre o canvas via CSS.
-             * No mobile:  aparece no fluxo normal (column-reverse coloca embaixo do canvas).
-             */}
             <SimulationPanel
                 isSimPanelOpen={isSimPanelOpen}
                 setSimPanelOpen={setSimPanelOpen}

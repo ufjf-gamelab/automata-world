@@ -22,14 +22,12 @@ export type GameAction =
     | { type: "START_EXECUTION" }
     | { type: "STOP_EXECUTION" }
     | { type: "NEXT_STEP" }
-    | { type: "EXECUTE_ACTION"; payload: string };
+    | { type: "EXECUTE_ACTION"; payload: string }
+    /** Disparado pela simulação quando determina que a condição de vitória foi atingida */
+    | { type: "SET_VICTORY" };
 
 // --- Constantes de direção ---
 
-/**
- * Mapeamento de índice de rotação para vetor (dx, dz).
- * 0 = Sul, 1 = Leste, 2 = Norte, 3 = Oeste
- */
 const DIRECTIONS: [number, number][] = [
     [0, 1], // 0 = Sul
     [1, 0], // 1 = Leste
@@ -37,7 +35,6 @@ const DIRECTIONS: [number, number][] = [
     [-1, 0], // 3 = Oeste
 ];
 
-/** Mapeamento de char cardinal para índice de rotação (usado apenas no modo cardinal) */
 const CARDINAL_MAP: Record<string, number> = { s: 0, l: 1, n: 2, o: 3 };
 
 // --- Funções auxiliares ---
@@ -69,7 +66,7 @@ const getRawValue = (x: number, z: number, gridString: string) => {
     return parseInt(char);
 };
 
-const countTotalButtons = (gridString: string) => {
+export const countTotalButtons = (gridString: string) => {
     let count = 0;
     gridString
         .trim()
@@ -84,10 +81,6 @@ const countTotalButtons = (gridString: string) => {
     return count;
 };
 
-/**
- * Normaliza o payload de EXECUTE_ACTION para array de chars internos.
- * Aceita chars ("f", "e") ou palavras ("forward", "turnLeft").
- */
 const normalizePayloadToChars = (payload: string): string[] => {
     if (!payload) return [];
     const asChar = COMMAND_TO_CHAR[payload.toLowerCase()];
@@ -125,7 +118,6 @@ const applyCommand = (
                 nextH = targetH;
             }
             break;
-
         case "p":
             if (isTargetValid && targetH === currH + 1) {
                 nextX = targetX;
@@ -133,7 +125,6 @@ const applyCommand = (
                 nextH = targetH;
             }
             break;
-
         case "b": {
             const rawCurr = getRawValue(currX, currZ, state.activeStage.floor);
             if (rawCurr > 5 || rawCurr === 0) {
@@ -144,22 +135,15 @@ const applyCommand = (
             }
             break;
         }
-
-        // ── Rotações relativas ─────────────────────────────────────────────
         case "e":
-            // Gira 90° anti-horário (esquerda)
-            if (MOVEMENT_MODE === "relative") nextRot = (currRot + 1) % 4;
-            break;
-        case "d":
-            // Gira 90° horário (direita)
             if (MOVEMENT_MODE === "relative") nextRot = (currRot + 3) % 4;
             break;
+        case "d":
+            if (MOVEMENT_MODE === "relative") nextRot = (currRot + 1) % 4;
+            break;
         case "t":
-            // Meia-volta (180°)
             if (MOVEMENT_MODE === "relative") nextRot = (currRot + 2) % 4;
             break;
-
-        // ── Rotações cardinais (modo cardinal) ────────────────────────────
         case "n":
         case "s":
         case "l":
@@ -234,16 +218,24 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
         }
 
         case "EXECUTE_ACTION": {
+            /*
+             * Executa comandos do jogo durante a simulação do autômato.
+             * NÃO verifica vitória aqui — a vitória é verificada e disparada
+             * exclusivamente pelo useSimulation via SET_VICTORY, garantindo
+             * que todos os critérios (fita lida, estado final, botões) sejam
+             * avaliados juntos no momento correto.
+             */
             const chars = normalizePayloadToChars(action.payload);
             let current = state;
             for (const ch of chars) {
                 const applied = applyCommand(ch, current);
                 current = { ...current, ...applied };
             }
-            const totalButtons = countTotalButtons(state.activeStage.floor);
-            const isVictory = totalButtons > 0 && current.activeButtons.length === totalButtons;
-            return { ...state, ...current, stepCounter: state.stepCounter + 1, isVictory };
+            return { ...state, ...current, stepCounter: state.stepCounter + 1 };
         }
+
+        case "SET_VICTORY":
+            return { ...state, isVictory: true };
 
         default:
             return state;
