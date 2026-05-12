@@ -31,29 +31,21 @@ export const stagesList: Stage[] = [
         },
         tutorial: [
             {
-                // Imagem: tela do jogo mostrando os 3 blocos em linha,
-                // personagem no bloco esquerdo, botão brilhante no bloco direito.
-                // Seta apontando para o botão.
-                image: "reta/Gemini_Generated_Image_hpv6dvhpv6dvhpv7.png",
+                image: "tutorial/reta/passo1.png",
                 text: "Bem-vindo ao **Automa World**! Seu objetivo é levar o personagem até o **botão azul** no final do caminho.",
             },
             {
-                // Imagem: painel do autômato com os 4 estados já conectados (1→2→3→4),
-                // arestas rotuladas "A" com ação "Forward" e a última com ação "Button".
-                // Círculo duplo no estado 4 indicando estado final.
                 image: "tutorial/reta/passo2.png",
-                text: "O **autômato** já está pronto! Cada transição com **A** avança o personagem, e a última aciona o botão. Leia a fita **AAA** e clique em Executar.",
+                text: "O **autômato** já está pronto! Cada transição com **A** avança o personagem, e a última aciona o botão.",
             },
             {
-                // Imagem: diagrama explicativo: Estado Inicial ▶, Estado Final ◎,
-                // Transição com rótulo e ação. Legenda clara em fundo escuro.
                 image: "tutorial/reta/passo3.png",
-                text: "Nas próximas fases **você mesmo** vai construir o autômato. Clique com o botão direito em um estado para adicionar novos estados e transições!",
+                text: "Escreva a fita **AAA** para executar.",
             },
         ],
     },
     {
-        id: 3,
+        id: 2,
         name: "Virando à direita",
         floor: `111
 --1
@@ -74,23 +66,21 @@ export const stagesList: Stage[] = [
             nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
             edges: [],
         },
-        // tutorial: [
-        //     {
-        //         // Imagem: mapa em L invertido com seta mostrando: andar 2 para o leste,
-        //         // virar à direita, andar 2 para o sul, apertar botão.
-        //         image: "tutorial/virada_direita/passo1.png",
-        //         text: "Agora você aprende a **virar à direita** (↻). O caminho vai para o lado e depois para baixo — você precisa girar no momento certo!",
-        //     },
-        //     {
-        //         // Imagem: ícone D com seta curva para a direita, mostrando que D
-        //         // rotaciona o personagem 90° no sentido horário.
-        //         image: "tutorial/virada_direita/passo2.png",
-        //         text: "O símbolo **D** gira o personagem 90° no sentido horário ↻. Leia a fita **FFDFFB**: avança, avança, vira, avança, avança, botão!",
-        //     },
-        // ],
+        tutorial: [
+            {
+                image: "tutorial/virada_direita/passo1.png",
+                text: "Agora você aprende a **virar à direita** (↻). O caminho vai para o lado e depois para baixo — você precisa girar no momento certo!",
+            },
+            {
+                // Imagem: ícone D com seta curva para a direita, mostrando que D
+                // rotaciona o personagem 90° no sentido horário.
+                image: "tutorial/virada_direita/passo2.png",
+                text: "O símbolo **D** gira o personagem 90° no sentido horário ↻. Leia a fita **FFDFFB**: avança, avança, vira, avança, avança, botão!",
+            },
+        ],
     },
     {
-        id: 2,
+        id: 3,
         name: "Meia volta",
         floor: `1-6
 1-1
@@ -116,26 +106,26 @@ export const stagesList: Stage[] = [
             ],
             edges: [{ source: "1", target: "2", label: "f", action: "f" }],
         },
-        // tutorial: [
-        //     {
-        //         // Imagem: vista aérea do mapa em L com linha pontilhada
-        //         // traçando o caminho do jogador até o botão no canto superior direito.
-        //         image: "tutorial/meia_volta/passo1.png",
-        //         text: "O caminho agora tem **curvas**! Você precisa virar o personagem na hora certa para chegar ao botão.",
-        //     },
-        //     {
-        //         // Imagem: ícones dos 3 comandos: F (seta verde), E (curva azul), B (botão amarelo).
-        //         // Cards coloridos com legenda de cada símbolo.
-        //         image: "tutorial/meia_volta/passo2.png",
-        //         text: "Você tem 3 símbolos: **F** (frente), **E** (girar à esquerda ↺) e **B** (botão). A fita **FFEFFEFFB** já diz o caminho exato!",
-        //     },
-        //     {
-        //         // Imagem: fita "FFEFFEFFB" exibida como células coloridas
-        //         // (F=verde, E=azul, B=amarelo), igual ao tape display do jogo.
-        //         image: "tutorial/meia_volta/passo3.png",
-        //         text: "Complete o autômato: você precisará de **9 estados** — um para cada símbolo da fita. O último deve ser o **estado final**.",
-        //     },
-        // ],
+        tutorial: [
+            {
+                // Imagem: vista aérea do mapa em L com linha pontilhada
+                // traçando o caminho do jogador até o botão no canto superior direito.
+                image: "tutorial/meia_volta/passo1.png",
+                text: "O caminho agora tem **curvas**! Você precisa virar o personagem na hora certa para chegar ao botão.",
+            },
+            {
+                // Imagem: ícones dos 3 comandos: F (seta verde), E (curva azul), B (botão amarelo).
+                // Cards coloridos com legenda de cada símbolo.
+                image: "tutorial/meia_volta/passo2.png",
+                text: "Você tem 3 símbolos: **F** (frente), **E** (girar à esquerda ↺) e **B** (botão). A fita **FFEFFEFFB** já diz o caminho exato!",
+            },
+            {
+                // Imagem: fita "FFEFFEFFB" exibida como células coloridas
+                // (F=verde, E=azul, B=amarelo), igual ao tape display do jogo.
+                image: "tutorial/meia_volta/passo3.png",
+                text: "Complete o autômato: você precisará de **9 estados** — um para cada símbolo da fita. O último deve ser o **estado final**.",
+            },
+        ],
     },
     {
         id: 4,
@@ -162,12 +152,8 @@ export const stagesList: Stage[] = [
         },
         tutorial: [
             {
-                // Imagem: mapa em Z visto de cima com setas numeradas mostrando
-                // as 3 fases do percurso: (1) vai para o leste 3 blocos,
-                // (2) vira com E e desce 3 blocos, (3) vira com D e vai 2 para o leste.
-                // Destaque nas duas viradas em cores diferentes.
                 image: "tutorial/ziguezague/passo1.png",
-                text: "O percurso forma um **Z**! Você vai para a direita, desce e vai para a direita novamente. São **duas viradas** — uma com E e outra com D.",
+                text: "O percurso forma um **Z**! Você vai para a direita, desce e vai para a esquerda. São **duas viradas** — uma com **D** e outra com **E**.",
             },
             {
                 // Imagem: comparação visual E vs D:

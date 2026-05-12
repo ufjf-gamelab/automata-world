@@ -1,4 +1,5 @@
 import { useState, useReducer, useRef } from "react";
+import { createPortal } from "react-dom";
 import type { Dispatch } from "react";
 import GraphCanvas from "./canvas/GraphCanvas";
 import SimulationPanel, { SPEED_PRESETS } from "./ui/SimulationPanel";
@@ -129,22 +130,12 @@ function AutomatonEditor({
             ? [{ icon: "⚡", label: "Set State Action", onClick: graphActions.handleSetNodeAction }]
             : []),
         { isSeparator: true },
-        {
-            icon: "🗑️",
-            label: "Delete State",
-            onClick: graphActions.handleDeleteNode,
-            className: "text-red-600",
-        },
+        { icon: "🗑️", label: "Delete State", onClick: graphActions.handleDeleteNode },
     ];
 
     const edgeMenuItems: MenuItem[] = [
         { icon: "✏️", label: "Edit Transition", onClick: graphActions.handleOpenEditEdgeModal },
-        {
-            icon: "🗑️",
-            label: "Delete Transition",
-            onClick: graphActions.handleDeleteEdge,
-            className: "text-red-600",
-        },
+        { icon: "🗑️", label: "Delete Transition", onClick: graphActions.handleDeleteEdge },
     ];
 
     const closeModal = () => setModalData({ isOpen: false, action: null, title: "" });
@@ -158,6 +149,7 @@ function AutomatonEditor({
 
     return (
         <div className={styles.automatonSection}>
+            {/* SimulationPanel — irmão do canvas para mobile funcionar */}
             <SimulationPanel
                 isSimPanelOpen={isSimPanelOpen}
                 setSimPanelOpen={setSimPanelOpen}
@@ -211,43 +203,56 @@ function AutomatonEditor({
                 {permissions && Object.keys(permissions).length > 0 && (
                     <StageRestrictionsInfo permissions={permissions} stageName={activeStage.name} />
                 )}
-
-                <TransitionModal
-                    isOpen={modalData.isOpen && modalData.action !== "nodeAction"}
-                    onClose={closeModal}
-                    onSubmit={graphActions.handleModalSubmit}
-                    initialLabel={modalData.action === "edit" ? modalData.edgeToEdit?.label : ""}
-                    initialAction={modalData.action === "edit" ? modalData.edgeToEdit?.action : ""}
-                    title={modalData.title}
-                    allowedSymbols={permissions?.allowedSymbols}
-                    allowedCommands={permissions?.allowedCommands}
-                    edgeActionsAllowed={permissions?.edgeActionsAllowed}
-                />
-
-                <NodeActionModal
-                    isOpen={modalData.isOpen && modalData.action === "nodeAction"}
-                    onClose={closeModal}
-                    onSubmit={graphActions.handleNodeActionSubmit}
-                    initialAction={modalData.nodeForAction?.action}
-                    title={modalData.title}
-                    allowedCommands={permissions?.allowedCommands}
-                />
-
-                <ContextMenu
-                    isVisible={contextMenu.visible}
-                    x={contextMenu.x}
-                    y={contextMenu.y}
-                    items={nodeMenuItems}
-                    menuRef={menuRef}
-                />
-                <ContextMenu
-                    isVisible={edgeMenu.visible}
-                    x={edgeMenu.x}
-                    y={edgeMenu.y}
-                    items={edgeMenuItems}
-                    menuRef={menuRef}
-                />
             </div>
+
+            {/*
+             * Modais e menus via portal — renderizados diretamente no document.body
+             * para escapar do overflow:hidden do canvasWrapper que cortava os modais.
+             */}
+            {createPortal(
+                <>
+                    <TransitionModal
+                        isOpen={modalData.isOpen && modalData.action !== "nodeAction"}
+                        onClose={closeModal}
+                        onSubmit={graphActions.handleModalSubmit}
+                        initialLabel={
+                            modalData.action === "edit" ? modalData.edgeToEdit?.label : ""
+                        }
+                        initialAction={
+                            modalData.action === "edit" ? modalData.edgeToEdit?.action : ""
+                        }
+                        title={modalData.title}
+                        allowedSymbols={permissions?.allowedSymbols}
+                        allowedCommands={permissions?.allowedCommands}
+                        edgeActionsAllowed={permissions?.edgeActionsAllowed}
+                    />
+
+                    <NodeActionModal
+                        isOpen={modalData.isOpen && modalData.action === "nodeAction"}
+                        onClose={closeModal}
+                        onSubmit={graphActions.handleNodeActionSubmit}
+                        initialAction={modalData.nodeForAction?.action}
+                        title={modalData.title}
+                        allowedCommands={permissions?.allowedCommands}
+                    />
+
+                    <ContextMenu
+                        isVisible={contextMenu.visible}
+                        x={contextMenu.x}
+                        y={contextMenu.y}
+                        items={nodeMenuItems}
+                        menuRef={menuRef}
+                    />
+                    <ContextMenu
+                        isVisible={edgeMenu.visible}
+                        x={edgeMenu.x}
+                        y={edgeMenu.y}
+                        items={edgeMenuItems}
+                        menuRef={menuRef}
+                    />
+                </>,
+                document.body,
+            )}
         </div>
     );
 }
