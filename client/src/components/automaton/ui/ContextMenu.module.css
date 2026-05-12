@@ -1,85 +1,63 @@
 .contextMenu {
     position: fixed;
-    background: white;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.05);
-    z-index: 100;
-    border-radius: 8px;
-    min-width: 220px;
-    padding: 6px;
-    opacity: 0;
-    transform: translateY(-5px);
-    animation: fadeIn 0.1s ease-out forwards;
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg);
+    z-index: 2000;
+    border-radius: 12px;
+    min-width: 200px;
+    padding: 4px;
+    animation: popIn 150ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-@keyframes fadeIn {
+@keyframes popIn {
+    from {
+        opacity: 0;
+        transform: scale(0.93)
+    }
+
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: scale(1)
     }
 }
 
 .contextMenuButton {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 9px;
     width: 100%;
-    padding: 10px 12px;
+    padding: 7px 10px;
     background: none;
     border: none;
     text-align: left;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 0.82rem;
     font-weight: 500;
-    color: #2d3748;
-    border-radius: 6px;
-    transition: background-color 0.15s, color 0.15s;
+    color: var(--text-md);
+    border-radius: 7px;
+    transition: background 110ms, color 110ms;
     white-space: nowrap;
 }
 
 .contextMenuButton:hover:not(.disabled) {
-    background-color: #f7fafc;
-    color: #2b6cb0;
+    background: var(--primary-bg);
+    color: var(--primary-hi);
+}
+
+.contextMenu hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 3px 8px;
 }
 
 .disabled {
-    opacity: 0.45;
+    opacity: 0.35;
     cursor: not-allowed;
 }
 
 .lockIcon {
     margin-left: auto;
-    font-size: 0.75rem;
-}
-
-.contextMenu hr {
-    border: none;
-    border-top: 1px solid #e2e8f0;
-    margin: 6px 0;
-}
-
-.textRed600 {
-    color: #e53e3e !important;
-}
-
-.textRed600:hover {
-    background-color: #fff5f5 !important;
-    color: #c53030 !important;
-}
-
-@media (max-width: 768px) {
-    .contextMenu {
-        min-width: 180px;
-        padding: 4px;
-    }
-
-    .contextMenuButton {
-        padding: 8px 10px;
-        font-size: 13px;
-        gap: 8px;
-    }
-
-    .contextMenu hr {
-        margin: 4px 0;
-    }
+    font-size: 0.68rem;
+    opacity: 0.5;
 }

@@ -1,62 +1,58 @@
 .wrapper {
     position: absolute;
-    bottom: 16px;
-    left: 16px;
+    bottom: 12px;
+    left: 12px;
     z-index: 20;
 }
 
 .infoBtn {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 2px solid #f59e0b;
-    background: rgba(30, 20, 5, 0.85);
-    color: #f59e0b;
-    font-size: 1rem;
-    font-weight: 700;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    border: 1px solid var(--accent);
+    background: var(--bg-raised);
+    color: var(--accent);
+    font-size: 0.82rem;
+    font-weight: 800;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.15s, transform 0.1s;
-    backdrop-filter: blur(4px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    transition: background 110ms, box-shadow 110ms;
+    box-shadow: var(--shadow-sm);
 }
 
 .infoBtn:hover {
-    background: rgba(60, 40, 5, 0.9);
-    transform: scale(1.08);
+    background: var(--accent-bg);
+    box-shadow: 0 0 0 3px var(--accent-bg);
 }
 
 .infoBtnActive {
-    background: rgba(245, 158, 11, 0.2);
-    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.3);
+    background: var(--accent-bg);
 }
 
-/* ── Painel ── */
 .panel {
     position: absolute;
-    bottom: 42px;
+    bottom: 36px;
     left: 0;
-    width: 280px;
-    background: rgba(20, 18, 40, 0.97);
-    border: 1px solid #f59e0b55;
-    border-radius: 10px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(8px);
-    animation: popUp 0.15s ease;
+    width: 260px;
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
     overflow: hidden;
+    animation: popIn 150ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-@keyframes popUp {
+@keyframes popIn {
     from {
         opacity: 0;
-        transform: translateY(6px);
+        transform: scale(0.93)
     }
 
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: scale(1)
     }
 }
 
@@ -64,14 +60,15 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 12px 8px;
-    border-bottom: 1px solid #2a2a3a;
+    padding: 9px 12px 7px;
+    border-bottom: 1px solid var(--border);
+    background: var(--accent-bg);
 }
 
 .panelTitle {
-    font-size: 0.78rem;
+    font-size: 0.73rem;
     font-weight: 700;
-    color: #f59e0b;
+    color: var(--accent);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -80,17 +77,17 @@
 .panelClose {
     background: none;
     border: none;
-    color: #666;
+    color: var(--text-lo);
     cursor: pointer;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     padding: 2px 5px;
     border-radius: 4px;
-    flex-shrink: 0;
+    transition: color 110ms, background 110ms;
 }
 
 .panelClose:hover {
-    color: #ccc;
-    background: #2a2a3a;
+    color: var(--text-hi);
+    background: var(--bg-hover);
 }
 
 .list {
@@ -102,16 +99,16 @@
 }
 
 .listItem {
-    font-size: 0.8rem;
-    color: #ccc;
-    line-height: 1.4;
+    font-size: 0.76rem;
+    color: var(--text-md);
+    line-height: 1.5;
 }
 
 .footer {
     margin: 0;
     padding: 6px 12px 10px;
-    font-size: 0.68rem;
-    color: #555;
-    border-top: 1px solid #1e1e2e;
+    font-size: 0.65rem;
+    color: var(--text-lo);
+    border-top: 1px solid var(--border);
     font-style: italic;
 }

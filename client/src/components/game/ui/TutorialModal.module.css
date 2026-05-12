@@ -1,57 +1,56 @@
-/* Fundo escuro que bloqueia a tela inteira */
 .overlay {
     position: fixed;
     inset: 0;
-    background: rgba(28, 28, 28, 0.82);
+    background: rgba(0, 0, 0, 0.78);
+    backdrop-filter: blur(5px);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 700;
     padding: 20px;
-    animation: fadeIn 0.25s ease;
+    animation: fadeIn 200ms ease;
 }
 
 @keyframes fadeIn {
     from {
-        opacity: 0;
+        opacity: 0
     }
 
     to {
-        opacity: 1;
+        opacity: 1
     }
-}
-
-/* Card principal: imagem em cima, balão em baixo */
-.card {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    max-width: 480px;
-    max-height: 90dvh;
-    animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes slideUp {
     from {
         opacity: 0;
-        transform: translateY(28px) scale(0.96);
+        transform: translateY(16px)
     }
 
     to {
         opacity: 1;
-        transform: translateY(0) scale(1);
+        transform: translateY(0)
     }
 }
 
-/* ── Área de imagem ── */
+.card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 500px;
+    max-height: 90dvh;
+    animation: slideUp 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.75);
+}
 
 .imageArea {
     position: relative;
     width: 100%;
-    border-radius: 20px 20px 0 0;
-    overflow: hidden;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 16/9;
     flex-shrink: 0;
+    background: #141824;
 }
 
 .image {
@@ -59,10 +58,8 @@
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: opacity 0.3s ease;
 }
 
-/* Placeholder quando não há imagem */
 .imagePlaceholder {
     width: 100%;
     height: 100%;
@@ -70,164 +67,162 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 12px;
+    gap: 10px;
+    background: #141824;
 }
 
 .placeholderIcon {
-    font-size: 3.5rem;
+    font-size: 3rem;
     line-height: 1;
+    opacity: 0.3;
 }
 
 .placeholderLabel {
-    font-size: 0.9rem;
-    color: #8888bb;
+    font-size: 0.82rem;
+    color: #556080;
     font-weight: 600;
+    font-family: var(--font, sans-serif);
 }
 
-/* Badge de progresso no canto superior direito da imagem */
 .progressBadge {
     position: absolute;
-    top: 12px;
-    right: 12px;
-    background: rgba(0, 0, 0, 0.55);
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.65);
     backdrop-filter: blur(6px);
-    color: white;
-    font-size: 0.72rem;
+    color: #e8edf5;
+    font-size: 0.66rem;
     font-weight: 700;
     padding: 3px 10px;
     border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     pointer-events: none;
+    font-family: var(--font, sans-serif);
+    letter-spacing: 0.04em;
 }
 
-/* ── Balão de fala ── */
-
 .balloon {
-    background: white;
-    border-radius: 0 0 20px 20px;
+    background: #1c2235;
     padding: 20px 22px 18px;
     position: relative;
     display: flex;
     flex-direction: column;
     gap: 14px;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
 }
 
-/* Ponta triangular do balão (aponta para cima, para a imagem) */
 .balloonTip {
     position: absolute;
-    top: -12px;
+    top: -10px;
     left: 50%;
     transform: translateX(-50%);
     width: 0;
     height: 0;
-    border-left: 14px solid transparent;
-    border-right: 14px solid transparent;
-    border-bottom: 14px solid white;
-    filter: drop-shadow(0 -2px 2px rgba(0, 0, 0, 0.1));
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-bottom: 12px solid #1c2235;
 }
 
 .balloonText {
     margin: 0;
-    font-size: 1rem;
-    line-height: 1.7;
-    color: #1a1f36;
+    font-size: 0.95rem;
+    line-height: 1.72;
+    color: #e8edf5;
     text-align: center;
+    font-family: var(--font, sans-serif);
 }
 
 .balloonText strong {
-    color: #553c9a;
+    color: #8a9ef5;
     font-weight: 700;
 }
 
-/* Dots de progresso */
 .dots {
     display: flex;
     justify-content: center;
-    gap: 6px;
+    gap: 5px;
 }
 
 .dot {
     display: inline-block;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #d0d5e8;
-    transition: background 0.2s, transform 0.2s;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: #2e3a54;
+    transition: background 200ms, transform 200ms;
+    cursor: default;
 }
 
 .dotActive {
-    background: #667eea;
-    transform: scale(1.35);
+    background: #6d83f2;
+    transform: scale(1.45);
 }
 
 .dotDone {
-    background: #a5b4fc;
+    background: #3e506e;
 }
 
-/* Botões de navegação */
 .navRow {
     display: flex;
-    gap: 10px;
+    gap: 8px;
 }
 
 .prevBtn {
     flex: 1;
-    padding: 11px;
-    border: 1.5px solid #e0e3f0;
-    border-radius: 12px;
-    background: white;
-    color: #6b7280;
-    font-size: 0.88rem;
+    padding: 10px;
+    border: 1.5px solid #2e3a54;
+    border-radius: 9px;
+    background: #1c2235;
+    color: #94a3c0;
+    font-size: 0.84rem;
     font-weight: 600;
     cursor: pointer;
-    transition: border-color 0.15s, background 0.15s;
+    transition: border-color 110ms, background 110ms, color 110ms;
+    font-family: var(--font, sans-serif);
 }
 
 .prevBtn:hover:not(:disabled) {
-    border-color: #667eea;
-    background: #f0f1fd;
-    color: #667eea;
+    border-color: #6d83f2;
+    background: rgba(109, 131, 242, 0.12);
+    color: #8a9ef5;
 }
 
 .prevBtn:disabled {
-    opacity: 0.3;
+    opacity: 0.25;
     cursor: not-allowed;
 }
 
 .nextBtn {
     flex: 2;
-    padding: 11px;
+    padding: 10px;
     border: none;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 9px;
+    background: #6d83f2;
     color: white;
-    font-size: 0.92rem;
+    font-size: 0.9rem;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 4px 14px rgba(102, 126, 234, 0.45);
-    transition: opacity 0.15s, transform 0.1s;
+    box-shadow: 0 3px 12px rgba(109, 131, 242, 0.45);
+    transition: opacity 110ms, transform 110ms;
+    font-family: var(--font, sans-serif);
     letter-spacing: 0.02em;
 }
 
 .nextBtn:hover {
-    opacity: 0.92;
+    opacity: 0.9;
     transform: translateY(-1px);
 }
 
-/* ── Mobile ── */
-
-@media (max-width: 480px) {
-    .card {
-        max-width: 100%;
+@media (max-width:480px) {
+    .imageArea {
+        aspect-ratio: 4/3
     }
 
     .balloonText {
-        font-size: 0.92rem;
+        font-size: 0.88rem
     }
 
     .balloon {
-        padding: 16px 16px 14px;
-        gap: 12px;
+        padding: 14px 15px 13px;
+        gap: 11px
     }
 }

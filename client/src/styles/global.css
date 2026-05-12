@@ -1,30 +1,192 @@
-/* src/global.css */
+/* ================================================================
+   AUTOMA WORLD — Design System
+   Tema controlado por data-theme="dark" | data-theme="light" no <html>
+   ================================================================ */
+
+/* ── Tema escuro (padrão) ── */
+:root,
+[data-theme="dark"] {
+    --bg-base: #141824;
+    --bg-raised: #1c2235;
+    --bg-float: #232b42;
+    --bg-hover: #2a3350;
+
+    --border: #2e3a54;
+    --border-dim: #243048;
+
+    --text-hi: #e8edf5;
+    --text-md: #94a3c0;
+    --text-lo: #556080;
+
+    --primary: #6d83f2;
+    --primary-hi: #8a9ef5;
+    --primary-lo: #1e2a5a;
+    --primary-bg: rgba(109, 131, 242, 0.15);
+
+    --accent: #f59e0b;
+    --accent-bg: rgba(245, 158, 11, 0.1);
+
+    --success: #34d399;
+    --success-bg: rgba(52, 211, 153, 0.1);
+
+    --danger: #f87171;
+    --danger-bg: rgba(248, 113, 113, 0.1);
+
+    --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+    --shadow-xl: 0 16px 56px rgba(0, 0, 0, 0.7);
+
+    --overlay-bg: rgba(0, 0, 0, 0.75);
+
+    /* canvas do autômato */
+    --canvas-bg: #0f1520;
+    --canvas-dot: #1e2a3e;
+    --node-fill: #1c2235;
+    --node-stroke: #3e506e;
+    --edge-stroke: #3e506e;
+    --edge-label: #e8edf5;
+    --edge-halo: #0f1520;
+}
+
+/* ── Tema claro ── */
+[data-theme="light"] {
+    --bg-base: #e8ecf4;
+    --bg-raised: #f0f3fa;
+    --bg-float: #f6f8fd;
+    --bg-hover: #dde3f0;
+
+    --border: #c8d0e8;
+    --border-dim: #d8dff0;
+
+    --text-hi: #141c30;
+    --text-md: #3d4e72;
+    --text-lo: #7a8aaa;
+
+    --primary: #4f63d2;
+    --primary-hi: #6475e0;
+    --primary-lo: #b8c0f0;
+    --primary-bg: rgba(79, 99, 210, 0.1);
+
+    --accent: #c07000;
+    --accent-bg: #fdf3dc;
+
+    --success: #0a7a56;
+    --success-bg: #d6f5ea;
+
+    --danger: #c01818;
+    --danger-bg: #fde8e8;
+
+    --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.12);
+    --shadow-md: 0 4px 14px rgba(15, 23, 42, 0.14);
+    --shadow-lg: 0 8px 28px rgba(15, 23, 42, 0.16);
+    --shadow-xl: 0 16px 48px rgba(15, 23, 42, 0.18);
+
+    --overlay-bg: rgba(10, 15, 30, 0.6);
+
+    --canvas-bg: #dfe4f0;
+    --canvas-dot: #b8c2d8;
+    --node-fill: #f0f3fa;
+    --node-stroke: #7a8aaa;
+    --edge-stroke: #7a8aaa;
+    --edge-label: #141c30;
+    --edge-halo: #dfe4f0;
+}
+
+/* ── Reset ── */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html {
+    color-scheme: dark;
+}
+
+[data-theme="light"] {
+    color-scheme: light;
+}
+
 body {
-  margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  overflow: hidden;
-  background-color: #f8f9fa;
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+    background: var(--bg-base);
+    color: var(--text-hi);
+    transition: background 250ms ease, color 250ms ease;
 }
 
-/* Arrow head style (referenced by ID) */
+button {
+    font-family: inherit;
+}
+
+/* Seta do autômato */
 .arrow-head {
-  fill: #adb5bd;
-  transition: fill 0.2s;
+    fill: var(--edge-stroke);
+    transition: fill 200ms;
 }
 
-/* Keyframes (keep globally or move to specific modules) */
+/* Animações globais */
 @keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.15); }
-  100% { transform: scale(1); }
+    0%, 100% {
+        transform: scale(1)
+    }
+
+    50% {
+        transform: scale(1.12)
+    }
 }
 
 @keyframes march {
-  to { stroke-dashoffset: -16; }
+    to {
+        stroke-dashoffset: -16
+    }
 }
 
 @keyframes fadeIn {
-  to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0
+    }
+
+    to {
+        opacity: 1
+    }
 }
 
-/* Add any other truly global styles here */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(14px)
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0)
+    }
+}
+
+@keyframes popIn {
+    from {
+        opacity: 0;
+        transform: scale(0.93)
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1)
+    }
+}
+
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0)
+    }
+
+    25% {
+        transform: translateX(-4px)
+    }
+
+    75% {
+        transform: translateX(4px)
+    }
+}

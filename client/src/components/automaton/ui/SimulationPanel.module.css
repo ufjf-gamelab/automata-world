@@ -1,74 +1,64 @@
-/* ═══════════════════════════════════════════════════════
-   DESKTOP — painel flutua sobre o canvas via absolute
-   O pai (.automatonSection) tem position:relative
-   ═══════════════════════════════════════════════════════ */
-
 .panel {
     position: absolute;
-    top: 16px;
-    left: 16px;
+    top: 12px;
+    left: 12px;
     z-index: 30;
-    width: 264px;
+    width: 252px;
     height: auto;
     display: flex;
     flex-direction: column;
-    background: rgba(255, 255, 255, 0.96);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(102, 126, 234, 0.2);
-    border-radius: 14px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0, 0, 0, 0.06);
-    animation: popIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow-lg);
     overflow: hidden;
+    animation: popIn 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: background 250ms;
 }
 
 @keyframes popIn {
     from {
         opacity: 0;
-        transform: scale(0.94) translateY(-6px);
+        transform: scale(0.93)
     }
 
     to {
         opacity: 1;
-        transform: scale(1) translateY(0);
+        transform: scale(1)
     }
 }
 
-/* Pill quando colapsado — também absoluta no desktop */
 .collapsedPill {
     position: absolute;
-    top: 16px;
-    left: 16px;
+    top: 12px;
+    left: 12px;
     z-index: 30;
-    padding: 7px 14px;
+    padding: 6px 14px;
     border-radius: 999px;
-    border: 1px solid rgba(102, 126, 234, 0.3);
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    font-size: 0.8rem;
+    border: 1px solid var(--border);
+    background: var(--bg-raised);
+    font-size: 0.76rem;
     font-weight: 700;
-    color: #4a5580;
+    color: var(--text-md);
     cursor: pointer;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
+    box-shadow: var(--shadow-sm);
+    transition: background 110ms, transform 110ms;
     white-space: nowrap;
 }
 
 .collapsedPill:hover {
-    background: white;
-    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.25);
+    background: var(--bg-float);
     transform: translateY(-1px);
+    color: var(--text-hi);
 }
-
-/* ── Header ── */
 
 .header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 11px 13px 10px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-float);
     flex-shrink: 0;
 }
 
@@ -84,34 +74,33 @@
 }
 
 .headerTitle {
-    font-size: 0.88rem;
+    font-size: 0.82rem;
     font-weight: 700;
-    color: white;
-    letter-spacing: 0.02em;
+    color: var(--text-hi);
+    letter-spacing: 0.01em;
 }
 
 .collapseBtn {
-    background: rgba(255, 255, 255, 0.18);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-lo);
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
     font-size: 11px;
     cursor: pointer;
     padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.15s;
+    transition: background 110ms, color 110ms;
     flex-shrink: 0;
 }
 
 .collapseBtn:hover {
-    background: rgba(255, 255, 255, 0.32);
+    background: var(--bg-hover);
+    color: var(--text-hi);
 }
-
-/* ── Seções ── */
 
 .section {
     padding: 11px 13px;
@@ -120,71 +109,76 @@
     gap: 7px;
 }
 
+.sectionRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 13px;
+    gap: 8px;
+}
+
 .divider {
     height: 1px;
-    background: #eceef5;
+    background: var(--border);
     flex-shrink: 0;
 }
 
 .sectionLabel {
-    font-size: 0.67rem;
+    font-size: 0.62rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.07em;
-    color: #9299b5;
+    letter-spacing: 0.08em;
+    color: var(--text-lo);
     display: flex;
     align-items: center;
     gap: 5px;
 }
 
 .lockedBadge {
-    font-size: 0.62rem;
-    background: #fff3cd;
-    color: #856404;
-    border: 1px solid #ffc107;
+    font-size: 0.58rem;
+    background: var(--accent-bg);
+    color: var(--accent);
+    border: 1px solid var(--accent);
     border-radius: 4px;
     padding: 1px 5px;
-    font-weight: 600;
-    letter-spacing: 0;
+    font-weight: 700;
     text-transform: none;
+    letter-spacing: 0;
+    opacity: 0.85;
 }
-
-/* ── Input da fita ── */
 
 .tapeInput {
     width: 100%;
-    padding: 8px 11px;
-    border: 1.5px solid #d4d8ee;
-    border-radius: 7px;
-    background: #fafbff;
-    font-family: "Courier New", Courier, monospace;
+    padding: 7px 10px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-base);
+    font-family: monospace;
     font-size: 0.95rem;
     font-weight: 700;
     letter-spacing: 0.14em;
-    color: #1a1f36;
+    color: var(--text-hi);
     box-sizing: border-box;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: border-color 180ms, background 250ms, color 250ms;
 }
 
 .tapeInput:focus {
-    border-color: #667eea;
+    border-color: var(--primary);
     outline: none;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.16);
+    box-shadow: 0 0 0 3px var(--primary-bg);
 }
 
 .tapeInput:disabled {
-    background: #f1f3fb;
-    color: #8b92a9;
+    background: var(--bg-float);
+    color: var(--text-lo);
     cursor: not-allowed;
 }
 
 .tapeInput::placeholder {
-    color: #bcc0d6;
+    color: var(--text-lo);
     font-weight: 400;
     letter-spacing: 0.02em;
 }
-
-/* ── Tape Display com progresso ── */
 
 .tapeDisplay {
     display: flex;
@@ -194,53 +188,47 @@
 
 .tapeCell {
     position: relative;
-    width: 24px;
-    height: 24px;
+    width: 23px;
+    height: 23px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 5px;
-    font-family: "Courier New", Courier, monospace;
-    font-size: 0.78rem;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.74rem;
     font-weight: 800;
     flex-shrink: 0;
-    transition: opacity 0.25s, transform 0.2s;
+    transition: opacity 220ms, transform 180ms;
 }
 
-/* Lida — esmaecida, reduzida, mostra check */
 .tapeCellRead {
-    opacity: 0.55;
-    transform: scale(0.88);
+    opacity: 0.4;
+    transform: scale(0.84);
 }
 
 .checkMark {
-    font-size: 0.72rem;
+    font-size: 0.66rem;
     font-weight: 900;
     line-height: 1;
 }
 
-/* Sendo lida — destaque máximo */
 .tapeCellCurrent {
-    transform: scale(1.15);
-    box-shadow:
-        0 0 0 2px white,
-        0 0 0 3.5px currentColor,
-        0 4px 12px rgba(0, 0, 0, 0.2);
+    transform: scale(1.18);
     z-index: 1;
     animation: tapePulse 0.9s ease-in-out infinite;
+    box-shadow: 0 0 0 2px var(--bg-raised), 0 0 0 3.5px currentColor;
 }
 
 @keyframes tapePulse {
     0%, 100% {
-        transform: scale(1.15);
+        transform: scale(1.18)
     }
 
     50% {
-        transform: scale(1.22);
+        transform: scale(1.26)
     }
 }
 
-/* Ponto piscante sob a letra atual */
 .cursor {
     position: absolute;
     bottom: -5px;
@@ -255,119 +243,96 @@
 
 @keyframes blink {
     50% {
-        opacity: 0;
+        opacity: 0
     }
 }
 
-/* Pendente — muito esmaecida */
 .tapeCellPending {
-    opacity: 0.35;
+    opacity: 0.25;
 }
-
-/* ── Legenda ── */
 
 .tapeLegend {
     display: flex;
     gap: 10px;
-    font-size: 0.62rem;
+    font-size: 0.58rem;
     font-weight: 600;
-    padding-top: 2px;
+    padding-top: 1px;
 }
 
 .legendRead {
-    color: #adb5bd;
+    color: var(--text-lo);
 }
 
 .legendCurrent {
-    color: #667eea;
+    color: var(--primary);
 }
 
 .legendPending {
-    color: #ccd0e0;
-}
-
-/* ── Velocidade ── */
-
-.speedGroup {
-    display: flex;
-    gap: 5px;
-}
-
-/* Linha horizontal: label + botão lado a lado */
-.sectionRow {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 7px 13px;
-    gap: 8px;
+    color: var(--border);
 }
 
 .speedCycleBtn {
-    padding: 3px 10px;
-    border: 1px solid #d4d8ee;
+    padding: 3px 11px;
+    border: 1px solid var(--border);
     border-radius: 999px;
-    background: white;
-    color: #5a6282;
-    font-size: 0.7rem;
+    background: var(--bg-base);
+    color: var(--text-md);
+    font-size: 0.66rem;
     font-weight: 700;
     cursor: pointer;
     white-space: nowrap;
-    transition: border-color 0.15s, background 0.15s;
+    transition: border-color 110ms, background 110ms, color 110ms;
     flex-shrink: 0;
 }
 
 .speedCycleBtn:hover:not(:disabled) {
-    border-color: #667eea;
-    color: #667eea;
-    background: #f0f1fd;
+    border-color: var(--primary);
+    color: var(--primary-hi);
+    background: var(--primary-bg);
 }
 
 .speedCycleBtn:disabled {
-    opacity: 0.4;
+    opacity: 0.35;
     cursor: not-allowed;
 }
 
-/* ── Play / Stop ── */
-
 .playBtn {
     width: 100%;
-    padding: 11px 14px;
+    padding: 10px 14px;
     border: none;
     border-radius: 9px;
-    background: linear-gradient(135deg, #28a745, #20c997);
+    background: var(--success);
     color: white;
-    font-size: 0.88rem;
-    font-weight: 700;
+    font-size: 0.84rem;
+    font-weight: 800;
     cursor: pointer;
-    transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s;
-    box-shadow: 0 3px 10px rgba(40, 167, 69, 0.35);
+    transition: opacity 110ms, transform 110ms;
+    box-shadow: 0 3px 10px var(--success-bg);
     letter-spacing: 0.02em;
 }
 
 .playBtn:hover:not(:disabled) {
     opacity: 0.9;
     transform: translateY(-1px);
-    box-shadow: 0 5px 14px rgba(40, 167, 69, 0.4);
 }
 
 .playBtn:disabled {
-    opacity: 0.4;
+    opacity: 0.35;
     cursor: not-allowed;
     box-shadow: none;
 }
 
 .stopBtn {
     width: 100%;
-    padding: 11px 14px;
+    padding: 10px 14px;
     border: none;
     border-radius: 9px;
-    background: linear-gradient(135deg, #dc3545, #e74c3c);
+    background: var(--danger);
     color: white;
-    font-size: 0.88rem;
-    font-weight: 700;
+    font-size: 0.84rem;
+    font-weight: 800;
     cursor: pointer;
-    transition: opacity 0.2s, transform 0.1s;
-    box-shadow: 0 3px 10px rgba(220, 53, 69, 0.35);
+    transition: opacity 110ms, transform 110ms;
     letter-spacing: 0.02em;
 }
 
@@ -376,26 +341,14 @@
     transform: translateY(-1px);
 }
 
-/* ═══════════════════════════════════════════════════════
-   MOBILE — sai do absolute, entra no fluxo normal
-   column-reverse do .automatonSection coloca este
-   elemento abaixo do canvasWrapper visualmente.
-   ═══════════════════════════════════════════════════════ */
-
-@media (max-width: 768px) {
+@media (max-width:768px) {
     .panel {
-        /* Volta ao fluxo normal — fica visível abaixo do canvas */
         position: static;
         width: 100%;
         border-radius: 0;
         border-left: none;
         border-right: none;
-        border-top: 1px solid rgba(102, 126, 234, 0.2);
         animation: none;
-        backdrop-filter: none;
-        -webkit-backdrop-filter: none;
-        background: white;
-        /* Altura máxima com scroll interno para não empurrar o canvas */
         max-height: 56dvh;
         overflow-y: auto;
         flex-shrink: 0;
@@ -408,8 +361,6 @@
         border-left: none;
         border-right: none;
         text-align: center;
-        background: white;
-        border-top: 1px solid rgba(102, 126, 234, 0.2);
         box-shadow: none;
         padding: 12px;
         flex-shrink: 0;
@@ -417,12 +368,11 @@
 
     .collapsedPill:hover {
         transform: none;
-        box-shadow: none;
     }
 
     .tapeCell {
-        width: 22px;
-        height: 22px;
-        font-size: 0.72rem;
+        width: 20px;
+        height: 20px;
+        font-size: 0.68rem;
     }
 }

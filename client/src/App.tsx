@@ -1,9 +1,10 @@
 import { useReducer, useState } from "react";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import AutomatonEditor from "./components/automaton/AutomatonEditor";
 import GameView from "./components/GameView";
 import { gameReducer, createInitialState } from "./components/game/gameReducer";
 import { stagesList } from "./components/game/data/Stages";
-import { useCustomStages } from "./components/game/data/useCustomStages.ts";
+import { useCustomStages } from "./components/game/data/useCustomStages";
 import type { Stage } from "./components/game/data/types";
 import "./styles/global.css";
 import "./styles/App.css";
@@ -27,27 +28,29 @@ export default function App() {
     };
 
     return (
-        <div className="appContainer">
-            <div className="automatonWrapper">
-                <AutomatonEditor
-                    key={gameState.activeStage.id}
-                    gameDispatch={gameDispatch}
-                    setCurrentCommand={setCurrentCommand}
-                    activeStage={gameState.activeStage}
-                />
-            </div>
+        <ThemeProvider>
+            <div className="appContainer">
+                <div className="automatonWrapper">
+                    <AutomatonEditor
+                        key={gameState.activeStage.id}
+                        gameDispatch={gameDispatch}
+                        setCurrentCommand={setCurrentCommand}
+                        activeStage={gameState.activeStage}
+                    />
+                </div>
 
-            <div className="gameWrapper">
-                <GameView
-                    gameState={gameState}
-                    currentCommand={currentCommand}
-                    onChangeStage={handleChangeStage}
-                    onNextStage={handleNextStage}
-                    customStages={customStages}
-                    onSaveCustomStage={saveStage}
-                    onDeleteCustomStage={deleteStage}
-                />
+                <div className="gameWrapper">
+                    <GameView
+                        gameState={gameState}
+                        currentCommand={currentCommand}
+                        onChangeStage={handleChangeStage}
+                        onNextStage={handleNextStage}
+                        customStages={customStages}
+                        onSaveCustomStage={saveStage}
+                        onDeleteCustomStage={deleteStage}
+                    />
+                </div>
             </div>
-        </div>
+        </ThemeProvider>
     );
 }

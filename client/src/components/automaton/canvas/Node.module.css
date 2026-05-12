@@ -1,87 +1,100 @@
 .node {
-  cursor: pointer;
-  touch-action: none;
-  -webkit-touch-callout: none;
-  user-select: none;
+    cursor: pointer;
+    touch-action: none;
+    user-select: none;
 }
 
 .outer {
-  stroke: #495057;
-  stroke-width: 2px;
-  fill: #fff;
-  transition: fill 0.2s, stroke 0.2s;
+    fill: var(--node-fill);
+    stroke: var(--node-stroke);
+    stroke-width: 1.5px;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+    transition: fill 180ms, stroke 180ms, filter 180ms;
 }
 
 .inner {
-  stroke: #495057;
-  stroke-width: 2px;
-  fill: none;
-}
-
-/* Action sequence shown inside the node */
-.actionText {
-  font-size: 12px;
-  font-weight: 700;
-  font-family: monospace;
-  fill: #1a73e8;
-  pointer-events: none;
-  user-select: none;
-  text-anchor: middle;
-  dominant-baseline: central;
-  /* Clip text that overflows the circle boundary */
-  overflow: hidden;
-}
-
-/* Node id — plain label when there is no action */
-.labelText {
-  font-size: 16px;
-  font-weight: 500;
-  fill: #212529;
-  pointer-events: none;
-  user-select: none;
-  text-anchor: middle;
-  dominant-baseline: central;
+    fill: none;
+    stroke: var(--node-stroke);
+    stroke-width: 1.5px;
 }
 
 .outer.initial {
-  stroke: #28a745;
-  stroke-width: 3px;
+    stroke: var(--success);
+    stroke-width: 2px;
 }
 
 .initialArrow {
-  stroke: #28a745;
-  stroke-width: 2px;
+    stroke: var(--success);
+    stroke-width: 2px;
+    stroke-linecap: round;
 }
 
 .outer.active {
-  fill: #fff3cd;
-  stroke: #ffc107;
-  stroke-width: 3px;
-  animation: pulse 0.75s linear;
+    fill: var(--accent-bg);
+    stroke: var(--accent);
+    stroke-width: 2px;
+    animation: nodeGlow 0.9s ease-in-out infinite;
+}
+
+@keyframes nodeGlow {
+    0%, 100% {
+        filter: drop-shadow(0 0 4px var(--accent-bg)) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3))
+    }
+
+    50% {
+        filter: drop-shadow(0 0 12px var(--accent)) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3))
+    }
 }
 
 .outer.failed {
-  fill: #f8d7da;
-  stroke: #dc3545;
-  stroke-width: 3px;
+    fill: var(--danger-bg);
+    stroke: var(--danger);
+    stroke-width: 2px;
+    animation: shake 0.4s ease;
+}
+
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0)
+    }
+
+    25% {
+        transform: translateX(-4px)
+    }
+
+    75% {
+        transform: translateX(4px)
+    }
 }
 
 .node.dragging .outer {
-  stroke: #0056b3;
-  stroke-width: 3px;
-  cursor: grabbing;
+    stroke: var(--primary);
+    stroke-width: 2px;
+    cursor: grabbing;
 }
 
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
+.node:not(.dragging):hover .outer {
+    stroke: var(--primary);
+}
 
-  50% {
-    transform: scale(1.15);
-  }
+.labelText {
+    font-size: 15px;
+    font-weight: 600;
+    fill: var(--text-hi);
+    pointer-events: none;
+    user-select: none;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
 
-  100% {
-    transform: scale(1);
-  }
+.actionText {
+    font-size: 10px;
+    font-weight: 700;
+    fill: var(--primary);
+    pointer-events: none;
+    user-select: none;
+    text-anchor: middle;
+    dominant-baseline: central;
+    letter-spacing: 0.02em;
+    font-family: monospace;
 }

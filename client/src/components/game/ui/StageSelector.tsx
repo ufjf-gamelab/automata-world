@@ -1,9 +1,9 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { stagesList } from "../data/Stages";
 import type { Stage } from "../data/types";
 import MapEditorModal from "./MapEditorModal";
 import styles from "./StageSelector.module.css";
-import { useModal } from "../../../contexts/ModalContext";
 
 interface StageSelectorProps {
     activeStage: Stage;
@@ -38,10 +38,8 @@ function MapPreview({ floor }: { floor: string }) {
                 <div key={z} className={styles.mapRow}>
                     {row.map((cell, x) => {
                         if (cell.empty) return <div key={x} className={styles.cellEmpty} />;
-                        const brightness = 40 + Math.round((cell.height / maxH) * 50);
-                        const bg = cell.isButton
-                            ? `hsl(211, 80%, ${brightness}%)`
-                            : `hsl(211, 61%, ${brightness}%)`;
+                        const b = 30 + Math.round((cell.height / maxH) * 55);
+                        const bg = cell.isButton ? `hsl(211,75%,${b}%)` : `hsl(218,55%,${b}%)`;
                         return (
                             <div
                                 key={x}
@@ -56,7 +54,6 @@ function MapPreview({ floor }: { floor: string }) {
     );
 }
 
-/** Estado do editor: undefined = fechado, null = novo mapa, Stage = edição */
 type EditorState = Stage | null | undefined;
 
 export default function StageSelector({
@@ -68,8 +65,6 @@ export default function StageSelector({
 }: StageSelectorProps) {
     const [isListOpen, setIsListOpen] = useState(false);
     const [editorState, setEditorState] = useState<EditorState>(undefined);
-
-    const { showConfirm } = useModal();
 
     const allStages = [...stagesList, ...customStages];
     const currentIndex = allStages.findIndex((s) => s.id === activeStage.id);
@@ -100,10 +95,9 @@ export default function StageSelector({
         setEditorState(stage);
     };
 
-    const handleDelete = async (id: number, e: React.MouseEvent) => {
+    const handleDelete = (id: number, e: React.MouseEvent) => {
         e.stopPropagation();
-        const userConfirmed = await showConfirm("Deseja mesmo apagar este item?", "Atenção");
-        if (!userConfirmed) return;
+        if (!confirm("Excluir este mapa permanentemente?")) return;
         onDeleteCustomStage(id);
         if (activeStage.id === id) onChangeStage(stagesList[0]);
     };
@@ -115,6 +109,102 @@ export default function StageSelector({
     };
 
     const isEditorOpen = editorState !== undefined;
+
+    /* ── Modal de lista — renderizado via portal para escapar do overflow da stageBar ── */
+    const listModal =
+        isListOpen &&
+        createPortal(
+            <div className={styles.modalOverlay} onClick={() => setIsListOpen(false)}>
+                <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+                    <div className={styles.modalHeader}>
+                        <h3 className={styles.modalTitle}>Selecionar Fase</h3>
+                        <button className={styles.closeBtn} onClick={() => setIsListOpen(false)}>
+                            ✕
+                        </button>
+                    </div>
+
+                    <div className={styles.scrollArea}>
+                        <p className={styles.sectionLabel}>Fases oficiais</p>
+                        <div className={styles.stageGrid}>
+                            {stagesList.map((stage, i) => (
+                                <button
+                                    key={stage.id}
+                                    className={`${styles.stageCard} ${stage.id === activeStage.id ? styles.stageCardActive : ""}`}
+                                    onClick={() => selectStage(stage)}
+                                >
+                                    <div className={styles.cardPreview}>
+                                        <MapPreview floor={stage.floor} />
+                                    </div>
+                                    <div className={styles.cardInfo}>
+                                        <span className={styles.cardNumber}>{i + 1}</span>
+                                        <span className={styles.cardName}>{stage.name}</span>
+                                        {stage.permissions && (
+                                            <span className={styles.cardLock}>🔒</span>
+                                        )}
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+
+                        {customStages.length > 0 && (
+                            <>
+                                <p className={styles.sectionLabel}>Meus mapas</p>
+                                <div className={styles.stageGrid}>
+                                    {customStages.map((stage, i) => (
+                                        <button
+                                            key={stage.id}
+                                            className={`${styles.stageCard} ${stage.id === activeStage.id ? styles.stageCardActive : ""}`}
+                                            onClick={() => selectStage(stage)}
+                                        >
+                                            <div className={styles.cardPreview}>
+                                                <MapPreview floor={stage.floor} />
+                                            </div>
+                                            <div className={styles.cardInfo}>
+                                                <span className={styles.cardNumber}>#{i + 1}</span>
+                                                <span className={styles.cardName}>
+                                                    {stage.name}
+                                                </span>
+                                                <button
+                                                    className={styles.editBtn}
+                                                    onClick={(e) => openEdit(stage, e)}
+                                                >
+                                                    ✏️
+                                                </button>
+                                                <button
+                                                    className={styles.deleteBtn}
+                                                    onClick={(e) => handleDelete(stage.id, e)}
+                                                >
+                                                    🗑️
+                                                </button>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </div>
+
+                    <div className={styles.modalFooter}>
+                        <button className={styles.newMapBtn} onClick={openNew}>
+                            ＋ Criar novo mapa
+                        </button>
+                    </div>
+                </div>
+            </div>,
+            document.body,
+        );
+
+    /* ── Editor — também via portal ── */
+    const editorModal =
+        isEditorOpen &&
+        createPortal(
+            <MapEditorModal
+                stage={editorState ?? undefined}
+                onSave={handleSave}
+                onClose={() => setEditorState(undefined)}
+            />,
+            document.body,
+        );
 
     return (
         <>
@@ -154,102 +244,8 @@ export default function StageSelector({
                 </button>
             </div>
 
-            {/* ── Modal lista de fases ── */}
-            {isListOpen && (
-                <div className={styles.modalOverlay} onClick={() => setIsListOpen(false)}>
-                    <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-                        <div className={styles.modalHeader}>
-                            <h3 className={styles.modalTitle}>Selecionar Fase</h3>
-                            <button
-                                className={styles.closeBtn}
-                                onClick={() => setIsListOpen(false)}
-                            >
-                                ✕
-                            </button>
-                        </div>
-
-                        <div className={styles.scrollArea}>
-                            <p className={styles.sectionLabel}>Fases oficiais</p>
-                            <div className={styles.stageGrid}>
-                                {stagesList.map((stage, i) => (
-                                    <button
-                                        key={stage.id}
-                                        className={`${styles.stageCard} ${stage.id === activeStage.id ? styles.stageCardActive : ""}`}
-                                        onClick={() => selectStage(stage)}
-                                    >
-                                        <div className={styles.cardPreview}>
-                                            <MapPreview floor={stage.floor} />
-                                        </div>
-                                        <div className={styles.cardInfo}>
-                                            <span className={styles.cardNumber}>{i + 1}</span>
-                                            <span className={styles.cardName}>{stage.name}</span>
-                                            {stage.permissions && (
-                                                <span className={styles.cardLock}>🔒</span>
-                                            )}
-                                        </div>
-                                    </button>
-                                ))}
-                            </div>
-
-                            {customStages.length > 0 && (
-                                <>
-                                    <p className={styles.sectionLabel}>Meus mapas</p>
-                                    <div className={styles.stageGrid}>
-                                        {customStages.map((stage, i) => (
-                                            <button
-                                                key={stage.id}
-                                                className={`${styles.stageCard} ${stage.id === activeStage.id ? styles.stageCardActive : ""}`}
-                                                onClick={() => selectStage(stage)}
-                                            >
-                                                <div className={styles.cardPreview}>
-                                                    <MapPreview floor={stage.floor} />
-                                                </div>
-                                                <div className={styles.cardInfo}>
-                                                    <span className={styles.cardNumber}>
-                                                        #{i + 1}
-                                                    </span>
-                                                    <span className={styles.cardName}>
-                                                        {stage.name}
-                                                    </span>
-                                                    <button
-                                                        className={styles.editBtn}
-                                                        onClick={(e) => openEdit(stage, e)}
-                                                        title="Editar"
-                                                    >
-                                                        ✏️
-                                                    </button>
-                                                    <button
-                                                        className={styles.deleteBtn}
-                                                        onClick={(e) => handleDelete(stage.id, e)}
-                                                        title="Excluir"
-                                                    >
-                                                        🗑️
-                                                    </button>
-                                                </div>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </>
-                            )}
-                        </div>
-
-                        <div className={styles.modalFooter}>
-                            <button className={styles.newMapBtn} onClick={openNew}>
-                                ＋ Criar novo mapa
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* ── Editor de mapa ── */}
-            {isEditorOpen && (
-                <MapEditorModal
-                    stage={editorState ?? undefined}
-                    onSave={handleSave}
-                    onClose={() => setEditorState(undefined)}
-                />
-            )}
+            {listModal}
+            {editorModal}
         </>
     );
 }

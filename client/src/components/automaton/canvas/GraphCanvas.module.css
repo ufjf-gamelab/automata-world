@@ -1,14 +1,19 @@
 .graphCanvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-  position: relative;
-  z-index: 1;
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: default;
+    background-color: var(--canvas-bg);
+    background-image: radial-gradient(circle, var(--canvas-dot) 1px, transparent 1px);
+    background-size: 26px 26px;
+    transition: background-color 250ms ease;
 }
 
 .ghostLine {
-  stroke: #007bff;
-  stroke-width: 2px;
-  stroke-dasharray: 6 6;
-  pointer-events: none;
+    stroke: var(--primary);
+    stroke-width: 1.5px;
+    stroke-dasharray: 5 4;
+    stroke-linecap: round;
+    pointer-events: none;
+    opacity: 0.65;
 }

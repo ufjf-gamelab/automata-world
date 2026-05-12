@@ -9,6 +9,7 @@ import VictoryModal from "./game/ui/VictoryModal";
 import TutorialModal from "./game/ui/TutorialModal";
 import CompassRose from "./CompassRose";
 import StageSelector from "./game/ui/StageSelector";
+import ThemeToggle from "./game/ui/ThemeToggle";
 import type { Stage } from "./game/data/types";
 import type { GameState } from "./game/gameReducer";
 import styles from "./GameView.module.css";
@@ -52,8 +53,6 @@ export default function GameView({
     } = gameState;
 
     const compassInnerRef = useRef<SVGGElement | null>(null);
-    const [visualX, visualZ] = getVisualPosition(playerGridPos, activeStage.floor);
-
     const [showTutorial, setShowTutorial] = useState(() =>
         Boolean(activeStage.tutorial && activeStage.tutorial.length > 0),
     );
@@ -61,6 +60,8 @@ export default function GameView({
     useEffect(() => {
         setShowTutorial(Boolean(activeStage.tutorial && activeStage.tutorial.length > 0));
     }, [activeStage.id]);
+
+    const [visualX, visualZ] = getVisualPosition(playerGridPos, activeStage.floor);
 
     return (
         <div className={styles.gameView}>
@@ -82,6 +83,7 @@ export default function GameView({
                     onSaveCustomStage={onSaveCustomStage}
                     onDeleteCustomStage={onDeleteCustomStage}
                 />
+                <ThemeToggle />
             </div>
 
             <div className={styles.canvasFrame}>
@@ -89,9 +91,7 @@ export default function GameView({
                     <ambientLight intensity={0.5} />
                     <directionalLight position={[10, 15, 5]} intensity={1.2} castShadow />
                     <pointLight position={[-10, -5, -10]} intensity={0.15} />
-
                     <GameEnvironment />
-
                     <group position={[0, 0, 0]}>
                         <Floor grid={activeStage.floor} activeButtons={activeButtons} />
                         <Player
@@ -102,11 +102,9 @@ export default function GameView({
                             command={currentCommand}
                         />
                     </group>
-
                     <OrbitControls enablePan={false} enableZoom={false} />
                     <CameraWatcher compassRef={compassInnerRef} />
                 </Canvas>
-
                 <CompassRose rotationIndex={playerRotation} innerRef={compassInnerRef} />
             </div>
         </div>

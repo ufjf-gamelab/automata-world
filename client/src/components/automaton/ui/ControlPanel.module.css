@@ -1,70 +1,54 @@
 .controlPanel {
-  position: absolute;
-  z-index: 10;
-  background: #ffffff;
-  border: 1px solid #dee2e6;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  padding: 10px;
-  top: 15px;
-  right: 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  width: max-content;
+    position: absolute;
+    z-index: 10;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .controlPanel button {
-  color: white;
-  border: none;
-  padding: 10px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: background-color 0.2s, transform 0.1s;
-  white-space: nowrap;
-  min-height: 40px;
-  -webkit-tap-highlight-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 13px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--bg-raised);
+    color: var(--text-md);
+    font-size: 0.76rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 110ms, border-color 110ms, color 110ms, transform 110ms, box-shadow 110ms;
+    white-space: nowrap;
+    box-shadow: var(--shadow-sm);
+    min-height: 32px;
+    opacity: 0.92;
+    backdrop-filter: blur(6px);
 }
 
-.controlPanel button:active {
-  transform: scale(0.96);
-}
-
-.relayoutButton {
-  background-color: #6c757d !important;
-}
-
-.relayoutButton:hover {
-  background-color: #5a6268 !important;
-}
-
-.centerButton {
-  background-color: #007bff !important;
+.controlPanel button:hover {
+    background: var(--bg-float);
+    border-color: var(--border-dim);
+    color: var(--text-hi);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+    opacity: 1;
 }
 
 .centerButton:hover {
-  background-color: #0056b3 !important;
+    color: var(--primary);
+    border-color: var(--primary);
 }
 
 @media (max-width: 768px) {
-  .controlPanel {
-    top: auto;
-    bottom: 12px;
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
-    flex-direction: row;
-    gap: 8px;
-    padding: 8px 12px;
-    border-radius: 30px;
-  }
-
-  .controlPanel button {
-    font-size: 13px;
-    padding: 8px 12px;
-    min-height: 40px;
-    border-radius: 8px;
-  }
+    .controlPanel {
+        top: auto;
+        bottom: 10px;
+        right: 50%;
+        transform: translateX(50%);
+        flex-direction: row;
+    }
 }
