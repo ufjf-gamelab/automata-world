@@ -12,6 +12,7 @@ import styles from "./AutomatonEditor.module.css";
 import { graphReducer } from "./AutomatonReducer";
 import { useSimulation } from "./useSimulation";
 import { useGraphActions } from "./useGraphActions";
+import { useModal } from "../../contexts/ModalContext";
 import {
     createInitialGraphFromStage,
     type ContextMenuData,
@@ -71,6 +72,7 @@ function AutomatonEditor({
         title: "",
     });
 
+    const { showAlert } = useModal();
     const { permissions } = activeStage;
     const nodeLimitReached =
         permissions?.maxNodes !== undefined && nodes.length >= permissions.maxNodes;
@@ -90,6 +92,7 @@ function AutomatonEditor({
         simulationSpeed,
         activeButtons,
         activeStageFloor: activeStage.floor,
+        showAlert,
         onStartTransition,
         onEndTransition,
         onStateEnter,
@@ -149,7 +152,6 @@ function AutomatonEditor({
 
     return (
         <div className={styles.automatonSection}>
-            {/* SimulationPanel — irmão do canvas para mobile funcionar */}
             <SimulationPanel
                 isSimPanelOpen={isSimPanelOpen}
                 setSimPanelOpen={setSimPanelOpen}
@@ -205,10 +207,6 @@ function AutomatonEditor({
                 )}
             </div>
 
-            {/*
-             * Modais e menus via portal — renderizados diretamente no document.body
-             * para escapar do overflow:hidden do canvasWrapper que cortava os modais.
-             */}
             {createPortal(
                 <>
                     <TransitionModal

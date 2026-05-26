@@ -84,8 +84,8 @@
 
     --overlay-bg: rgba(10, 15, 30, 0.6);
 
-    --canvas-bg: #dfe4f0;
-    --canvas-dot: #b8c2d8;
+    --canvas-bg: #ffffff;
+    --canvas-dot: #dde3f0;
     --node-fill: #f0f3fa;
     --node-stroke: #7a8aaa;
     --edge-stroke: #7a8aaa;

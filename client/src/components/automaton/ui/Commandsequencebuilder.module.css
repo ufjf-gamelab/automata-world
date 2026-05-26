@@ -1,0 +1,60 @@
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+}
+
+.btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 10px 6px 8px;
+    border: 1.5px solid #2e3a54;
+    border-color: var(--border, #2e3a54);
+    border-radius: 10px;
+    background: #141824;
+    background: var(--bg-base, #141824);
+    color: #94a3c0;
+    color: var(--text-md, #94a3c0);
+    cursor: pointer;
+    transition: border-color 120ms, background 120ms, color 120ms, transform 100ms;
+    font-family: inherit;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.btn:hover {
+    border-color: #6d83f2;
+    border-color: var(--primary, #6d83f2);
+    background: rgba(109, 131, 242, 0.12);
+    background: var(--primary-bg, rgba(109, 131, 242, 0.12));
+    color: #8a9ef5;
+    color: var(--primary-hi, #8a9ef5);
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    transform: translateY(0) scale(0.96);
+}
+
+.btnActive {
+    border-color: #6d83f2;
+    border-color: var(--primary, #6d83f2);
+    background: rgba(109, 131, 242, 0.2);
+    background: var(--primary-bg, rgba(109, 131, 242, 0.2));
+    color: #8a9ef5;
+    color: var(--primary-hi, #8a9ef5);
+    box-shadow: 0 0 0 2.5px rgba(109, 131, 242, 0.25);
+}
+
+.label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+}

@@ -1,11 +1,10 @@
 import React from "react";
 import { GAME_COMMANDS } from "../../game/gameConfig";
-import styles from "./TransitionModal.module.css";
+import styles from "./CommandSequenceBuilder.module.css";
 
 interface CommandSequenceBuilderProps {
     value: string;
     onChange: (cmd: string) => void;
-    /** Filtra os comandos exibidos; undefined = sem restrição */
     allowedCommands?: string[];
 }
 
@@ -21,17 +20,25 @@ const CommandSequenceBuilder: React.FC<CommandSequenceBuilderProps> = ({
     const handleSelect = (key: string) => onChange(value === key ? "" : key);
 
     return (
-        <div className={styles.commandGrid}>
-            {visibleCommands.map((cmd) => (
-                <button
-                    key={cmd.key}
-                    type="button"
-                    className={`${styles.commandButton} ${value === cmd.key ? styles.commandButtonActive : ""}`}
-                    onClick={() => handleSelect(cmd.key)}
-                >
-                    {cmd.display}
-                </button>
-            ))}
+        <div className={styles.grid}>
+            {visibleCommands.map((cmd) => {
+                const Icon = cmd.icon;
+                const isActive = value === cmd.key;
+                return (
+                    <button
+                        key={cmd.key}
+                        type="button"
+                        className={`${styles.btn} ${isActive ? styles.btnActive : ""}`}
+                        onClick={() => handleSelect(cmd.key)}
+                        title={cmd.display}
+                        aria-label={cmd.display}
+                        aria-pressed={isActive}
+                    >
+                        <Icon size={18} />
+                        <span className={styles.label}>{cmd.display}</span>
+                    </button>
+                );
+            })}
         </div>
     );
 };

@@ -12,16 +12,15 @@ interface UseSimulationParams {
     gameDispatch: Dispatch<GameAction>;
     setCurrentCommand: (cmd: string) => void;
     simulationSpeed: number;
-    /** Botões ativos no momento — usado para checar vitória */
     activeButtons: string[];
     activeStageFloor: string;
+    showAlert: (message: string) => void;
     onStartTransition?: (edgeId: string, from: string, to: string, symbol: string) => void;
     onEndTransition?: (edgeId: string, from: string, to: string, symbol: string) => void;
     onStateEnter?: (nodeId: string) => void;
     onStateExit?: (nodeId: string) => void;
 }
 
-/** Duração de cada comando em ms — calibre conforme animações do modelo 3D */
 export const ANIM_DURATION: Record<string, number> = {
     f: 900,
     p: 850,
@@ -41,7 +40,6 @@ function getAnimDuration(ch: string): number {
 
 const delay = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
-/** Executa sequência de comandos enviando palavra ao Player e char ao reducer */
 async function runCommands(
     sequence: string,
     budget: number,
@@ -75,6 +73,7 @@ export function useSimulation({
     simulationSpeed,
     activeButtons,
     activeStageFloor,
+    showAlert,
     onStartTransition,
     onEndTransition,
     onStateEnter,
@@ -102,7 +101,6 @@ export function useSimulation({
         onExitRef.current = onStateExit;
     }, [onStateExit]);
 
-    // Refs para valores que a async function precisa acessar sem ficarem stale
     const activeButtonsRef = useRef(activeButtons);
     const activeFloorRef = useRef(activeStageFloor);
     useEffect(() => {
@@ -122,7 +120,6 @@ export function useSimulation({
             const { currentNodeId, characterIndex, type } = step;
             const currentNode = nodes.find((n) => n.id === currentNodeId);
 
-            // ── WAITING — 2s de espera após reset ─────────────────────────
             if (type === "waiting") {
                 await delay(500);
                 if (!isCurrent()) return;
@@ -130,16 +127,9 @@ export function useSimulation({
                 return;
             }
 
-            // ── STATE — autômato entrou num estado ────────────────────────
             if (type === "state") {
                 let spent = 0;
 
-                /*
-                 * SINCRONIZAÇÃO:
-                 * O autômato já está destacando este estado (React renderizou
-                 * o novo step antes de disparar o effect). A ação do nó é
-                 * despachada IMEDIATAMENTE — autômato e boneco se movem juntos.
-                 */
                 if (currentNode?.action) {
                     spent = await runCommands(
                         currentNode.action,
@@ -155,7 +145,6 @@ export function useSimulation({
                 await delay(Math.max(0, simulationSpeed - spent));
                 if (!isCurrent()) return;
 
-                // Fita consumida — verifica vitória
                 if (characterIndex >= inputWord.length) {
                     resolveVictory(currentNode?.isFinal ?? false);
                     return;
@@ -165,7 +154,6 @@ export function useSimulation({
                 return;
             }
 
-            // ── TRANSITION — lê símbolo e destaca a aresta ────────────────
             if (type === "transition") {
                 if (characterIndex >= inputWord.length) {
                     resolveVictory(currentNode?.isFinal ?? false);
@@ -188,13 +176,6 @@ export function useSimulation({
                 onExitRef.current?.(currentNodeId!);
                 onStartRef.current?.(transition.id, currentNodeId!, transition.target, symbol);
 
-                /*
-                 * SINCRONIZAÇÃO DA ARESTA:
-                 * Primeiro destacamos a aresta no autômato (setStep com activeEdgeId).
-                 * O efeito vai disparar novamente com type="edge_action", e SÓ ENTÃO
-                 * o boneco se move — garantindo que aresta destacada e movimento
-                 * aconteçam no mesmo ciclo visual.
-                 */
                 setStep({
                     currentNodeId,
                     activeEdgeId: transition.id,
@@ -210,7 +191,6 @@ export function useSimulation({
                 return;
             }
 
-            // ── EDGE_ACTION — aresta já destacada; move o boneco ─────────
             if (type === "edge_action" && step.pendingEdge) {
                 const { target, action: edgeAction, id: edgeId } = step.pendingEdge;
 
@@ -251,18 +231,9 @@ export function useSimulation({
         };
     }, [status, step, inputWord, nodes, edges, simulationSpeed]);
 
-    /**
-     * Verifica se a simulação terminou com sucesso.
-     *
-     * Vitória exige TODOS os critérios simultaneamente:
-     *  1. Fita totalmente lida (já garantido ao chamar esta função)
-     *  2. Se o autômato tem estados finais, o estado atual deve ser final
-     *  3. Se o mapa tem botões, todos devem estar ativados
-     */
     const resolveVictory = (isCurrentNodeFinal: boolean) => {
         const hasFinalStates = nodes.some((n) => n.isFinal);
         const stateOk = !hasFinalStates || isCurrentNodeFinal;
-
         const totalButtons = countTotalButtons(activeFloorRef.current);
         const buttonsOk = totalButtons === 0 || activeButtonsRef.current.length === totalButtons;
 
@@ -275,21 +246,13 @@ export function useSimulation({
         }
     };
 
-    // --- Controles ---
-
     const play = () => {
         const initialNode = nodes.find((n) => n.isInitial);
         if (!initialNode) {
-            alert("Defina um estado inicial antes de iniciar a simulação.");
+            showAlert("Defina um estado inicial antes de iniciar a simulação.");
             return;
         }
 
-        /*
-         * RESET + 2S DE ESPERA:
-         * Reseta o jogo imediatamente (boneco volta ao início via lerp).
-         * O step "waiting" aguarda 2000ms antes de iniciar a simulação,
-         * dando tempo para o boneco chegar à posição inicial.
-         */
         gameDispatch({ type: "RESET_STAGE", payload: { commands: "" } });
         setCurrentCommand("");
         setStatus("running");

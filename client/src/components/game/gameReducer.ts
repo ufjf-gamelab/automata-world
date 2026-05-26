@@ -136,10 +136,10 @@ const applyCommand = (
             break;
         }
         case "e":
-            if (MOVEMENT_MODE === "relative") nextRot = (currRot + 3) % 4;
+            if (MOVEMENT_MODE === "relative") nextRot = (currRot + 1) % 4;
             break;
         case "d":
-            if (MOVEMENT_MODE === "relative") nextRot = (currRot + 1) % 4;
+            if (MOVEMENT_MODE === "relative") nextRot = (currRot + 3) % 4;
             break;
         case "t":
             if (MOVEMENT_MODE === "relative") nextRot = (currRot + 2) % 4;

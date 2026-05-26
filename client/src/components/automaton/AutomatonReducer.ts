@@ -46,7 +46,7 @@ export const getLayout = (nodesToLayout: Node[], edgesToLayout: Edge[]): Node[] 
 
     // Monta o grafo dagre e calcula o layout
     const g = new dagre.graphlib.Graph({ multigraph: true });
-    g.setGraph({ rankdir: "LR", nodesep: 100, ranksep: 180, edgesep: 60 });
+    g.setGraph({ rankdir: "LR", nodesep: 60, ranksep: 120, edgesep: 60 });
     g.setDefaultEdgeLabel(() => ({}));
 
     nodesToLayout.forEach((node) =>
@@ -62,7 +62,7 @@ export const getLayout = (nodesToLayout: Node[], edgesToLayout: Edge[]): Node[] 
     });
 
     // Garante distância mínima entre pares bidirecionais para as curvas terem espaço
-    const MIN_BIDIR_DIST = 160;
+    const MIN_BIDIR_DIST = 120;
     const nodeMap = new Map(laid.map((n) => [n.id, { ...n }]));
 
     const bidirPairs = new Set<string>();
@@ -214,14 +214,12 @@ export function graphReducer(state: GraphState, action: GraphAction): GraphState
         case "DELETE_EDGE":
             return { ...state, edges: state.edges.filter((e) => e.id !== action.edgeId) };
 
-        // Torna um nó o único estado inicial (desmarca os demais)
         case "SET_INITIAL":
             return {
                 ...state,
                 nodes: state.nodes.map((n) => ({ ...n, isInitial: n.id === action.nodeId })),
             };
 
-        // Alterna se um nó é estado final ou não
         case "TOGGLE_FINAL":
             return {
                 ...state,
@@ -230,11 +228,9 @@ export function graphReducer(state: GraphState, action: GraphAction): GraphState
                 ),
             };
 
-        // Recalcula as posições de todos os nós usando dagre
         case "RELAYOUT":
             return { ...state, nodes: getLayout(state.nodes, state.edges) };
 
-        // Substitui o grafo inteiro com dados importados de um arquivo JSON
         case "LOAD":
             return { nodes: action.nodes, edges: action.edges, nodeCounter: action.nodes.length };
 

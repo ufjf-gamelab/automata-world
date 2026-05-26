@@ -5,8 +5,8 @@
 }
 
 .outer {
-    fill: var(--node-fill);
-    stroke: var(--node-stroke);
+    fill: var(--node-fill, #1c2235);
+    stroke: var(--node-stroke, #3e506e);
     stroke-width: 1.5px;
     filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
     transition: fill 180ms, stroke 180ms, filter 180ms;
@@ -14,87 +14,100 @@
 
 .inner {
     fill: none;
-    stroke: var(--node-stroke);
+    stroke: var(--node-stroke, #3e506e);
     stroke-width: 1.5px;
 }
 
 .outer.initial {
-    stroke: var(--success);
+    stroke: var(--success, #34d399);
     stroke-width: 2px;
 }
 
 .initialArrow {
-    stroke: var(--success);
+    stroke: var(--success, #34d399);
     stroke-width: 2px;
     stroke-linecap: round;
 }
 
 .outer.active {
-    fill: var(--accent-bg);
-    stroke: var(--accent);
+    fill: var(--accent-bg, rgba(245, 158, 11, 0.12));
+    stroke: var(--accent, #f59e0b);
     stroke-width: 2px;
     animation: nodeGlow 0.9s ease-in-out infinite;
 }
 
 @keyframes nodeGlow {
     0%, 100% {
-        filter: drop-shadow(0 0 4px var(--accent-bg)) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3))
+        filter: drop-shadow(0 0 4px var(--accent-bg)) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
     }
 
     50% {
-        filter: drop-shadow(0 0 12px var(--accent)) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3))
+        filter: drop-shadow(0 0 12px var(--accent)) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
     }
 }
 
 .outer.failed {
-    fill: var(--danger-bg);
-    stroke: var(--danger);
+    fill: var(--danger-bg, rgba(248, 113, 113, 0.1));
+    stroke: var(--danger, #f87171);
     stroke-width: 2px;
     animation: shake 0.4s ease;
 }
 
 @keyframes shake {
     0%, 100% {
-        transform: translateX(0)
+        transform: translateX(0);
     }
 
     25% {
-        transform: translateX(-4px)
+        transform: translateX(-4px);
     }
 
     75% {
-        transform: translateX(4px)
+        transform: translateX(4px);
     }
 }
 
 .node.dragging .outer {
-    stroke: var(--primary);
+    stroke: var(--primary, #6d83f2);
     stroke-width: 2px;
     cursor: grabbing;
 }
 
 .node:not(.dragging):hover .outer {
-    stroke: var(--primary);
+    stroke: var(--primary, #6d83f2);
 }
 
+/* ── Label do estado ── */
 .labelText {
     font-size: 15px;
-    font-weight: 600;
-    fill: var(--text-hi);
+    font-weight: 700;
+    fill: var(--text-hi, #e8edf5);
     pointer-events: none;
     user-select: none;
     text-anchor: middle;
     dominant-baseline: central;
+}
+
+/* ── Ação do estado (símbolo Unicode) ── */
+.actionBadgeBg {
+    fill: var(--primary, #6d83f2);
+    opacity: 0.18;
+    rx: 5px;
+    ry: 5px;
 }
 
 .actionText {
-    font-size: 10px;
-    font-weight: 700;
-    fill: var(--primary);
+    font-size: 15px;
+    font-weight: 800;
+    fill: var(--primary-hi, #8a9ef5);
     pointer-events: none;
     user-select: none;
     text-anchor: middle;
     dominant-baseline: central;
-    letter-spacing: 0.02em;
-    font-family: monospace;
+    /* Halo para legibilidade em ambos os temas */
+    paint-order: stroke;
+    stroke: var(--node-fill, #1c2235);
+    stroke-width: 3.5px;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }

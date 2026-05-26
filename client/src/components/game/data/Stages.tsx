@@ -1,6 +1,6 @@
 import type { Stage } from "./types";
 
-export const stagesList: Stage[] = [
+const oldStages: Stage[] = [
     {
         id: 1,
         name: "Reta simples",
@@ -72,8 +72,6 @@ export const stagesList: Stage[] = [
                 text: "Agora você aprende a **virar à direita** (↻). O caminho vai para o lado e depois para baixo — você precisa girar no momento certo!",
             },
             {
-                // Imagem: ícone D com seta curva para a direita, mostrando que D
-                // rotaciona o personagem 90° no sentido horário.
                 image: "tutorial/virada_direita/passo2.png",
                 text: "O símbolo **D** gira o personagem 90° no sentido horário ↻. Leia a fita **FFDFFB**: avança, avança, vira, avança, avança, botão!",
             },
@@ -108,20 +106,14 @@ export const stagesList: Stage[] = [
         },
         tutorial: [
             {
-                // Imagem: vista aérea do mapa em L com linha pontilhada
-                // traçando o caminho do jogador até o botão no canto superior direito.
                 image: "tutorial/meia_volta/passo1.png",
                 text: "O caminho agora tem **curvas**! Você precisa virar o personagem na hora certa para chegar ao botão.",
             },
             {
-                // Imagem: ícones dos 3 comandos: F (seta verde), E (curva azul), B (botão amarelo).
-                // Cards coloridos com legenda de cada símbolo.
                 image: "tutorial/meia_volta/passo2.png",
                 text: "Você tem 3 símbolos: **F** (frente), **E** (girar à esquerda ↺) e **B** (botão). A fita **FFEFFEFFB** já diz o caminho exato!",
             },
             {
-                // Imagem: fita "FFEFFEFFB" exibida como células coloridas
-                // (F=verde, E=azul, B=amarelo), igual ao tape display do jogo.
                 image: "tutorial/meia_volta/passo3.png",
                 text: "Complete o autômato: você precisará de **9 estados** — um para cada símbolo da fita. O último deve ser o **estado final**.",
             },
@@ -156,17 +148,10 @@ export const stagesList: Stage[] = [
                 text: "O percurso forma um **Z**! Você vai para a direita, desce e vai para a esquerda. São **duas viradas** — uma com **D** e outra com **E**.",
             },
             {
-                // Imagem: comparação visual E vs D:
-                // E: seta curva para a esquerda do personagem (↺)
-                // D: seta curva para a direita do personagem (↻)
-                // Com exemplos de quando cada um é usado no percurso Z.
                 image: "tutorial/ziguezague/passo2.png",
                 text: "**E** e **D** giram em sentidos opostos. Observe a fita **FFFEFFFDFFB** — o E vira na descida e o D vira na segunda reta horizontal.",
             },
             {
-                // Imagem: o Z desenhado com as 3 seções coloridas:
-                // Seção 1 (→→→) em verde, virada E em amarelo, seção 2 (↓↓↓) em azul,
-                // virada D em laranja, seção 3 (→→) em verde, botão em vermelho.
                 image: "tutorial/ziguezague/passo3.png",
                 text: "Monte **11 estados** — um para cada símbolo. Use **F** para andar, **E** e **D** para virar e **B** para o botão. Você consegue!",
             },
@@ -191,26 +176,6 @@ export const stagesList: Stage[] = [
             nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
             edges: [],
         },
-        // tutorial: [
-        //     {
-        //         // Imagem: vista lateral dos 3 blocos em degraus (h1, h2, h3) com
-        //         // o personagem no bloco mais baixo e setas diagonais mostrando os saltos.
-        //         image: "tutorial/escada/passo1.png",
-        //         text: "Os blocos estão em **alturas diferentes**! Para subir, você usará o comando **P** (pular), que move o personagem para um bloco que está exatamente **1 nível acima**.",
-        //     },
-        //     {
-        //         // Imagem: comparação P vs F: P sobe um nível (seta diagonal para cima),
-        //         // F anda reto ou desce um nível (seta horizontal ou levemente para baixo).
-        //         image: "tutorial/escada/passo2.png",
-        //         text: "**P** sobe exatamente 1 nível. **F** anda reto ou desce 1 nível. Se a diferença de altura for maior, nenhum dos dois funciona — o personagem fica parado!",
-        //     },
-        //     {
-        //         // Imagem: o autômato esperado: 3 estados P→P→B com o estado 4 como final.
-        //         // Diagrama limpo mostrando os 4 estados e suas conexões.
-        //         image: "tutorial/escada/passo3.png",
-        //         text: "Monte um autômato com **4 estados**: use **P** para subir cada degrau e **B** para apertar o botão no topo. Boa sorte!",
-        //     },
-        // ],
     },
     {
         id: 6,
@@ -233,33 +198,7 @@ export const stagesList: Stage[] = [
             nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
             edges: [],
         },
-        // tutorial: [
-        //     {
-        //         // Imagem: grid 2x2 visto isometricamente com as alturas indicadas
-        //         // (1, 2, 3, 4) e o personagem no canto inferior esquerdo.
-        //         // Seta espiral mostrando a rota.
-        //         image: "tutorial/espiral/passo1.png",
-        //         text: "O mapa é uma **grade 2x2** com blocos de alturas crescentes. Você precisa subir em espiral — pular, girar, pular, girar — até o botão no topo!",
-        //     },
-        //     {
-        //         // Imagem: a fita "PEPEPB" exibida como células coloridas
-        //         // (P=verde, E=azul, B=amarelo). Seta apontando para o campo de fita.
-        //         image: "tutorial/espiral/passo2.png",
-        //         text: "A fita **PEPEPB** já está definida. O padrão **P-E** se repete 3 vezes: pule um nível, gire à esquerda, pule, gire... e no final aperte o botão!",
-        //     },
-        //     {
-        //         // Imagem: autômato com 6 estados conectados em sequência P,E,P,E,P,B.
-        //         // Estado 6 com círculo duplo (final). Diagrama limpo.
-        //         image: "tutorial/espiral/passo3.png",
-        //         text: "Monte um autômato com **6 estados**, um para cada símbolo. A sequência é P→E→P→E→P→B. O último estado é o final!",
-        //     },
-        // ],
     },
-
-    // ═══════════════════════════════════════════════════════════════
-    // LOOPS
-    // ═══════════════════════════════════════════════════════════════
-
     {
         id: 7,
         name: "Corredor infinito",
@@ -279,29 +218,6 @@ export const stagesList: Stage[] = [
             nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
             edges: [],
         },
-        // tutorial: [
-        //     {
-        //         // Imagem: corredor longo com 8 blocos e uma pergunta visual:
-        //         // "8 estados?" com um X vermelho, versus "2 estados com loop?"
-        //         // com um ✓ verde. Contraste claro entre as duas abordagens.
-        //         image: "tutorial/loop/passo1.png",
-        //         text: "O corredor tem **7 blocos** antes do botão. Você poderia criar 8 estados... mas há um jeito mais inteligente: o **self-loop**!",
-        //     },
-        //     {
-        //         // Imagem: diagrama de um self-loop — estado 1 com uma seta curva
-        //         // voltando para si mesmo, rotulada "A (forward)". Estado 2 (final)
-        //         // conectado por "B (button)". Simples e didático.
-        //         image: "tutorial/loop/passo2.png",
-        //         text: "Um **self-loop** é uma transição que volta para o mesmo estado! Com apenas **2 estados**, o autômato pode andar indefinidamente e parar quando lê o botão.",
-        //     },
-        //     {
-        //         // Imagem: fita "AAAAAAAB" com as 7 letras A representando os 7 passos
-        //         // e B o botão. O autômato ao lado mostrando: estado 1 lê "A" → fica em 1,
-        //         // estado 1 lê "B" → vai para estado 2 (final).
-        //         image: "tutorial/loop/passo3.png",
-        //         text: "Monte o autômato: estado **1** tem um self-loop em **A** (ação: avançar) e uma transição para o estado **2** em **B** (ação: botão). A fita é **AAAAAAAB**.",
-        //     },
-        // ],
     },
     {
         id: 8,
@@ -322,20 +238,6 @@ export const stagesList: Stage[] = [
             nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
             edges: [],
         },
-        // tutorial: [
-        //     {
-        //         // Imagem: escada de 5 degraus com alturas 1→2→3→4→5(botão) e o personagem
-        //         // no primeiro degrau. Loop indicado por seta circular acima dos degraus.
-        //         image: "tutorial/escada_loop/passo1.png",
-        //         text: "A escada tem **5 degraus**. Em vez de 5 estados, use um **self-loop com P** — o personagem sobe um degrau de cada vez, independente de quantos sejam!",
-        //     },
-        //     {
-        //         // Imagem: autômato com self-loop em P e saída em B.
-        //         // Estado 1 com seta curva (P=pular) e seta para estado 2 (B=botão).
-        //         image: "tutorial/escada_loop/passo2.png",
-        //         text: "Monte: estado **1** com self-loop em **P** (pular) e transição para estado **2** em **B** (botão). A fita é **PPPPB** — 4 saltos e aperta o botão!",
-        //     },
-        // ],
     },
     {
         id: 9,
@@ -356,27 +258,6 @@ export const stagesList: Stage[] = [
             nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
             edges: [],
         },
-        // tutorial: [
-        //     {
-        //         // Imagem: visão lateral dos 7 blocos alternando h1 e h2,
-        //         // com setas indicando P (subir) e F (descer/avançar) alternadamente.
-        //         image: "tutorial/alternado/passo1.png",
-        //         text: "O caminho sobe e desce como uma **montanha-russa**! Você precisa alternar **P** (sobe) e **F** (avança/desce) repetidamente até o botão.",
-        //     },
-        //     {
-        //         // Imagem: ciclo de 2 estados — estado A e estado B com setas
-        //         // A→B (P) e B→A (F). Diferente do self-loop: são 2 estados diferentes
-        //         // que formam um ciclo. Uma seta de A para C (final) indica B.
-        //         image: "tutorial/alternado/passo2.png",
-        //         text: "Desta vez, use um **ciclo de 2 estados**: estado **A** (para blocos baixos) vai para estado **B** com P, e **B** volta para **A** com F. 3 estados no total!",
-        //     },
-        //     {
-        //         // Imagem: fita "PFPFPFB" com células coloridas e o autômato de 3 estados
-        //         // ao lado: 1--p-->2, 2--f-->1, 1--b-->3(final).
-        //         image: "tutorial/alternado/passo3.png",
-        //         text: "A fita é **PFPFPFB**. Monte: estado **1** lê P→vai para **2** e lê B→vai para **3**(final). Estado **2** lê F→volta para **1**. É um ciclo!",
-        //     },
-        // ],
     },
     {
         id: 10,
@@ -400,21 +281,6 @@ export const stagesList: Stage[] = [
             nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
             edges: [],
         },
-        // tutorial: [
-        //     {
-        //         // Imagem: mapa em U visto de cima, com setas mostrando:
-        //         // desce 2 (Sul), vira direita (Leste), anda 2, vira direita (Norte),
-        //         // sobe 2 até o botão.
-        //         image: "tutorial/u/passo1.png",
-        //         text: "O caminho forma um **U**! Você desce, atravessa e sobe até o botão. Use **D** (girar à direita ↻) para fazer as duas curvas.",
-        //     },
-        //     {
-        //         // Imagem: fita "FFDFFDFFB" exibida como células coloridas
-        //         // com cada grupo de símbolos agrupado (FF=andar, D=virar, etc.).
-        //         image: "tutorial/u/passo2.png",
-        //         text: "A fita **FFDFFDFFB** descreve o percurso completo. Note que a virada ↻ aparece **duas vezes**. Monte 9 estados, um para cada símbolo!",
-        //     },
-        // ],
     },
     {
         id: 11,
@@ -437,26 +303,10 @@ export const stagesList: Stage[] = [
             nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
             edges: [],
         },
-        // tutorial: [
-        //     {
-        //         // Imagem: grid 3x3 com a rota em espiral desenhada com seta tracejada:
-        //         // [0,2]→[1,2]→[2,2]→vira→[2,1]→[2,0]=botão.
-        //         // Setas numeradas indicando a sequência.
-        //         image: "tutorial/espiral3x3/passo1.png",
-        //         text: "Desta vez **você decide** a fita! Observe o mapa, trace o caminho até o botão e descubra a sequência de comandos. Pista: você precisará de **D** duas vezes.",
-        //     },
-        //     {
-        //         // Imagem: dica visual mostrando o personagem no canto inferior esquerdo
-        //         // e o botão no canto superior direito, com a pergunta "Qual é o caminho?".
-        //         image: "tutorial/espiral3x3/passo2.png",
-        //         text: "Dica: avance para o **Leste**, vire à direita (↻ = Norte), avance até o botão. Quantos **F** você precisa em cada trecho? Monte o autômato e teste!",
-        //     },
-        // ],
     },
     {
         id: 12,
         name: "Desafio livre",
-
         floor: `1111
 1--1
 1--1
@@ -476,20 +326,380 @@ export const stagesList: Stage[] = [
             nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
             edges: [],
         },
-        // tutorial: [
-        //     {
-        //         // Imagem: mapa quadrado 4x4 com o centro vazio, personagem no canto
-        //         // superior esquerdo e botão no canto inferior direito. Sem setas —
-        //         // o jogador deve descobrir o caminho sozinho.
-        //         image: "tutorial/desafio/passo1.png",
-        //         text: "**Desafio final!** Não há fita definida nem autômato inicial. Explore o mapa, descubra o caminho até o botão e monte o autômato do zero!",
-        //     },
-        //     {
-        //         // Imagem: dica mostrando que o centro está vazio (blocos inválidos),
-        //         // então o jogador deve contornar pelo lado de fora do quadrado.
-        //         image: "tutorial/desafio/passo2.png",
-        //         text: "O centro do mapa está **vazio** — você não pode atravessar! Contorne pelo perímetro. Você pode usar **E** e **D** à vontade. Quantos estados vai precisar?",
-        //     },
-        // ],
     },
 ];
+
+// ═══════════════════════════════════════════════════════════════
+//  FASES LFA — PROGRESSÃO PEDAGÓGICA
+//
+//  Fase 101 — Observação         : autômato pré-montado, só executa
+//  Fase 102 — Primeira interação : marca o estado inicial
+//  Fase 103 — Transições         : cria as arestas entre estados dados
+//  Fase 104 — Aceitação          : define os estados finais
+//  Fase 105 — Autômato completo  : constrói o AFD inteiro do zero
+//  Fase 106 — Sandbox            : modo livre, sem restrições
+//
+//  CODIFICAÇÃO DO MAPA (floor):
+//   1-5 → tile de altura 1–5
+//   6-9 → botão de altura 1–4  (6=btn h1, 7=btn h2, 8=btn h3, 9=btn h4)
+//   0   → botão de altura 5
+//   -   → vazio (sem bloco)
+//
+//  REGRA DO BOTÃO: o comando "b" pressiona o botão na posição ATUAL
+//  do jogador. O jogador precisa ESTAR em cima do tile de botão para
+//  pressionar. Portanto, a última ação antes de "b" deve ser "f" ou "p"
+//  movendo o jogador até o tile do botão.
+// ═══════════════════════════════════════════════════════════════
+const newStages: Stage[] = [
+    // ─────────────────────────────────────────────────────────
+    //  FASE 101 — OBSERVAÇÃO
+    //  Mapa: reta 3 blocos  [P→1→1→B]
+    //  Caminho: f,f,b  (3 transições, fita "aaa")
+    //  [0,0]=tile, [1,0]=tile, [2,0]=button
+    //  Jogador em [0,0] East: f→[1,0], f→[2,0](btn), b→pressiona
+    // ─────────────────────────────────────────────────────────
+    {
+        id: 101,
+        name: "LFA 1 — Observação",
+        floor: "116",
+        playerPosition: [0, 0],
+        initialRotation: 1,
+        permissions: {
+            allowLoops: false,
+            allowMultipleOutgoing: false,
+            stateActionsAllowed: false,
+            edgeActionsAllowed: false,
+            maxNodes: 4,
+            allowedSymbols: ["a"],
+            allowedCommands: ["f", "b"],
+            fixedTape: "aaa",
+        },
+        initialGraph: {
+            nodes: [
+                { id: "1", label: "1", isInitial: true, isFinal: false },
+                { id: "2", label: "2", isInitial: false, isFinal: false },
+                { id: "3", label: "3", isInitial: false, isFinal: false },
+                { id: "4", label: "4", isInitial: false, isFinal: true },
+            ],
+            edges: [
+                { source: "1", target: "2", label: "a", action: "f" },
+                { source: "2", target: "3", label: "a", action: "f" },
+                { source: "3", target: "4", label: "a", action: "b" },
+            ],
+        },
+        tutorial: [
+            {
+                image: "lfa/01-observacao/passo1.png",
+                text:
+                    "Bem-vindo às aulas de **Linguagens Formais e Autômatos**! " +
+                    "O autômato já está montado. Observe o grafo ao lado: " +
+                    "cada **círculo** é um estado e cada **seta** é uma transição.",
+            },
+            {
+                image: "lfa/01-observacao/passo2.png",
+                text:
+                    "O **estado inicial** (seta de entrada) é de onde o autômato parte. " +
+                    "O **estado final** (borda dupla) é onde ele precisa chegar para aceitar a entrada. " +
+                    "Cada aresta carrega o símbolo que a dispara e a ação do personagem.",
+            },
+            {
+                image: "lfa/01-observacao/passo3.png",
+                text:
+                    "A fita já está preenchida com 'aaa'. " +
+                    "Clique em **Executar** e observe: a cada símbolo lido, " +
+                    "o autômato avança um estado e o personagem executa a ação correspondente.",
+            },
+        ],
+    },
+
+    // ─────────────────────────────────────────────────────────
+    //  FASE 102 — PRIMEIRA INTERAÇÃO
+    //  Mapa: reta 4 blocos  [P→1→1→1→B]  (floor "1116")
+    //  Caminho: f,f,f,b  (4 transições, fita "aaaa")
+    //  [0,0]=tile, [1,0]=tile, [2,0]=tile, [3,0]=button
+    //  Jogador em [0,0] East: f→[1], f→[2], f→[3](btn), b→pressiona
+    //  BUG ANTERIOR: floor "11116" tinha button em [4,0] mas ações só
+    //  chegavam em [3,0]. Corrigido para "1116".
+    // ─────────────────────────────────────────────────────────
+    {
+        id: 102,
+        name: "LFA 2 — Estado inicial",
+        floor: "1116",
+        playerPosition: [0, 0],
+        initialRotation: 1,
+        permissions: {
+            allowLoops: false,
+            allowMultipleOutgoing: false,
+            stateActionsAllowed: false,
+            edgeActionsAllowed: false,
+            maxNodes: 5,
+            allowedSymbols: ["a"],
+            allowedCommands: ["f", "b"],
+            fixedTape: "aaaa",
+        },
+        initialGraph: {
+            nodes: [
+                { id: "1", label: "1", isInitial: false, isFinal: false },
+                { id: "2", label: "2", isInitial: false, isFinal: false },
+                { id: "3", label: "3", isInitial: false, isFinal: false },
+                { id: "4", label: "4", isInitial: false, isFinal: false },
+                { id: "5", label: "5", isInitial: false, isFinal: true },
+            ],
+            edges: [
+                { source: "1", target: "2", label: "a", action: "f" },
+                { source: "2", target: "3", label: "a", action: "f" },
+                { source: "3", target: "4", label: "a", action: "f" },
+                { source: "4", target: "5", label: "a", action: "b" },
+            ],
+        },
+        tutorial: [
+            {
+                image: "lfa/02-estado-inicial/passo1.png",
+                text:
+                    "O autômato está quase pronto — os estados e as transições já existem. " +
+                    "Mas falta algo essencial: o **estado inicial**! " +
+                    "Sem ele, o autômato não sabe de onde partir.",
+            },
+            {
+                image: "lfa/02-estado-inicial/passo2.png",
+                text:
+                    "O personagem começa no **primeiro bloco** — então o autômato também " +
+                    "deve partir do estado que representa essa posição inicial. " +
+                    "Clique com o botão direito no estado **1** e marque-o como inicial.",
+            },
+            {
+                image: "lfa/02-estado-inicial/passo3.png",
+                text:
+                    "Agora o autômato tem um ponto de partida! " +
+                    "Execute a fita 'aaaa' e veja o personagem percorrer os 3 blocos " +
+                    "e apertar o botão ao chegar no estado final.",
+            },
+        ],
+    },
+
+    // ─────────────────────────────────────────────────────────
+    //  FASE 103 — CONSTRUINDO TRANSIÇÕES
+    //  Mapa: L  [P→1]
+    //            [  ↑]
+    //            [  B]
+    //  Caminho: f,e,f,b  (4 transições, fita "aaaa")
+    //  floor "-6\n11": [0,0]=vazio, [1,0]=button, [0,1]=tile, [1,1]=tile
+    //  Jogador em [0,1] East: f→[1,1], e→vira Norte, f→[1,0](btn), b→pressiona
+    //  BUG ANTERIOR: fixedTape "aaa" tinha 3 símbolos mas caminho precisa de 4
+    //  e maxNodes 4 só permite 3 transições. Corrigido para "aaaa" e maxNodes 5.
+    // ─────────────────────────────────────────────────────────
+    {
+        id: 103,
+        name: "LFA 3 — Transições",
+        floor: `-6
+11`,
+        playerPosition: [0, 1],
+        initialRotation: 1,
+        permissions: {
+            allowLoops: false,
+            allowMultipleOutgoing: false,
+            stateActionsAllowed: false,
+            edgeActionsAllowed: true,
+            maxNodes: 5,
+            allowedSymbols: ["a"],
+            allowedCommands: ["f", "e", "b"],
+            fixedTape: "aaaa",
+        },
+        initialGraph: {
+            nodes: [
+                { id: "1", label: "1", isInitial: true, isFinal: false },
+                { id: "2", label: "2", isInitial: false, isFinal: false },
+                { id: "3", label: "3", isInitial: false, isFinal: false },
+                { id: "4", label: "4", isInitial: false, isFinal: false },
+                { id: "5", label: "5", isInitial: false, isFinal: true },
+            ],
+            edges: [],
+        },
+        tutorial: [
+            {
+                image: "lfa/03-transicoes/passo1.png",
+                text:
+                    "Os **estados** já estão criados, mas o autômato não sabe como se mover entre eles. " +
+                    "Você precisa criar as **transições** — as arestas que conectam os estados. " +
+                    "A função δ define: dado um estado e um símbolo, qual é o próximo estado?",
+            },
+            {
+                image: "lfa/03-transicoes/passo2.png",
+                text:
+                    "Para criar uma transição: arraste do estado de **origem** para o estado de **destino**. " +
+                    "Escolha o símbolo 'a' e a ação de movimento. " +
+                    "O caminho exige: **avançar** (f), **virar esquerda** (e), **avançar** (f), **botão** (b).",
+            },
+            {
+                image: "lfa/03-transicoes/passo3.png",
+                text:
+                    "Monte as 4 transições para completar δ: " +
+                    "1 -a/f→ 2 | 2 -a/e→ 3 | 3 -a/f→ 4 | 4 -a/b→ 5. " +
+                    "Execute a fita 'aaaa' — cada símbolo lido dispara uma transição " +
+                    "e o personagem executa a ação correspondente!",
+            },
+        ],
+    },
+
+    // ─────────────────────────────────────────────────────────
+    //  FASE 104 — ACEITAÇÃO E REJEIÇÃO
+    //  Mapa: reta 3 blocos  [P→1→1→B]  (floor "116")
+    //  Caminho: f,f,b  (3 transições pré-dadas)
+    //  [0,0]=tile, [1,0]=tile, [2,0]=button
+    //  Jogador em [0,0] East: f→[1,0], f→[2,0](btn), b→pressiona
+    //  BUG ANTERIOR: floor "1116" tinha button em [3,0] mas ação "b"
+    //  era executada em [2,0] (tile comum). Corrigido para "116".
+    // ─────────────────────────────────────────────────────────
+    {
+        id: 104,
+        name: "LFA 4 — Estado final",
+        floor: "116",
+        playerPosition: [0, 0],
+        initialRotation: 1,
+        permissions: {
+            allowLoops: false,
+            allowMultipleOutgoing: false,
+            stateActionsAllowed: true,
+            edgeActionsAllowed: false,
+            maxNodes: 4,
+            allowedSymbols: ["a"],
+            allowedCommands: ["f", "b"],
+        },
+        initialGraph: {
+            nodes: [
+                { id: "1", label: "1", isInitial: true, isFinal: false },
+                { id: "2", label: "2", isInitial: false, isFinal: false },
+                { id: "3", label: "3", isInitial: false, isFinal: false },
+                { id: "4", label: "4", isInitial: false, isFinal: false },
+            ],
+            edges: [
+                { source: "1", target: "2", label: "a", action: "f" },
+                { source: "2", target: "3", label: "a", action: "f" },
+                { source: "3", target: "4", label: "a", action: "b" },
+            ],
+        },
+        tutorial: [
+            {
+                image: "lfa/04-aceitacao/passo1.png",
+                text:
+                    "O autômato tem estados e transições, mas ainda não sabe quando **aceitar** a entrada. " +
+                    "Um AFD aceita uma cadeia somente se, após ler todos os símbolos, " +
+                    "o estado atual for um **estado final** (borda dupla).",
+            },
+            {
+                image: "lfa/04-aceitacao/passo2.png",
+                text:
+                    "Sem um estado final definido, qualquer cadeia é **rejeitada** — " +
+                    "independentemente de onde o autômato pare. " +
+                    "Pense: após ler 'aaa', o personagem aperta o botão no estado 4. " +
+                    "Esse é o estado que deve ser o final!",
+            },
+            {
+                image: "lfa/04-aceitacao/passo3.png",
+                text:
+                    "Clique com botão direito no estado **4** e marque-o como **estado final**. " +
+                    "Agora execute a fita 'aaa': o personagem chega ao botão, " +
+                    "o autômato para no estado final — e a cadeia é **aceita**!",
+            },
+        ],
+    },
+
+    // ─────────────────────────────────────────────────────────
+    //  FASE 105 — AUTÔMATO COMPLETO
+    //  Mapa: Γ  [P→1→B]  (row 0)
+    //            [↑    ]  (row 1)
+    //  Caminho: f,d,f,f,b  (5 transições, fita "aaaaa")
+    //  floor "116\n1--": [0,0]=tile, [1,0]=tile, [2,0]=button, [0,1]=tile
+    //  Jogador em [0,1] North: f→[0,0], d→vira East, f→[1,0], f→[2,0](btn), b→pressiona
+    //  BUG ANTERIOR: maxNodes 5 permitia apenas 4 transições. O caminho precisa de 5.
+    //  Corrigido para maxNodes 6 (6 estados = 5 transições em cadeia linear).
+    // ─────────────────────────────────────────────────────────
+    {
+        id: 105,
+        name: "LFA 5 — AFD completo",
+        floor: `116
+1--`,
+        playerPosition: [0, 1],
+        initialRotation: 2,
+        permissions: {
+            allowLoops: false,
+            allowMultipleOutgoing: false,
+            stateActionsAllowed: false,
+            edgeActionsAllowed: true,
+            maxNodes: 6,
+            allowedSymbols: ["a"],
+            allowedCommands: ["f", "d", "b"],
+        },
+        initialGraph: {
+            nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
+            edges: [],
+        },
+        tutorial: [
+            {
+                image: "lfa/05-afd-completo/passo1.png",
+                text:
+                    "Agora você monta o autômato **do zero**! " +
+                    "Analise o mapa: o personagem precisa subir, virar à direita e avançar até o botão. " +
+                    "Quantos estados e transições são necessários? Trace o caminho antes de começar.",
+            },
+            {
+                image: "lfa/05-afd-completo/passo2.png",
+                text:
+                    "Lembre da **5-tupla M = (Q, Σ, δ, q₀, F)**: " +
+                    "você precisa definir todos os 5 componentes. " +
+                    "Crie estados, conecte-os com transições e marque " +
+                    "o estado inicial (q₀) e o estado final (F).",
+            },
+            {
+                image: "lfa/05-afd-completo/passo3.png",
+                text:
+                    "Dica: 6 estados no total — um por símbolo lido mais o inicial. " +
+                    "Ações: f (subir), d (virar direita), f, f, b (botão). " +
+                    "Estado 6 é o final. Execute a fita 'aaaaa' para verificar!",
+            },
+        ],
+    },
+
+    // ─────────────────────────────────────────────────────────
+    //  FASE 106 — SANDBOX
+    //  Sem restrições — modo livre
+    // ─────────────────────────────────────────────────────────
+    {
+        id: 106,
+        name: "LFA 6 — Sandbox",
+        floor: `1111
+1--1
+1--1
+1116`,
+        playerPosition: [0, 0],
+        initialRotation: 0,
+        permissions: {
+            allowLoops: true,
+            allowMultipleOutgoing: true,
+            stateActionsAllowed: true,
+            edgeActionsAllowed: true,
+        },
+        initialGraph: {
+            nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
+            edges: [],
+        },
+        tutorial: [
+            {
+                image: "lfa/06-sandbox/passo1.png",
+                text:
+                    "**Modo livre!** Não há restrições de estados, símbolos ou loops. " +
+                    "Explore o mapa, crie o autômato que quiser e experimente " +
+                    "diferentes cadeias de entrada. O centro está vazio — contorne pelo perímetro.",
+            },
+            {
+                image: "lfa/06-sandbox/passo2.png",
+                text:
+                    "Use tudo que aprendeu: defina um **estado inicial**, marque **estados finais**, " +
+                    "crie **transições** com os símbolos que preferir e experimente **loops** " +
+                    "para percorrer trechos repetidos do caminho. Não há resposta errada!",
+            },
+        ],
+    },
+];
+
+export const stagesList: Stage[] = [...oldStages, ...newStages];

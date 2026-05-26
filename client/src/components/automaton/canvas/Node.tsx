@@ -1,20 +1,16 @@
 import React, { useRef } from "react";
-import { GAME_COMMANDS } from "../../game/gameConfig";
+import { ACTION_SVG_SYMBOL } from "../../game/gameConfig";
 import type { Node } from "../AutomatonReducer";
 import { NODE_WIDTH } from "../AutomatonReducer";
 import { useNodeDrag } from "./useNodeDrag";
 import styles from "./Node.module.css";
 
-const ACTION_DISPLAY: Record<string, string> = Object.fromEntries(
-    GAME_COMMANDS.map((c) => [c.key, c.display]),
-);
-
-function formatAction(action: string): string {
+function formatActionSymbols(action: string): string {
     return action
         .toLowerCase()
         .split("")
-        .map((ch) => ACTION_DISPLAY[ch] ?? ch.toUpperCase())
-        .join(" → ");
+        .map((ch) => ACTION_SVG_SYMBOL[ch] ?? ch.toUpperCase())
+        .join(" ");
 }
 
 interface NodeProps {
@@ -25,11 +21,6 @@ interface NodeProps {
     screenToWorld: (clientX: number, clientY: number) => { x: number; y: number };
     isActive: boolean;
     isFailed: boolean;
-    /**
-     * Chave que muda a cada vez que o autômato entra neste estado.
-     * Ao usar como `key` no elemento SVG, força o React a remontar o
-     * elemento e reiniciar a animação CSS — necessário para loops.
-     */
     activeKey: number;
 }
 
@@ -51,6 +42,7 @@ const NodeComponent = ({
     const onLongPressRef = useRef(onLongPress);
     const screenToWorldRef = useRef(screenToWorld);
     const nodeDataRef = useRef(node);
+
     React.useEffect(() => {
         onDragRef.current = onDrag;
     }, [onDrag]);
@@ -94,6 +86,13 @@ const NodeComponent = ({
         .filter(Boolean)
         .join(" ");
 
+    const actionSymbol = node.action ? formatActionSymbols(node.action) : null;
+
+    // Dimensões do badge de ação acima do nó
+    const badgeW = actionSymbol ? Math.max(26, actionSymbol.length * 11 + 12) : 0;
+    const badgeH = 20;
+    const badgeY = -radius - badgeH - 2; // acima do círculo com folga
+
     return (
         <g
             ref={nodeRef}
@@ -101,27 +100,37 @@ const NodeComponent = ({
             transform={`translate(${node.x}, ${node.y})`}
             onClick={handleMouseClick}
         >
-            {/*
-             * key={isActive ? activeKey : "idle"} força o React a remontar
-             * este elemento sempre que activeKey muda enquanto o nó está ativo.
-             * Isso reinicia a animação CSS de pulse — essencial para loops,
-             * onde o nó permanece ativo entre visitas consecutivas.
-             */}
             <circle key={isActive ? activeKey : "idle"} className={outerClasses} r={radius} />
             {node.isFinal && <circle className={styles.inner} r={radius - 6} />}
 
-            {node.action ? (
-                <>
-                    <text className={styles.actionText} dy="-7">
-                        {formatAction(node.action)}
+            {actionSymbol && (
+                /* Badge com fundo pill posicionado acima do círculo */
+                <g>
+                    <rect
+                        className={styles.actionBadgeBg}
+                        x={-badgeW / 2}
+                        y={badgeY}
+                        width={badgeW}
+                        height={badgeH}
+                        rx={5}
+                        ry={5}
+                    />
+                    <text
+                        className={styles.actionText}
+                        x={0}
+                        y={badgeY + badgeH / 2}
+                        textAnchor="middle"
+                        dominantBaseline="central"
+                    >
+                        {actionSymbol}
                     </text>
-                    <text className={styles.labelText} dy="10">
-                        {node.label}
-                    </text>
-                </>
-            ) : (
-                <text className={styles.labelText}>{node.label}</text>
+                </g>
             )}
+
+            {/* Label do estado — centralizado no círculo */}
+            <text className={styles.labelText} textAnchor="middle" dominantBaseline="central">
+                {node.label}
+            </text>
 
             {node.isInitial && (
                 <path
