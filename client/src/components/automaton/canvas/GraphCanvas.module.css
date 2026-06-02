@@ -3,17 +3,56 @@
     width: 100%;
     height: 100%;
     cursor: default;
-    background-color: var(--canvas-bg);
-    background-image: radial-gradient(circle, var(--canvas-dot) 1px, transparent 1px);
+    background-color: var(--canvas-bg, #0f1520);
+    background-image: radial-gradient(circle, var(--canvas-dot, #1e2a3e) 1px, transparent 1px);
     background-size: 26px 26px;
     transition: background-color 250ms ease;
 }
 
 .ghostLine {
-    stroke: var(--primary);
+    stroke: var(--primary, #6d83f2);
     stroke-width: 1.5px;
     stroke-dasharray: 5 4;
     stroke-linecap: round;
     pointer-events: none;
     opacity: 0.65;
+}
+
+/* ── Estado vazio — instrução de primeiro uso ── */
+
+.emptyState {
+    pointer-events: none;
+}
+
+.emptyCircle {
+    fill: none;
+    stroke: var(--border, #2e3a54);
+    stroke-width: 2px;
+    stroke-dasharray: 8 5;
+    animation: rotateDash 12s linear infinite;
+}
+
+@keyframes rotateDash {
+    from {
+        stroke-dashoffset: 0;
+    }
+
+    to {
+        stroke-dashoffset: -100;
+    }
+}
+
+.emptyIcon {
+    font-size: 36px;
+    font-weight: 300;
+    fill: var(--border, #2e3a54);
+    font-family: inherit;
+}
+
+.emptyLabel {
+    font-size: 13px;
+    font-weight: 500;
+    fill: var(--text-lo, #556080);
+    font-family: inherit;
+    letter-spacing: 0.02em;
 }

@@ -14,6 +14,8 @@ interface GraphCanvasProps {
     onNodeLongPress?: (event: TouchEvent, node: Node) => void;
     onEdgeClick: (event: React.MouseEvent, edge: Edge) => void;
     onSvgMouseMove: (x: number, y: number) => void;
+    /** Chamado quando o usuário clica no canvas sem nenhum nó presente */
+    onCanvasClick?: (worldX: number, worldY: number) => void;
     recenterTrigger: number;
     linkingState: { sourceNode: Node | null };
     mousePosition: { x: number; y: number };
@@ -22,10 +24,6 @@ interface GraphCanvasProps {
     activeEdgeId: string | null;
     failedNodeId: string | null;
     isSimulating: boolean;
-    /**
-     * Incrementa a cada passo da simulação — usado como activeKey no Node
-     * para forçar re-mount da animação em loops.
-     */
     activeStepIndex: number;
 }
 
@@ -59,10 +57,8 @@ function computeAvoidanceOffset(
         ay = src.y + (dy / len) * radius;
     const bx = tgt.x - (dx / len) * radius,
         by = tgt.y - (dy / len) * radius;
-
     let maxPenetration = 0,
         sideSign = 1;
-
     for (const node of allNodes) {
         if (node.id === src.id || node.id === tgt.id) continue;
         const dist = distPointToSegment(node.x, node.y, ax, ay, bx, by);
@@ -75,7 +71,6 @@ function computeAvoidanceOffset(
             }
         }
     }
-
     if (maxPenetration === 0) return 0;
     return sideSign * Math.max(70, maxPenetration * 1.6);
 }
@@ -88,6 +83,7 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
     onNodeLongPress,
     onEdgeClick,
     onSvgMouseMove,
+    onCanvasClick,
     recenterTrigger,
     sourceNodeForLinking,
     mousePosition,
@@ -105,7 +101,6 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
         if (!svgRef.current || !gRef.current) return;
         const svg = d3.select(svgRef.current);
         const g = d3.select(gRef.current);
-
         const zoom = d3
             .zoom<SVGSVGElement, unknown>()
             .scaleExtent([0.1, 4])
@@ -117,7 +112,6 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
                 return !event.button;
             })
             .on("zoom", (event) => g.attr("transform", event.transform.toString()));
-
         svg.call(zoom).on("dblclick.zoom", null);
         zoomRef.current = zoom;
     }, []);
@@ -131,7 +125,6 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
         const width = svgNode.clientWidth;
         const height = svgNode.clientHeight;
         if (width === 0 || height === 0) return;
-
         let minX = Infinity,
             minY = Infinity,
             maxX = -Infinity,
@@ -142,18 +135,15 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
             maxX = Math.max(maxX, n.x);
             maxY = Math.max(maxY, n.y);
         });
-
         const gWidth = maxX - minX + NODE_WIDTH * 2;
         const gHeight = maxY - minY + NODE_HEIGHT * 2;
         if (gWidth === 0 || gHeight === 0) return;
-
         const gCenterX = minX + (maxX - minX) / 2;
         const gCenterY = minY + (maxY - minY) / 2;
         const scale = Math.min(width / gWidth, height / gHeight) * 0.75;
         const transform = d3.zoomIdentity
             .translate(width / 2 - gCenterX * scale, height / 2 - gCenterY * scale)
             .scale(scale);
-
         (svg.transition().duration(750) as any).call(zoomRef.current.transform, transform);
     }, [recenterTrigger]);
 
@@ -170,6 +160,12 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
         onSvgMouseMove(x, y);
     };
 
+    const handleSvgClick = (event: React.MouseEvent<SVGSVGElement>) => {
+        if (nodes.length > 0) return;
+        const { x, y } = screenToWorld(event.clientX, event.clientY);
+        onCanvasClick?.(x, y);
+    };
+
     const nodesById = new Map(nodes.map((n) => [n.id, n]));
 
     return (
@@ -178,6 +174,7 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
             width="100%"
             height="100%"
             onMouseMove={handleMouseMove}
+            onClick={handleSvgClick}
             className={styles.graphCanvas}
         >
             <defs>
@@ -201,9 +198,33 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
                     markerWidth={6}
                     markerHeight={6}
                 >
-                    <path d="M 0,-5 L 10,0 L 0,5" fill="#28a745" />
+                    <path d="M 0,-5 L 10,0 L 0,5" fill="#34d399" />
                 </marker>
             </defs>
+
+            {/* Estado vazio — instrução para criar o primeiro estado */}
+            {nodes.length === 0 && (
+                <g className={styles.emptyState}>
+                    <circle cx="50%" cy="50%" r={36} className={styles.emptyCircle} />
+                    <text
+                        x="50%"
+                        y="calc(50% - 12px)"
+                        textAnchor="middle"
+                        dominantBaseline="central"
+                        className={styles.emptyIcon}
+                    >
+                        +
+                    </text>
+                    <text
+                        x="50%"
+                        y="calc(50% + 52px)"
+                        textAnchor="middle"
+                        className={styles.emptyLabel}
+                    >
+                        Clique para criar o primeiro estado
+                    </text>
+                </g>
+            )}
 
             <g ref={gRef}>
                 <g>
@@ -211,7 +232,6 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
                         const sourceNode = nodesById.get(edge.source);
                         const targetNode = nodesById.get(edge.target);
                         if (!sourceNode || !targetNode) return null;
-
                         const parallelEdges = edges.filter(
                             (e) => e.source === edge.source && e.target === edge.target,
                         );
@@ -227,7 +247,6 @@ const GraphCanvas: React.FC<GraphCanvasProps> = ({
                             targetNode,
                             nodes,
                         );
-
                         return (
                             <EdgeComponent
                                 key={edge.id}

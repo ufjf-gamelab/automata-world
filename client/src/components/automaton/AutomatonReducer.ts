@@ -1,33 +1,23 @@
-/**
- * AutomatonReducer.ts — Estrutura de dados e reducer do grafo do autômato
- *
- * Define os tipos Node (estado) e Edge (transição), além do reducer que
- * processa todas as mutações do grafo: arrastar nós, adicionar/remover
- * estados e transições, importar/exportar, e reorganizar o layout.
- *
- * O layout automático usa a biblioteca `dagre`, que calcula posições
- * hierárquicas para grafos direcionados.
- */
 import * as dagre from "dagre";
 
 // --- Tipos do grafo ---
 
 export interface Node {
     id: string;
-    label: string; // texto exibido dentro do círculo (id do estado)
+    label: string;
     x: number;
     y: number;
     isInitial?: boolean;
     isFinal?: boolean;
-    action?: string; // sequência de comandos do jogo executada ao entrar neste estado (ex: "fn")
+    action?: string;
 }
 
 export interface Edge {
     id: string;
-    source: string; // id do nó de origem
-    target: string; // id do nó de destino
-    label: string; // símbolo lido na fita (qualquer letra do alfabeto)
-    action?: string; // sequência de comandos do jogo executada ao percorrer esta aresta (ex: "fb")
+    source: string;
+    target: string;
+    label: string;
+    action?: string;
 }
 
 export const NODE_WIDTH = 60;
@@ -35,16 +25,9 @@ export const NODE_HEIGHT = 60;
 
 // --- Layout automático com dagre ---
 
-/**
- * Calcula as posições x/y de cada nó usando o algoritmo de layout hierárquico
- * da biblioteca dagre (esquerda → direita). Após o layout, verifica pares
- * bidirecionais (A↔B) e garante que a distância mínima entre eles seja
- * suficiente para as curvas das arestas não se sobreporem.
- */
 export const getLayout = (nodesToLayout: Node[], edgesToLayout: Edge[]): Node[] => {
     if (nodesToLayout.length === 0) return nodesToLayout;
 
-    // Monta o grafo dagre e calcula o layout
     const g = new dagre.graphlib.Graph({ multigraph: true });
     g.setGraph({ rankdir: "LR", nodesep: 60, ranksep: 120, edgesep: 60 });
     g.setDefaultEdgeLabel(() => ({}));
@@ -61,7 +44,6 @@ export const getLayout = (nodesToLayout: Node[], edgesToLayout: Edge[]): Node[] 
         return { ...node, x: pos.x, y: pos.y };
     });
 
-    // Garante distância mínima entre pares bidirecionais para as curvas terem espaço
     const MIN_BIDIR_DIST = 120;
     const nodeMap = new Map(laid.map((n) => [n.id, { ...n }]));
 
@@ -80,7 +62,6 @@ export const getLayout = (nodesToLayout: Node[], edgesToLayout: Edge[]): Node[] 
         const dy = b.y - a.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < MIN_BIDIR_DIST) {
-            // Empurra os dois nós para longe um do outro a partir do ponto médio
             const scale = MIN_BIDIR_DIST / Math.max(dist, 1);
             const midX = (a.x + b.x) / 2;
             const midY = (a.y + b.y) / 2;
@@ -105,12 +86,24 @@ export const getLayout = (nodesToLayout: Node[], edgesToLayout: Edge[]): Node[] 
 export interface GraphState {
     nodes: Node[];
     edges: Edge[];
-    nodeCounter: number; // contador usado para gerar IDs únicos sequenciais
+    nodeCounter: number;
 }
 
-/** Todas as ações que podem modificar o grafo do autômato */
+/**
+ * Retorna o menor inteiro positivo (≥ 1) ainda não usado como id.
+ * Preenche lacunas antes de avançar:
+ *   [1,2,3] → 4 | [1,3,4] → 2 | [4,5] → 1
+ */
+function nextAvailableId(nodes: Node[]): string {
+    const used = new Set(nodes.map((n) => parseInt(n.id, 10)).filter((n) => !isNaN(n) && n > 0));
+    let candidate = 1;
+    while (used.has(candidate)) candidate++;
+    return String(candidate);
+}
+
 export type GraphAction =
     | { type: "DRAG_NODE"; id: string; x: number; y: number }
+    | { type: "ADD_FIRST_NODE"; x: number; y: number }
     | { type: "ADD_NODE_AND_EDGE"; sourceId: string; label: string; action?: string }
     | { type: "ADD_EDGE"; sourceId: string; targetId: string; label: string; action?: string }
     | { type: "EDIT_EDGE"; edgeId: string; label: string; action?: string }
@@ -124,7 +117,6 @@ export type GraphAction =
 
 export function graphReducer(state: GraphState, action: GraphAction): GraphState {
     switch (action.type) {
-        // Atualiza a posição de um nó durante o arrasto
         case "DRAG_NODE":
             return {
                 ...state,
@@ -133,19 +125,24 @@ export function graphReducer(state: GraphState, action: GraphAction): GraphState
                 ),
             };
 
-        // Cria um novo nó e já o conecta ao nó de origem com uma aresta
+        case "ADD_FIRST_NODE": {
+            const id = "1";
+            const newNode: Node = { id, label: id, x: action.x, y: action.y, isInitial: true };
+            return { ...state, nodes: [newNode], edges: [], nodeCounter: 0 };
+        }
+
         case "ADD_NODE_AND_EDGE": {
-            const newId = `${state.nodeCounter}`;
-            const isDuplicate = state.edges.some(
+            const newId = nextAvailableId(state.nodes);
+            const duplicate = state.edges.some(
                 (e) =>
                     e.source === action.sourceId && e.target === newId && e.label === action.label,
             );
-            if (isDuplicate) return state;
+            if (duplicate) return state;
             const sourceNode = state.nodes.find((n) => n.id === action.sourceId);
             const newNode: Node = {
                 id: newId,
                 label: newId,
-                x: sourceNode ? sourceNode.x + 180 : 200,
+                x: sourceNode ? sourceNode.x + 150 : 200,
                 y: sourceNode ? sourceNode.y : 200,
             };
             const newEdge: Edge = {
@@ -155,22 +152,23 @@ export function graphReducer(state: GraphState, action: GraphAction): GraphState
                 label: action.label,
                 action: action.action,
             };
+            const newNodes = [...state.nodes, newNode];
+            const newEdges = [...state.edges, newEdge];
             return {
-                nodes: [...state.nodes, newNode],
-                edges: [...state.edges, newEdge],
-                nodeCounter: state.nodeCounter + 1,
+                ...state,
+                nodes: getLayout(newNodes, newEdges),
+                edges: newEdges,
             };
         }
 
-        // Conecta dois nós existentes com uma nova aresta
         case "ADD_EDGE": {
-            const isDuplicate = state.edges.some(
+            const duplicate = state.edges.some(
                 (e) =>
                     e.source === action.sourceId &&
                     e.target === action.targetId &&
                     e.label === action.label,
             );
-            if (isDuplicate) return state;
+            if (duplicate) return state;
             const newEdge: Edge = {
                 id: crypto.randomUUID(),
                 source: action.sourceId,
@@ -181,7 +179,6 @@ export function graphReducer(state: GraphState, action: GraphAction): GraphState
             return { ...state, edges: [...state.edges, newEdge] };
         }
 
-        // Atualiza o símbolo e/ou a ação de uma aresta existente
         case "EDIT_EDGE":
             return {
                 ...state,
@@ -192,7 +189,6 @@ export function graphReducer(state: GraphState, action: GraphAction): GraphState
                 ),
             };
 
-        // Define ou remove a sequência de ações de entrada de um estado
         case "SET_NODE_ACTION":
             return {
                 ...state,
@@ -201,7 +197,6 @@ export function graphReducer(state: GraphState, action: GraphAction): GraphState
                 ),
             };
 
-        // Remove o nó e todas as arestas que o envolvem
         case "DELETE_NODE":
             return {
                 ...state,
@@ -232,7 +227,7 @@ export function graphReducer(state: GraphState, action: GraphAction): GraphState
             return { ...state, nodes: getLayout(state.nodes, state.edges) };
 
         case "LOAD":
-            return { nodes: action.nodes, edges: action.edges, nodeCounter: action.nodes.length };
+            return { nodes: action.nodes, edges: action.edges, nodeCounter: 0 };
 
         default:
             return state;

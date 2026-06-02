@@ -1,6 +1,7 @@
 import { useState, useReducer, useRef } from "react";
 import { createPortal } from "react-dom";
 import type { Dispatch } from "react";
+import { useModal } from "../../contexts/ModalContext";
 import GraphCanvas from "./canvas/GraphCanvas";
 import SimulationPanel, { SPEED_PRESETS } from "./ui/SimulationPanel";
 import TransitionModal from "./ui/TransitionModal";
@@ -12,7 +13,6 @@ import styles from "./AutomatonEditor.module.css";
 import { graphReducer } from "./AutomatonReducer";
 import { useSimulation } from "./useSimulation";
 import { useGraphActions } from "./useGraphActions";
-import { useModal } from "../../contexts/ModalContext";
 import {
     createInitialGraphFromStage,
     type ContextMenuData,
@@ -73,6 +73,7 @@ function AutomatonEditor({
     });
 
     const { showAlert } = useModal();
+
     const { permissions } = activeStage;
     const nodeLimitReached =
         permissions?.maxNodes !== undefined && nodes.length >= permissions.maxNodes;
@@ -83,6 +84,15 @@ function AutomatonEditor({
     };
 
     const handleCenter = () => setRecenterTrigger((c) => c + 1);
+
+    /** Cria o primeiro estado quando o canvas está vazio */
+    const handleFirstNodeCreate = (worldX: number, worldY: number) => {
+        dispatch({
+            type: "ADD_FIRST_NODE",
+            x: worldX,
+            y: worldY,
+        });
+    };
 
     const simulation = useSimulation({
         nodes,
@@ -152,6 +162,7 @@ function AutomatonEditor({
 
     return (
         <div className={styles.automatonSection}>
+            {/* SimulationPanel — irmão do canvas para mobile funcionar */}
             <SimulationPanel
                 isSimPanelOpen={isSimPanelOpen}
                 setSimPanelOpen={setSimPanelOpen}
@@ -176,6 +187,7 @@ function AutomatonEditor({
                     onNodeLongPress={graphActions.handleNodeLongPress}
                     onEdgeClick={graphActions.handleEdgeClick}
                     onSvgMouseMove={graphActions.handleSvgMouseMove}
+                    onCanvasClick={handleFirstNodeCreate}
                     recenterTrigger={recenterTrigger}
                     linkingState={linkingState}
                     mousePosition={mousePosition}
@@ -207,6 +219,10 @@ function AutomatonEditor({
                 )}
             </div>
 
+            {/*
+             * Modais e menus via portal — renderizados diretamente no document.body
+             * para escapar do overflow:hidden do canvasWrapper que cortava os modais.
+             */}
             {createPortal(
                 <>
                     <TransitionModal
