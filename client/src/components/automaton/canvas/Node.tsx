@@ -1,17 +1,10 @@
 import React, { useRef } from "react";
-import { ACTION_SVG_SYMBOL } from "../../game/gameConfig";
 import type { Node } from "../AutomatonReducer";
 import { NODE_WIDTH } from "../AutomatonReducer";
 import { useNodeDrag } from "./useNodeDrag";
+import ActionSign from "./ActionSign";
+import { resolveFirstAction } from "./helpers";
 import styles from "./Node.module.css";
-
-function formatActionSymbols(action: string): string {
-    return action
-        .toLowerCase()
-        .split("")
-        .map((ch) => ACTION_SVG_SYMBOL[ch] ?? ch.toUpperCase())
-        .join(" ");
-}
 
 interface NodeProps {
     node: Node;
@@ -86,12 +79,13 @@ const NodeComponent = ({
         .filter(Boolean)
         .join(" ");
 
-    const actionSymbol = node.action ? formatActionSymbols(node.action) : null;
+    const action = node.action ? resolveFirstAction(node.action) : null;
 
-    // Dimensões do badge de ação acima do nó
-    const badgeW = actionSymbol ? Math.max(26, actionSymbol.length * 11 + 12) : 0;
-    const badgeH = 20;
-    const badgeY = -radius - badgeH - 2; // acima do círculo com folga
+    const SIGN_H = 20;
+    const GAP = 3;
+    const hasAction = !!action;
+    const labelDy = hasAction ? -(SIGN_H / 2 + GAP / 2) : 0;
+    const signY = hasAction ? SIGN_H / 2 + GAP + labelDy : 0;
 
     return (
         <g
@@ -103,34 +97,25 @@ const NodeComponent = ({
             <circle key={isActive ? activeKey : "idle"} className={outerClasses} r={radius} />
             {node.isFinal && <circle className={styles.inner} r={radius - 6} />}
 
-            {actionSymbol && (
-                /* Badge com fundo pill posicionado acima do círculo */
-                <g>
-                    <rect
-                        className={styles.actionBadgeBg}
-                        x={-badgeW / 2}
-                        y={badgeY}
-                        width={badgeW}
-                        height={badgeH}
-                        rx={5}
-                        ry={5}
-                    />
-                    <text
-                        className={styles.actionText}
-                        x={0}
-                        y={badgeY + badgeH / 2}
-                        textAnchor="middle"
-                        dominantBaseline="central"
-                    >
-                        {actionSymbol}
-                    </text>
-                </g>
-            )}
-
-            {/* Label do estado — centralizado no círculo */}
-            <text className={styles.labelText} textAnchor="middle" dominantBaseline="central">
+            <text
+                className={styles.labelText}
+                textAnchor="middle"
+                dominantBaseline="central"
+                dy={labelDy}
+            >
                 {node.label}
             </text>
+
+            {action && (
+                <ActionSign
+                    x={0}
+                    y={signY}
+                    symbol={action.symbol}
+                    Icon={action.Icon}
+                    bgClass={styles.signBg}
+                    textClass={styles.signText}
+                />
+            )}
 
             {node.isInitial && (
                 <path

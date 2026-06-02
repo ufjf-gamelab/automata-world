@@ -30,43 +30,40 @@
     }
 }
 
-/* ── Símbolo lido da fita (ex: "A") ── */
+/* Símbolo da fita (ex: "A") */
 .edgeLabelText {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 800;
-    fill: var(--edge-label, #e8edf5);
+    fill: var(--text-hi, #e8edf5);
     paint-order: stroke;
-    stroke: var(--edge-halo, #0f1520);
-    stroke-width: 5px;
+    stroke: var(--canvas-bg, #0f1520);
+    stroke-width: 4px;
     stroke-linecap: round;
-    stroke-linejoin: round;
     letter-spacing: 0.04em;
 }
 
-/* ── Ação da transição (símbolo Unicode ex: "↑") ── */
-.edgeActionText {
-    font-size: 16px;
-    font-weight: 900;
-    fill: var(--primary-hi, #8a9ef5);
-    paint-order: stroke;
-    stroke: var(--edge-halo, #0f1520);
-    stroke-width: 4px;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+/* Placa de ação */
+.signBg {
+    fill: var(--primary, #6d83f2);
+    stroke: rgba(0, 0, 0, 0.18);
+    stroke-width: 1.5px;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
 }
 
-/* Fundo pill da ação — desenhado via <rect> no Edge.tsx */
-.edgeActionBg {
-    fill: var(--primary-lo, #1e2a5a);
-    opacity: 0.85;
-}
-
-[data-theme="light"] .edgeActionText {
+[data-theme="light"] .signBg {
     fill: var(--primary, #4f63d2);
-    stroke: var(--edge-halo, #fafbfd);
+    stroke: var(--primary-lo, #b8c0f0);
+    stroke-width: 2.5px;
+    filter: none;
 }
 
-[data-theme="light"] .edgeActionBg {
-    fill: var(--primary-bg, rgba(79, 99, 210, 0.1));
-    opacity: 1;
+.signText {
+    font-size: 14px;
+    font-weight: 900;
+    fill: #ffffff;
+    pointer-events: none;
+    user-select: none;
+    text-anchor: middle;
+    dominant-baseline: central;
+    letter-spacing: 0.02em;
 }

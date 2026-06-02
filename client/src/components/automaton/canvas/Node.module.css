@@ -8,8 +8,8 @@
     fill: var(--node-fill, #1c2235);
     stroke: var(--node-stroke, #3e506e);
     stroke-width: 1.5px;
-    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
-    transition: fill 180ms, stroke 180ms, filter 180ms;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
+    transition: fill 180ms, stroke 180ms;
 }
 
 .inner {
@@ -20,7 +20,7 @@
 
 .outer.initial {
     stroke: var(--success, #34d399);
-    stroke-width: 2px;
+    stroke-width: 2.5px;
 }
 
 .initialArrow {
@@ -32,38 +32,38 @@
 .outer.active {
     fill: var(--accent-bg, rgba(245, 158, 11, 0.12));
     stroke: var(--accent, #f59e0b);
-    stroke-width: 2px;
+    stroke-width: 2.5px;
     animation: nodeGlow 0.9s ease-in-out infinite;
 }
 
 @keyframes nodeGlow {
     0%, 100% {
-        filter: drop-shadow(0 0 4px var(--accent-bg)) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+        filter: drop-shadow(0 0 4px var(--accent-bg)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
     }
 
     50% {
-        filter: drop-shadow(0 0 12px var(--accent)) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+        filter: drop-shadow(0 0 14px var(--accent)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
     }
 }
 
 .outer.failed {
-    fill: var(--danger-bg, rgba(248, 113, 113, 0.1));
+    fill: var(--danger-bg, rgba(248, 113, 113, 0.12));
     stroke: var(--danger, #f87171);
-    stroke-width: 2px;
+    stroke-width: 2.5px;
     animation: shake 0.4s ease;
 }
 
 @keyframes shake {
     0%, 100% {
-        transform: translateX(0);
+        transform: translateX(0)
     }
 
     25% {
-        transform: translateX(-4px);
+        transform: translateX(-4px)
     }
 
     75% {
-        transform: translateX(4px);
+        transform: translateX(4px)
     }
 }
 
@@ -77,7 +77,6 @@
     stroke: var(--primary, #6d83f2);
 }
 
-/* ── Label do estado ── */
 .labelText {
     font-size: 15px;
     font-weight: 700;
@@ -88,26 +87,28 @@
     dominant-baseline: central;
 }
 
-/* ── Ação do estado (símbolo Unicode) ── */
-.actionBadgeBg {
+/* ── Badge de ação — estilo placa de trânsito ── */
+.signBg {
     fill: var(--primary, #6d83f2);
-    opacity: 0.18;
-    rx: 5px;
-    ry: 5px;
+    stroke: rgba(0, 0, 0, 0.18);
+    stroke-width: 1.5px;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
 }
 
-.actionText {
-    font-size: 15px;
-    font-weight: 800;
-    fill: var(--primary-hi, #8a9ef5);
+[data-theme="light"] .signBg {
+    fill: var(--primary, #4f63d2);
+    stroke: var(--primary-lo, #b8c0f0);
+    stroke-width: 2.5px;
+    filter: none;
+}
+
+.signText {
+    font-size: 14px;
+    font-weight: 900;
+    fill: #ffffff;
     pointer-events: none;
     user-select: none;
     text-anchor: middle;
     dominant-baseline: central;
-    /* Halo para legibilidade em ambos os temas */
-    paint-order: stroke;
-    stroke: var(--node-fill, #1c2235);
-    stroke-width: 3.5px;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+    letter-spacing: 0.02em;
 }

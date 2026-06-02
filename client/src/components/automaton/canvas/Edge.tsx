@@ -1,9 +1,11 @@
 import React from "react";
 import type { Edge, Node } from "../AutomatonReducer";
-import { ACTION_SVG_SYMBOL } from "../../game/gameConfig";
+import ActionSign from "./ActionSign";
+import { resolveAction, cubicPoint } from "./helpers";
 import styles from "./Edge.module.css";
 
 const NODE_WIDTH = 60;
+const SIGN_OFFSET = 22;
 
 interface EdgeProps {
     edge: Edge;
@@ -17,70 +19,6 @@ interface EdgeProps {
     bundleIndex: number;
     hasReverseEdge: boolean;
     avoidanceOffset: number;
-}
-
-/** Pill de fundo + símbolo Unicode da ação com halo */
-function ActionBadge({ x, y, symbol }: { x: number; y: number; symbol: string }) {
-    const w = Math.max(22, symbol.length * 11 + 10);
-    const h = 20;
-    return (
-        <g>
-            <rect
-                className={styles.edgeActionBg}
-                x={x - w / 2}
-                y={y - h / 2}
-                width={w}
-                height={h}
-                rx={5}
-                ry={5}
-            />
-            <text
-                className={styles.edgeActionText}
-                x={x}
-                y={y}
-                textAnchor="middle"
-                dominantBaseline="central"
-            >
-                {symbol}
-            </text>
-        </g>
-    );
-}
-
-/** Label principal da aresta: símbolo da fita + ação abaixo */
-function EdgeLabel({
-    x,
-    y,
-    dy,
-    symbolLine,
-    actionSymbol,
-}: {
-    x: number;
-    y: number;
-    dy: number;
-    symbolLine: string;
-    actionSymbol: string | null;
-}) {
-    const lineH = 16; // distância entre as duas linhas
-    const actionY = y + dy + (actionSymbol ? lineH : 0);
-
-    return (
-        <g>
-            {/* Símbolo da fita */}
-            <text
-                className={styles.edgeLabelText}
-                x={x}
-                y={y + dy}
-                textAnchor="middle"
-                dominantBaseline="central"
-            >
-                {symbolLine}
-            </text>
-
-            {/* Ação com pill de fundo */}
-            {actionSymbol && <ActionBadge x={x} y={actionY + lineH * 0.5} symbol={actionSymbol} />}
-        </g>
-    );
 }
 
 const EdgeComponent = ({
@@ -98,12 +36,12 @@ const EdgeComponent = ({
 }: EdgeProps) => {
     const radius = NODE_WIDTH / 2;
 
-    const handleEdgeClick = (e: React.MouseEvent) => {
+    const handleClick = (e: React.MouseEvent) => {
         e.stopPropagation();
         onEdgeClick(e, edge);
     };
 
-    const gClasses = [
+    const gClass = [
         styles.edge,
         isActive ? styles.active : "",
         isActive && isSimulating ? styles.simulating : "",
@@ -112,101 +50,136 @@ const EdgeComponent = ({
         .join(" ");
 
     const symbolLine = edge.label.toUpperCase();
-    const actionSymbol = edge.action
-        ? (ACTION_SVG_SYMBOL[edge.action.toLowerCase()] ?? edge.action.toUpperCase())
-        : null;
+    const action = edge.action ? resolveAction(edge.action) : null;
 
-    // ── SELF-LOOP ──────────────────────────────────────────────
+    // ── SELF-LOOP ──────────────────────────────────────────────────────
     if (sourceNode.id === targetNode.id) {
-        const loopRadius = 25 + bundleIndex * 10;
-        const startX = sourceNode.x - 5;
-        const startY = sourceNode.y - radius;
-        const endX = sourceNode.x + 5;
-        const endY = sourceNode.y - radius;
-        const c1x = startX - loopRadius * 2.25;
-        const c1y = startY - loopRadius * 2.25;
-        const c2x = endX + loopRadius * 2.25;
-        const c2y = endY - loopRadius * 2.25;
-        const pathData = `M ${startX},${startY} C ${c1x},${c1y} ${c2x},${c2y} ${endX},${endY}`;
-        const labelX = (1 / 8) * startX + (3 / 8) * c1x + (3 / 8) * c2x + (1 / 8) * endX;
-        const labelY = (1 / 8) * startY + (3 / 8) * c1y + (3 / 8) * c2y + (1 / 8) * endY;
+        const lr = 25 + bundleIndex * 10;
+        const sx = sourceNode.x - 5,
+            sy = sourceNode.y - radius;
+        const ex = sourceNode.x + 5,
+            ey = sourceNode.y - radius;
+        const c1x = sx - lr * 2.25,
+            c1y = sy - lr * 2.25;
+        const c2x = ex + lr * 2.25,
+            c2y = ey - lr * 2.25;
+        const path = `M ${sx},${sy} C ${c1x},${c1y} ${c2x},${c2y} ${ex},${ey}`;
+        const mx = cubicPoint(0.5, sx, c1x, c2x, ex);
+        const my = cubicPoint(0.5, sy, c1y, c2y, ey);
+        const dmx = cubicPoint(0.5, c1x - sx, c2x - c1x, ex - c2x, 0);
+        const dmy = cubicPoint(0.5, c1y - sy, c2y - c1y, ey - c2y, 0);
+        const dLen = Math.max(1, Math.sqrt(dmx * dmx + dmy * dmy));
+        const px = -dmy / dLen,
+            py = dmx / dLen;
+        const labelX = mx + px * 14,
+            labelY = my + py * 14;
+        const signX = mx - px * SIGN_OFFSET,
+            signY = my - py * SIGN_OFFSET;
 
         return (
-            <g className={gClasses} onClick={handleEdgeClick}>
-                <path d={pathData} markerEnd="url(#arrowhead)" />
-                <EdgeLabel
+            <g className={gClass} onClick={handleClick}>
+                <path d={path} markerEnd="url(#arrowhead)" />
+                <text
+                    className={styles.edgeLabelText}
                     x={labelX}
                     y={labelY}
-                    dy={0}
-                    symbolLine={symbolLine}
-                    actionSymbol={actionSymbol}
-                />
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                >
+                    {symbolLine}
+                </text>
+                {action && (
+                    <ActionSign
+                        x={signX}
+                        y={signY}
+                        symbol={action.symbol}
+                        Icon={action.Icon}
+                        bgClass={styles.signBg}
+                        textClass={styles.signText}
+                    />
+                )}
             </g>
         );
     }
 
-    // ── ARESTA NORMAL ──────────────────────────────────────────
+    // ── ARESTA NORMAL ──────────────────────────────────────────────────
     const dx = targetNode.x - sourceNode.x;
     const dy = targetNode.y - sourceNode.y;
     const len = Math.max(1, Math.sqrt(dx * dx + dy * dy));
-    const ux = dx / len;
-    const uy = dy / len;
+    const ux = dx / len,
+        uy = dy / len;
+    const nx = -uy,
+        ny = ux;
 
-    const startX = sourceNode.x + ux * radius;
-    const startY = sourceNode.y + uy * radius;
-    const endX = targetNode.x - ux * radius;
-    const endY = targetNode.y - uy * radius;
-    const midX = (startX + endX) / 2;
-    const midY = (startY + endY) / 2;
-
-    const nx = -uy;
-    const ny = ux;
+    const startX = sourceNode.x + ux * radius,
+        startY = sourceNode.y + uy * radius;
+    const endX = targetNode.x - ux * radius,
+        endY = targetNode.y - uy * radius;
+    const midX = (startX + endX) / 2,
+        midY = (startY + endY) / 2;
 
     let curveOffset: number;
     if (avoidanceOffset !== 0) {
-        const parallelBump = bundleSize > 1 ? (bundleIndex - (bundleSize - 1) / 2) * 30 : 0;
-        curveOffset = avoidanceOffset + parallelBump;
+        curveOffset =
+            avoidanceOffset + (bundleSize > 1 ? (bundleIndex - (bundleSize - 1) / 2) * 30 : 0);
     } else if (totalEdgesInRelation === 1) {
         curveOffset = 0;
     } else {
-        const baseCurve = hasReverseEdge ? 65 : 35;
-        const parallelSpread = 40;
-        const midIndex = (bundleSize - 1) / 2;
-        curveOffset = baseCurve + (bundleIndex - midIndex) * parallelSpread;
+        curveOffset = (hasReverseEdge ? 65 : 35) + (bundleIndex - (bundleSize - 1) / 2) * 40;
     }
 
+    const curveSide = curveOffset >= 0 ? 1 : -1;
     let pathData: string;
-    let labelX: number;
-    let labelY: number;
+    let labelX: number, labelY: number, signX: number, signY: number;
 
     if (Math.abs(curveOffset) < 1) {
         pathData = `M ${startX},${startY} L ${endX},${endY}`;
-        labelX = midX;
-        labelY = midY;
+        labelX = midX - nx * 14;
+        labelY = midY - ny * 14;
+        signX = midX + nx * SIGN_OFFSET;
+        signY = midY + ny * SIGN_OFFSET;
     } else {
-        const peakX = midX + nx * curveOffset;
-        const peakY = midY + ny * curveOffset;
-        const c1x = (startX + peakX) / 2;
-        const c1y = (startY + peakY) / 2;
-        const c2x = (endX + peakX) / 2;
-        const c2y = (endY + peakY) / 2;
+        const peakX = midX + nx * curveOffset,
+            peakY = midY + ny * curveOffset;
+        const c1x = (startX + peakX) / 2,
+            c1y = (startY + peakY) / 2;
+        const c2x = (endX + peakX) / 2,
+            c2y = (endY + peakY) / 2;
         pathData = `M ${startX},${startY} C ${c1x},${c1y} ${c2x},${c2y} ${endX},${endY}`;
-        labelX = (1 / 8) * startX + (3 / 8) * c1x + (3 / 8) * c2x + (1 / 8) * endX;
-        labelY = (1 / 8) * startY + (3 / 8) * c1y + (3 / 8) * c2y + (1 / 8) * endY;
+        const t = 0.5,
+            tp = 0.38;
+        const cx = cubicPoint(t, startX, c1x, c2x, endX),
+            cy = cubicPoint(t, startY, c1y, c2y, endY);
+        const px = cubicPoint(tp, startX, c1x, c2x, endX),
+            py = cubicPoint(tp, startY, c1y, c2y, endY);
+        labelX = cx + nx * curveSide * 16;
+        labelY = cy + ny * curveSide * 16;
+        signX = px - nx * curveSide * SIGN_OFFSET;
+        signY = py - ny * curveSide * SIGN_OFFSET;
     }
 
-    const labelDy = curveOffset > 0 ? -12 : curveOffset < 0 ? 12 : -12;
-
     return (
-        <g className={gClasses} onClick={handleEdgeClick}>
+        <g className={gClass} onClick={handleClick}>
             <path d={pathData} markerEnd="url(#arrowhead)" />
-            <EdgeLabel
+            <text
+                className={styles.edgeLabelText}
                 x={labelX}
                 y={labelY}
-                dy={labelDy}
-                symbolLine={symbolLine}
-                actionSymbol={actionSymbol}
-            />
+                textAnchor="middle"
+                dominantBaseline="central"
+            >
+                {symbolLine}
+            </text>
+            {action && (
+                <ActionSign
+                    x={signX}
+                    y={signY}
+                    symbol={action.symbol}
+                    Icon={action.Icon}
+                    bgClass={styles.signBg}
+                    textClass={styles.signText}
+                />
+            )}
         </g>
     );
 };
