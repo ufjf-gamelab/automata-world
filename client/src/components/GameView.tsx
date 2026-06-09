@@ -102,7 +102,13 @@ export default function GameView({
                             command={currentCommand}
                         />
                     </group>
-                    <OrbitControls enablePan={false} enableZoom={false} />
+                    <OrbitControls
+                        enablePan={false}
+                        enableZoom={true}
+                        minDistance={4}
+                        maxDistance={22}
+                        zoomSpeed={0.8}
+                    />
                     <CameraWatcher compassRef={compassInnerRef} />
                 </Canvas>
                 <CompassRose rotationIndex={playerRotation} innerRef={compassInnerRef} />

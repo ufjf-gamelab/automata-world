@@ -4,19 +4,19 @@
 
 .edge path {
     stroke: var(--edge-stroke, #3e506e);
-    stroke-width: 1.5px;
+    stroke-width: 3.5px;
     fill: none;
     transition: stroke 200ms, stroke-width 200ms;
 }
 
 .edge:hover path {
     stroke: var(--primary, #6d83f2);
-    stroke-width: 2px;
+    stroke-width: 4px;
 }
 
 .edge.active path {
     stroke: var(--primary, #6d83f2);
-    stroke-width: 2.5px;
+    stroke-width: 4.5px;
 }
 
 .edge.active.simulating path {

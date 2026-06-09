@@ -15,6 +15,7 @@ const oldStages: Stage[] = [
             maxNodes: 4,
             allowedSymbols: ["a"],
             allowedCommands: ["f", "b"],
+            fixedTape: "aaa",
         },
         initialGraph: {
             nodes: [
