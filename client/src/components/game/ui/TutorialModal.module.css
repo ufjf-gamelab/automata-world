@@ -72,18 +72,22 @@
     background: rgba(0, 0, 0, 0.65);
 }
 
+/* ── Área da imagem — altura fixa para object-fit:contain funcionar como letterbox ── */
 .imageArea {
     position: relative;
     width: 100%;
-    aspect-ratio: 16/9;
+    height: 40dvh;
     flex-shrink: 0;
     background: var(--bg-base);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .image {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     display: block;
 }
 
@@ -237,7 +241,7 @@
 
 @media (max-width:480px) {
     .imageArea {
-        aspect-ratio: 4/3
+        height: 32dvh
     }
 
     .balloonText {

@@ -5,7 +5,6 @@ import { resolveAction, cubicPoint } from "./helpers";
 import styles from "./Edge.module.css";
 
 const NODE_WIDTH = 60;
-const SIGN_OFFSET = 22;
 
 interface EdgeProps {
     edge: Edge;
@@ -54,7 +53,7 @@ const EdgeComponent = ({
 
     // ── SELF-LOOP ──────────────────────────────────────────────────────
     if (sourceNode.id === targetNode.id) {
-        const lr = 25 + bundleIndex * 10;
+        const lr = 26 + bundleIndex * 24; // step maior → loops mais separados
         const sx = sourceNode.x - 5,
             sy = sourceNode.y - radius;
         const ex = sourceNode.x + 5,
@@ -64,17 +63,19 @@ const EdgeComponent = ({
         const c2x = ex + lr * 2.25,
             c2y = ey - lr * 2.25;
         const path = `M ${sx},${sy} C ${c1x},${c1y} ${c2x},${c2y} ${ex},${ey}`;
+
+        /*
+         * Pico real da curva (ponto mais alto do loop).
+         * O label e a placa ficam lado a lado NO PICO de cada loop,
+         * garantindo separação visual mesmo com múltiplos loops.
+         */
         const mx = cubicPoint(0.5, sx, c1x, c2x, ex);
         const my = cubicPoint(0.5, sy, c1y, c2y, ey);
-        const dmx = cubicPoint(0.5, c1x - sx, c2x - c1x, ex - c2x, 0);
-        const dmy = cubicPoint(0.5, c1y - sy, c2y - c1y, ey - c2y, 0);
-        const dLen = Math.max(1, Math.sqrt(dmx * dmx + dmy * dmy));
-        const px = -dmy / dLen,
-            py = dmx / dLen;
-        const labelX = mx + px * 14,
-            labelY = my + py * 14;
-        const signX = mx - px * SIGN_OFFSET,
-            signY = my - py * SIGN_OFFSET;
+        const GAP = 16;
+        const labelX = action ? mx - GAP : mx;
+        const labelY = my - 8;
+        const signX = mx + GAP;
+        const signY = my - 8;
 
         return (
             <g className={gClass} onClick={handleClick}>
@@ -129,15 +130,24 @@ const EdgeComponent = ({
     }
 
     const curveSide = curveOffset >= 0 ? 1 : -1;
+    const hasCollision = hasReverseEdge || totalEdgesInRelation > 1 || avoidanceOffset !== 0;
     let pathData: string;
-    let labelX: number, labelY: number, signX: number, signY: number;
+    let labelX = 0,
+        labelY = 0,
+        signX = 0,
+        signY = 0;
+
+    const PERP = 18; // distância perpendicular à aresta
+    const TANG = 12; // deslocamento tangencial (lado a lado em colisão)
+    const STACK = 11; // deslocamento vertical para empilhar (sem colisão)
 
     if (Math.abs(curveOffset) < 1) {
         pathData = `M ${startX},${startY} L ${endX},${endY}`;
-        labelX = midX - nx * 14;
-        labelY = midY - ny * 14;
-        signX = midX + nx * SIGN_OFFSET;
-        signY = midY + ny * SIGN_OFFSET;
+        // Label acima da aresta, ação abaixo
+        labelX = midX - nx * PERP;
+        labelY = midY - ny * PERP;
+        signX = midX + nx * PERP;
+        signY = midY + ny * PERP;
     } else {
         const peakX = midX + nx * curveOffset,
             peakY = midY + ny * curveOffset;
@@ -146,16 +156,23 @@ const EdgeComponent = ({
         const c2x = (endX + peakX) / 2,
             c2y = (endY + peakY) / 2;
         pathData = `M ${startX},${startY} C ${c1x},${c1y} ${c2x},${c2y} ${endX},${endY}`;
-        const t = 0.5,
-            tp = 0.38;
-        const cx = cubicPoint(t, startX, c1x, c2x, endX),
-            cy = cubicPoint(t, startY, c1y, c2y, endY);
-        const px = cubicPoint(tp, startX, c1x, c2x, endX),
-            py = cubicPoint(tp, startY, c1y, c2y, endY);
-        labelX = cx + nx * curveSide * 16;
-        labelY = cy + ny * curveSide * 16;
-        signX = px - nx * curveSide * SIGN_OFFSET;
-        signY = py - ny * curveSide * SIGN_OFFSET;
+        const cx = cubicPoint(0.5, startX, c1x, c2x, endX);
+        const cy = cubicPoint(0.5, startY, c1y, c2y, endY);
+        const bx = cx + nx * curveSide * PERP;
+        const by = cy + ny * curveSide * PERP;
+        if (hasCollision && action) {
+            // Com colisão: lado a lado ao longo da aresta
+            labelX = bx - ux * TANG;
+            labelY = by - uy * TANG;
+            signX = bx + ux * TANG;
+            signY = by + uy * TANG;
+        } else {
+            // Sem colisão: label fora da curva, ação dentro (abaixo)
+            labelX = bx;
+            labelY = by;
+            signX = cx - nx * curveSide * PERP;
+            signY = cy - ny * curveSide * PERP;
+        }
     }
 
     return (

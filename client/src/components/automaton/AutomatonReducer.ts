@@ -156,7 +156,7 @@ export function graphReducer(state: GraphState, action: GraphAction): GraphState
             const newEdges = [...state.edges, newEdge];
             return {
                 ...state,
-                nodes: getLayout(newNodes, newEdges),
+                nodes: newNodes,
                 edges: newEdges,
             };
         }

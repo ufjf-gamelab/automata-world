@@ -32,7 +32,7 @@ interface UseGraphActionsParams {
 }
 
 export function useGraphActions({
-    graph,
+    // graph,
     nodes,
     edges,
     dispatch,
@@ -230,21 +230,8 @@ export function useGraphActions({
         const { action: modalAction, sourceId, targetId, edgeToEdit } = modalData;
 
         if (modalAction === "add" && sourceId) {
-            const newId = `${graph.nodeCounter}`;
-
-            const edgeError = validateEdge(sourceId, newId);
-            if (edgeError) {
-                showAlert(edgeError);
-                return;
-            }
-
-            const isDuplicate = edges.some(
-                (e) => e.source === sourceId && e.target === newId && e.label === label,
-            );
-            if (isDuplicate) {
-                showAlert(`Erro: Transição (${sourceId} -${label}-> ${newId}) já existe.`);
-                return;
-            }
+            // Novo estado nunca pode ser self-loop — a validação não se aplica aqui.
+            // O ID real é calculado pelo reducer via nextAvailableId().
             dispatch({ type: "ADD_NODE_AND_EDGE", sourceId, label, action });
         } else if (modalAction === "link" && sourceId && targetId) {
             const edgeError = validateEdge(sourceId, targetId);

@@ -1,334 +1,334 @@
 import type { Stage } from "./types";
 
-const oldStages: Stage[] = [
-    {
-        id: 1,
-        name: "Reta simples",
-        floor: "116",
-        initialRotation: 1,
-        playerPosition: [0, 0],
-        permissions: {
-            allowLoops: false,
-            allowMultipleOutgoing: false,
-            stateActionsAllowed: false,
-            edgeActionsAllowed: true,
-            maxNodes: 4,
-            allowedSymbols: ["a"],
-            allowedCommands: ["f", "b"],
-            fixedTape: "aaa",
-        },
-        initialGraph: {
-            nodes: [
-                { id: "1", label: "1", isInitial: true, isFinal: false },
-                { id: "2", label: "2", isInitial: false, isFinal: false },
-                { id: "3", label: "3", isInitial: false, isFinal: false },
-                { id: "4", label: "4", isInitial: false, isFinal: true },
-            ],
-            edges: [
-                { source: "1", target: "2", label: "a", action: "f" },
-                { source: "2", target: "3", label: "a", action: "f" },
-                { source: "3", target: "4", label: "a", action: "b" },
-            ],
-        },
-        tutorial: [
-            {
-                image: "tutorial/reta/passo1.png",
-                text: "Bem-vindo ao **Automa World**! Seu objetivo é levar o personagem até o **botão azul** no final do caminho.",
-            },
-            {
-                image: "tutorial/reta/passo2.png",
-                text: "O **autômato** já está pronto! Cada transição com **A** avança o personagem, e a última aciona o botão.",
-            },
-            {
-                image: "tutorial/reta/passo3.png",
-                text: "Escreva a fita **AAA** para executar.",
-            },
-        ],
-    },
-    {
-        id: 2,
-        name: "Virando à direita",
-        floor: `111
---1
---6`,
-        playerPosition: [0, 0],
-        initialRotation: 1,
-        permissions: {
-            allowLoops: false,
-            allowMultipleOutgoing: false,
-            stateActionsAllowed: false,
-            edgeActionsAllowed: true,
-            maxNodes: 6,
-            allowedSymbols: ["f", "d", "b"],
-            allowedCommands: ["f", "d", "b"],
-            fixedTape: "FFDFFB",
-        },
-        initialGraph: {
-            nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
-            edges: [],
-        },
-        tutorial: [
-            {
-                image: "tutorial/virada_direita/passo1.png",
-                text: "Agora você aprende a **virar à direita** (↻). O caminho vai para o lado e depois para baixo — você precisa girar no momento certo!",
-            },
-            {
-                image: "tutorial/virada_direita/passo2.png",
-                text: "O símbolo **D** gira o personagem 90° no sentido horário ↻. Leia a fita **FFDFFB**: avança, avança, vira, avança, avança, botão!",
-            },
-        ],
-    },
-    {
-        id: 3,
-        name: "Meia volta",
-        floor: `1-6
-1-1
-111`,
-        playerPosition: [0, 0],
-        initialRotation: 0,
-        permissions: {
-            allowLoops: false,
-            allowMultipleOutgoing: false,
-            stateActionsAllowed: false,
-            edgeActionsAllowed: true,
-            maxNodes: 9,
-            allowedSymbols: ["f", "e", "b"],
-            allowedCommands: ["f", "b", "e", "d"],
-            fixedTape: "FFEFFEFFB",
-        },
-        initialGraph: {
-            nodes: [
-                { id: "1", label: "1", isInitial: true, isFinal: false },
-                { id: "2", label: "2", isInitial: false, isFinal: false },
-                { id: "3", label: "3", isInitial: false, isFinal: false },
-                { id: "4", label: "4", isInitial: false, isFinal: false },
-            ],
-            edges: [{ source: "1", target: "2", label: "f", action: "f" }],
-        },
-        tutorial: [
-            {
-                image: "tutorial/meia_volta/passo1.png",
-                text: "O caminho agora tem **curvas**! Você precisa virar o personagem na hora certa para chegar ao botão.",
-            },
-            {
-                image: "tutorial/meia_volta/passo2.png",
-                text: "Você tem 3 símbolos: **F** (frente), **E** (girar à esquerda ↺) e **B** (botão). A fita **FFEFFEFFB** já diz o caminho exato!",
-            },
-            {
-                image: "tutorial/meia_volta/passo3.png",
-                text: "Complete o autômato: você precisará de **9 estados** — um para cada símbolo da fita. O último deve ser o **estado final**.",
-            },
-        ],
-    },
-    {
-        id: 4,
-        name: "Zigue-Zague",
-        floor: `1116--
----1--
----1--
----116`,
-        playerPosition: [0, 0],
-        initialRotation: 1,
-        permissions: {
-            allowLoops: false,
-            allowMultipleOutgoing: false,
-            stateActionsAllowed: false,
-            edgeActionsAllowed: true,
-            maxNodes: 11,
-            allowedSymbols: ["f", "e", "d", "b"],
-            allowedCommands: ["f", "e", "d", "b"],
-            fixedTape: "FFFEFFFDFFB",
-        },
-        initialGraph: {
-            nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
-            edges: [],
-        },
-        tutorial: [
-            {
-                image: "tutorial/ziguezague/passo1.png",
-                text: "O percurso forma um **Z**! Você vai para a direita, desce e vai para a esquerda. São **duas viradas** — uma com **D** e outra com **E**.",
-            },
-            {
-                image: "tutorial/ziguezague/passo2.png",
-                text: "**E** e **D** giram em sentidos opostos. Observe a fita **FFFEFFFDFFB** — o E vira na descida e o D vira na segunda reta horizontal.",
-            },
-            {
-                image: "tutorial/ziguezague/passo3.png",
-                text: "Monte **11 estados** — um para cada símbolo. Use **F** para andar, **E** e **D** para virar e **B** para o botão. Você consegue!",
-            },
-        ],
-    },
-    {
-        id: 5,
-        name: "Pequena escada",
-        floor: "128",
-        playerPosition: [0, 0],
-        initialRotation: 1,
-        permissions: {
-            allowLoops: false,
-            allowMultipleOutgoing: false,
-            stateActionsAllowed: false,
-            edgeActionsAllowed: true,
-            maxNodes: 4,
-            allowedSymbols: ["p", "b"],
-            allowedCommands: ["p", "b"],
-        },
-        initialGraph: {
-            nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
-            edges: [],
-        },
-    },
-    {
-        id: 6,
-        name: "Subida espiral",
-        floor: `93
-12`,
-        playerPosition: [0, 1],
-        initialRotation: 1,
-        permissions: {
-            allowLoops: false,
-            allowMultipleOutgoing: false,
-            stateActionsAllowed: false,
-            edgeActionsAllowed: true,
-            maxNodes: 6,
-            allowedSymbols: ["p", "e", "b"],
-            allowedCommands: ["p", "b", "e", "d"],
-            fixedTape: "PEPEPB",
-        },
-        initialGraph: {
-            nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
-            edges: [],
-        },
-    },
-    {
-        id: 7,
-        name: "Corredor infinito",
-        floor: "11111116",
-        playerPosition: [0, 0],
-        initialRotation: 1,
-        permissions: {
-            allowLoops: true,
-            allowMultipleOutgoing: true,
-            stateActionsAllowed: false,
-            edgeActionsAllowed: true,
-            maxNodes: 2,
-            allowedSymbols: ["a", "b"],
-            allowedCommands: ["f", "b"],
-        },
-        initialGraph: {
-            nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
-            edges: [],
-        },
-    },
-    {
-        id: 8,
-        name: "Escada sem fim",
-        floor: "12340",
-        playerPosition: [0, 0],
-        initialRotation: 1,
-        permissions: {
-            allowLoops: true,
-            allowMultipleOutgoing: true,
-            stateActionsAllowed: false,
-            edgeActionsAllowed: true,
-            maxNodes: 2,
-            allowedSymbols: ["p", "b"],
-            allowedCommands: ["p", "b"],
-        },
-        initialGraph: {
-            nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
-            edges: [],
-        },
-    },
-    {
-        id: 9,
-        name: "Degraus alternados",
-        floor: "1212127",
-        playerPosition: [0, 0],
-        initialRotation: 1,
-        permissions: {
-            allowLoops: false,
-            allowMultipleOutgoing: true,
-            stateActionsAllowed: false,
-            edgeActionsAllowed: true,
-            maxNodes: 3,
-            allowedSymbols: ["p", "f", "b"],
-            allowedCommands: ["p", "f", "b"],
-        },
-        initialGraph: {
-            nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
-            edges: [],
-        },
-    },
-    {
-        id: 10,
-        name: "Labirinto em U",
-        floor: `1-6
-1-1
-111`,
-        playerPosition: [0, 0],
-        initialRotation: 0,
-        permissions: {
-            allowLoops: false,
-            allowMultipleOutgoing: false,
-            stateActionsAllowed: false,
-            edgeActionsAllowed: true,
-            maxNodes: 9,
-            allowedSymbols: ["f", "d", "b"],
-            allowedCommands: ["f", "d", "b"],
-            fixedTape: "FFDFFDFFB",
-        },
-        initialGraph: {
-            nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
-            edges: [],
-        },
-    },
-    {
-        id: 11,
-        name: "Espiral 3x3",
-        floor: `948
-503
-127`,
-        playerPosition: [0, 2],
-        initialRotation: 1,
-        permissions: {
-            allowLoops: false,
-            allowMultipleOutgoing: false,
-            stateActionsAllowed: false,
-            edgeActionsAllowed: true,
-            maxNodes: 8,
-            allowedSymbols: ["f", "d", "b"],
-            allowedCommands: ["f", "d", "b"],
-        },
-        initialGraph: {
-            nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
-            edges: [],
-        },
-    },
-    {
-        id: 12,
-        name: "Desafio livre",
-        floor: `1111
-1--1
-1--1
-1116`,
-        playerPosition: [0, 0],
-        initialRotation: 0,
-        permissions: {
-            allowLoops: true,
-            allowMultipleOutgoing: true,
-            stateActionsAllowed: false,
-            edgeActionsAllowed: true,
-            maxNodes: 12,
-            allowedSymbols: ["f", "d", "e", "b"],
-            allowedCommands: ["f", "d", "e", "b"],
-        },
-        initialGraph: {
-            nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
-            edges: [],
-        },
-    },
-];
+// const oldStages: Stage[] = [
+//     {
+//         id: 1,
+//         name: "Reta simples",
+//         floor: "116",
+//         initialRotation: 1,
+//         playerPosition: [0, 0],
+//         permissions: {
+//             allowLoops: false,
+//             allowMultipleOutgoing: false,
+//             stateActionsAllowed: false,
+//             edgeActionsAllowed: true,
+//             maxNodes: 4,
+//             allowedSymbols: ["a"],
+//             allowedCommands: ["f", "b"],
+//             fixedTape: "aaa",
+//         },
+//         initialGraph: {
+//             nodes: [
+//                 { id: "1", label: "1", isInitial: true, isFinal: false },
+//                 { id: "2", label: "2", isInitial: false, isFinal: false },
+//                 { id: "3", label: "3", isInitial: false, isFinal: false },
+//                 { id: "4", label: "4", isInitial: false, isFinal: true },
+//             ],
+//             edges: [
+//                 { source: "1", target: "2", label: "a", action: "f" },
+//                 { source: "2", target: "3", label: "a", action: "f" },
+//                 { source: "3", target: "4", label: "a", action: "b" },
+//             ],
+//         },
+//         tutorial: [
+//             {
+//                 image: "tutorial/reta/passo1.png",
+//                 text: "Bem-vindo ao **Automa World**! Seu objetivo é levar o personagem até o **botão azul** no final do caminho.",
+//             },
+//             {
+//                 image: "tutorial/reta/passo2.png",
+//                 text: "O **autômato** já está pronto! Cada transição com **A** avança o personagem, e a última aciona o botão.",
+//             },
+//             {
+//                 image: "tutorial/reta/passo3.png",
+//                 text: "Escreva a fita **AAA** para executar.",
+//             },
+//         ],
+//     },
+//     {
+//         id: 2,
+//         name: "Virando à direita",
+//         floor: `111
+// --1
+// --6`,
+//         playerPosition: [0, 0],
+//         initialRotation: 1,
+//         permissions: {
+//             allowLoops: false,
+//             allowMultipleOutgoing: false,
+//             stateActionsAllowed: false,
+//             edgeActionsAllowed: true,
+//             maxNodes: 6,
+//             allowedSymbols: ["f", "d", "b"],
+//             allowedCommands: ["f", "d", "b"],
+//             fixedTape: "FFDFFB",
+//         },
+//         initialGraph: {
+//             nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
+//             edges: [],
+//         },
+//         tutorial: [
+//             {
+//                 image: "tutorial/virada_direita/passo1.png",
+//                 text: "Agora você aprende a **virar à direita** (↻). O caminho vai para o lado e depois para baixo — você precisa girar no momento certo!",
+//             },
+//             {
+//                 image: "tutorial/virada_direita/passo2.png",
+//                 text: "O símbolo **D** gira o personagem 90° no sentido horário ↻. Leia a fita **FFDFFB**: avança, avança, vira, avança, avança, botão!",
+//             },
+//         ],
+//     },
+//     {
+//         id: 3,
+//         name: "Meia volta",
+//         floor: `1-6
+// 1-1
+// 111`,
+//         playerPosition: [0, 0],
+//         initialRotation: 0,
+//         permissions: {
+//             allowLoops: false,
+//             allowMultipleOutgoing: false,
+//             stateActionsAllowed: false,
+//             edgeActionsAllowed: true,
+//             maxNodes: 9,
+//             allowedSymbols: ["f", "e", "b"],
+//             allowedCommands: ["f", "b", "e", "d"],
+//             fixedTape: "FFEFFEFFB",
+//         },
+//         initialGraph: {
+//             nodes: [
+//                 { id: "1", label: "1", isInitial: true, isFinal: false },
+//                 { id: "2", label: "2", isInitial: false, isFinal: false },
+//                 { id: "3", label: "3", isInitial: false, isFinal: false },
+//                 { id: "4", label: "4", isInitial: false, isFinal: false },
+//             ],
+//             edges: [{ source: "1", target: "2", label: "f", action: "f" }],
+//         },
+//         tutorial: [
+//             {
+//                 image: "tutorial/meia_volta/passo1.png",
+//                 text: "O caminho agora tem **curvas**! Você precisa virar o personagem na hora certa para chegar ao botão.",
+//             },
+//             {
+//                 image: "tutorial/meia_volta/passo2.png",
+//                 text: "Você tem 3 símbolos: **F** (frente), **E** (girar à esquerda ↺) e **B** (botão). A fita **FFEFFEFFB** já diz o caminho exato!",
+//             },
+//             {
+//                 image: "tutorial/meia_volta/passo3.png",
+//                 text: "Complete o autômato: você precisará de **9 estados** — um para cada símbolo da fita. O último deve ser o **estado final**.",
+//             },
+//         ],
+//     },
+//     {
+//         id: 4,
+//         name: "Zigue-Zague",
+//         floor: `1116--
+// ---1--
+// ---1--
+// ---116`,
+//         playerPosition: [0, 0],
+//         initialRotation: 1,
+//         permissions: {
+//             allowLoops: false,
+//             allowMultipleOutgoing: false,
+//             stateActionsAllowed: false,
+//             edgeActionsAllowed: true,
+//             maxNodes: 11,
+//             allowedSymbols: ["f", "e", "d", "b"],
+//             allowedCommands: ["f", "e", "d", "b"],
+//             fixedTape: "FFFEFFFDFFB",
+//         },
+//         initialGraph: {
+//             nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
+//             edges: [],
+//         },
+//         tutorial: [
+//             {
+//                 image: "tutorial/ziguezague/passo1.png",
+//                 text: "O percurso forma um **Z**! Você vai para a direita, desce e vai para a esquerda. São **duas viradas** — uma com **D** e outra com **E**.",
+//             },
+//             {
+//                 image: "tutorial/ziguezague/passo2.png",
+//                 text: "**E** e **D** giram em sentidos opostos. Observe a fita **FFFEFFFDFFB** — o E vira na descida e o D vira na segunda reta horizontal.",
+//             },
+//             {
+//                 image: "tutorial/ziguezague/passo3.png",
+//                 text: "Monte **11 estados** — um para cada símbolo. Use **F** para andar, **E** e **D** para virar e **B** para o botão. Você consegue!",
+//             },
+//         ],
+//     },
+//     {
+//         id: 5,
+//         name: "Pequena escada",
+//         floor: "128",
+//         playerPosition: [0, 0],
+//         initialRotation: 1,
+//         permissions: {
+//             allowLoops: false,
+//             allowMultipleOutgoing: false,
+//             stateActionsAllowed: false,
+//             edgeActionsAllowed: true,
+//             maxNodes: 4,
+//             allowedSymbols: ["p", "b"],
+//             allowedCommands: ["p", "b"],
+//         },
+//         initialGraph: {
+//             nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
+//             edges: [],
+//         },
+//     },
+//     {
+//         id: 6,
+//         name: "Subida espiral",
+//         floor: `93
+// 12`,
+//         playerPosition: [0, 1],
+//         initialRotation: 1,
+//         permissions: {
+//             allowLoops: false,
+//             allowMultipleOutgoing: false,
+//             stateActionsAllowed: false,
+//             edgeActionsAllowed: true,
+//             maxNodes: 6,
+//             allowedSymbols: ["p", "e", "b"],
+//             allowedCommands: ["p", "b", "e", "d"],
+//             fixedTape: "PEPEPB",
+//         },
+//         initialGraph: {
+//             nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
+//             edges: [],
+//         },
+//     },
+//     {
+//         id: 7,
+//         name: "Corredor infinito",
+//         floor: "11111116",
+//         playerPosition: [0, 0],
+//         initialRotation: 1,
+//         permissions: {
+//             allowLoops: true,
+//             allowMultipleOutgoing: true,
+//             stateActionsAllowed: false,
+//             edgeActionsAllowed: true,
+//             maxNodes: 2,
+//             allowedSymbols: ["a", "b"],
+//             allowedCommands: ["f", "b"],
+//         },
+//         initialGraph: {
+//             nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
+//             edges: [],
+//         },
+//     },
+//     {
+//         id: 8,
+//         name: "Escada sem fim",
+//         floor: "12340",
+//         playerPosition: [0, 0],
+//         initialRotation: 1,
+//         permissions: {
+//             allowLoops: true,
+//             allowMultipleOutgoing: true,
+//             stateActionsAllowed: false,
+//             edgeActionsAllowed: true,
+//             maxNodes: 2,
+//             allowedSymbols: ["p", "b"],
+//             allowedCommands: ["p", "b"],
+//         },
+//         initialGraph: {
+//             nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
+//             edges: [],
+//         },
+//     },
+//     {
+//         id: 9,
+//         name: "Degraus alternados",
+//         floor: "1212127",
+//         playerPosition: [0, 0],
+//         initialRotation: 1,
+//         permissions: {
+//             allowLoops: false,
+//             allowMultipleOutgoing: true,
+//             stateActionsAllowed: false,
+//             edgeActionsAllowed: true,
+//             maxNodes: 3,
+//             allowedSymbols: ["p", "f", "b"],
+//             allowedCommands: ["p", "f", "b"],
+//         },
+//         initialGraph: {
+//             nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
+//             edges: [],
+//         },
+//     },
+//     {
+//         id: 10,
+//         name: "Labirinto em U",
+//         floor: `1-6
+// 1-1
+// 111`,
+//         playerPosition: [0, 0],
+//         initialRotation: 0,
+//         permissions: {
+//             allowLoops: false,
+//             allowMultipleOutgoing: false,
+//             stateActionsAllowed: false,
+//             edgeActionsAllowed: true,
+//             maxNodes: 9,
+//             allowedSymbols: ["f", "d", "b"],
+//             allowedCommands: ["f", "d", "b"],
+//             fixedTape: "FFDFFDFFB",
+//         },
+//         initialGraph: {
+//             nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
+//             edges: [],
+//         },
+//     },
+//     {
+//         id: 11,
+//         name: "Espiral 3x3",
+//         floor: `948
+// 503
+// 127`,
+//         playerPosition: [0, 2],
+//         initialRotation: 1,
+//         permissions: {
+//             allowLoops: false,
+//             allowMultipleOutgoing: false,
+//             stateActionsAllowed: false,
+//             edgeActionsAllowed: true,
+//             maxNodes: 8,
+//             allowedSymbols: ["f", "d", "b"],
+//             allowedCommands: ["f", "d", "b"],
+//         },
+//         initialGraph: {
+//             nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
+//             edges: [],
+//         },
+//     },
+//     {
+//         id: 12,
+//         name: "Desafio livre",
+//         floor: `1111
+// 1--1
+// 1--1
+// 1116`,
+//         playerPosition: [0, 0],
+//         initialRotation: 0,
+//         permissions: {
+//             allowLoops: true,
+//             allowMultipleOutgoing: true,
+//             stateActionsAllowed: false,
+//             edgeActionsAllowed: true,
+//             maxNodes: 12,
+//             allowedSymbols: ["f", "d", "e", "b"],
+//             allowedCommands: ["f", "d", "e", "b"],
+//         },
+//         initialGraph: {
+//             nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
+//             edges: [],
+//         },
+//     },
+// ];
 
 // ═══════════════════════════════════════════════════════════════
 //  FASES LFA — PROGRESSÃO PEDAGÓGICA
@@ -390,21 +390,21 @@ const newStages: Stage[] = [
         },
         tutorial: [
             {
-                image: "lfa/01-observacao/passo1.png",
+                image: "lfa/01observacao/passo1.png",
                 text:
                     "Bem-vindo às aulas de **Linguagens Formais e Autômatos**! " +
                     "O autômato já está montado. Observe o grafo ao lado: " +
                     "cada **círculo** é um estado e cada **seta** é uma transição.",
             },
             {
-                image: "lfa/01-observacao/passo2.png",
+                image: "lfa/01observacao/passo2.png",
                 text:
                     "O **estado inicial** (seta de entrada) é de onde o autômato parte. " +
                     "O **estado final** (borda dupla) é onde ele precisa chegar para aceitar a entrada. " +
                     "Cada aresta carrega o símbolo que a dispara e a ação do personagem.",
             },
             {
-                image: "lfa/01-observacao/passo3.png",
+                image: "lfa/01observacao/passo3.png",
                 text:
                     "A fita já está preenchida com 'aaa'. " +
                     "Clique em **Executar** e observe: a cada símbolo lido, " +
@@ -527,17 +527,17 @@ const newStages: Stage[] = [
             {
                 image: "lfa/03-transicoes/passo2.png",
                 text:
-                    "Para criar uma transição: arraste do estado de **origem** para o estado de **destino**. " +
-                    "Escolha o símbolo 'a' e a ação de movimento. " +
-                    "O caminho exige: **avançar** (f), **virar esquerda** (e), **avançar** (f), **botão** (b).",
+                    "Para criar uma transição: clique com o **botão direito** no estado de origem " +
+                    "e escolha **'Ligar a Estado Existente'**. Selecione o destino, escolha o símbolo " +
+                    "e a ação que o personagem deve executar ao percorrer aquela aresta.",
             },
             {
                 image: "lfa/03-transicoes/passo3.png",
                 text:
-                    "Monte as 4 transições para completar δ: " +
-                    "1 -a/f→ 2 | 2 -a/e→ 3 | 3 -a/f→ 4 | 4 -a/b→ 5. " +
-                    "Execute a fita 'aaaa' — cada símbolo lido dispara uma transição " +
-                    "e o personagem executa a ação correspondente!",
+                    "Monte as **4 transições** conectando os estados em sequência. " +
+                    "Analise o mapa: observe o caminho que o personagem precisa percorrer e defina " +
+                    "a ação correta em cada aresta — avançar, virar ou pressionar o botão. " +
+                    "Execute a fita 'aaaa' para verificar se o autômato está correto!",
             },
         ],
     },
@@ -560,7 +560,7 @@ const newStages: Stage[] = [
         permissions: {
             allowLoops: false,
             allowMultipleOutgoing: false,
-            stateActionsAllowed: true,
+            stateActionsAllowed: false,
             edgeActionsAllowed: false,
             maxNodes: 4,
             allowedSymbols: ["a"],
@@ -654,9 +654,10 @@ const newStages: Stage[] = [
             {
                 image: "lfa/05-afd-completo/passo3.png",
                 text:
-                    "Dica: 6 estados no total — um por símbolo lido mais o inicial. " +
-                    "Ações: f (subir), d (virar direita), f, f, b (botão). " +
-                    "Estado 6 é o final. Execute a fita 'aaaaa' para verificar!",
+                    "Dica: cada símbolo lido corresponde a um passo do personagem no mapa. " +
+                    "Observe o caminho e defina a ação certa em cada transição. " +
+                    "Não esqueça de marcar o **último estado** como final — " +
+                    "execute a fita e veja o personagem chegar ao botão!",
             },
         ],
     },
@@ -703,4 +704,4 @@ const newStages: Stage[] = [
     },
 ];
 
-export const stagesList: Stage[] = [...oldStages, ...newStages];
+export const stagesList: Stage[] = [/*...oldStages,*/ ...newStages];

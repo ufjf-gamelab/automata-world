@@ -131,24 +131,38 @@ function AutomatonEditor({
     const nodeMenuItems: MenuItem[] = [
         {
             icon: "✨",
-            label: "Add & Link New State",
+            label: "Criar e Ligar Novo Estado",
             onClick: graphActions.handleAddNewStateAndLink,
             disabled: nodeLimitReached,
         },
-        { icon: "🔗", label: "Link to Existing State", onClick: graphActions.handleStartLinking },
+        { icon: "🔗", label: "Ligar a Estado Existente", onClick: graphActions.handleStartLinking },
         { isSeparator: true },
-        { icon: "🚩", label: "Set as Initial State", onClick: graphActions.handleSetInitialState },
-        { icon: "🔘", label: "Toggle Final State", onClick: graphActions.handleToggleFinalState },
+        {
+            icon: "🚩",
+            label: "Definir como Estado Inicial",
+            onClick: graphActions.handleSetInitialState,
+        },
+        {
+            icon: "🔘",
+            label: "Alternar Estado Final",
+            onClick: graphActions.handleToggleFinalState,
+        },
         ...(permissions?.stateActionsAllowed !== false
-            ? [{ icon: "⚡", label: "Set State Action", onClick: graphActions.handleSetNodeAction }]
+            ? [
+                  {
+                      icon: "⚡",
+                      label: "Definir Ação do Estado",
+                      onClick: graphActions.handleSetNodeAction,
+                  },
+              ]
             : []),
         { isSeparator: true },
-        { icon: "🗑️", label: "Delete State", onClick: graphActions.handleDeleteNode },
+        { icon: "🗑️", label: "Excluir Estado", onClick: graphActions.handleDeleteNode },
     ];
 
     const edgeMenuItems: MenuItem[] = [
-        { icon: "✏️", label: "Edit Transition", onClick: graphActions.handleOpenEditEdgeModal },
-        { icon: "🗑️", label: "Delete Transition", onClick: graphActions.handleDeleteEdge },
+        { icon: "✏️", label: "Editar Transição", onClick: graphActions.handleOpenEditEdgeModal },
+        { icon: "🗑️", label: "Excluir Transição", onClick: graphActions.handleDeleteEdge },
     ];
 
     const closeModal = () => setModalData({ isOpen: false, action: null, title: "" });

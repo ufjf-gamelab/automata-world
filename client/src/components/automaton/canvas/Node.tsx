@@ -81,11 +81,10 @@ const NodeComponent = ({
 
     const action = node.action ? resolveFirstAction(node.action) : null;
 
-    const SIGN_H = 20;
-    const GAP = 3;
-    const hasAction = !!action;
-    const labelDy = hasAction ? -(SIGN_H / 2 + GAP / 2) : 0;
-    const signY = hasAction ? SIGN_H / 2 + GAP + labelDy : 0;
+    // Placa posicionada abaixo do círculo com folga de 5px
+    const SIGN_H = 22;
+    const GAP = 5;
+    const signY = radius + GAP + SIGN_H / 2;
 
     return (
         <g
@@ -97,15 +96,12 @@ const NodeComponent = ({
             <circle key={isActive ? activeKey : "idle"} className={outerClasses} r={radius} />
             {node.isFinal && <circle className={styles.inner} r={radius - 6} />}
 
-            <text
-                className={styles.labelText}
-                textAnchor="middle"
-                dominantBaseline="central"
-                dy={labelDy}
-            >
+            {/* Label do estado — centralizado no círculo */}
+            <text className={styles.labelText} textAnchor="middle" dominantBaseline="central">
                 {node.label}
             </text>
 
+            {/* Placa de ação ABAIXO do círculo */}
             {action && (
                 <ActionSign
                     x={0}
