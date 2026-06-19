@@ -295,31 +295,31 @@ const oldStages: Stage[] = [
             },
         ],
     },
-    {
-        id: 12,
-        name: "Desafio livre",
-        floor: `1111\n1--1\n1--1\n1116`,
-        playerPosition: [0, 0],
-        initialRotation: 0,
-        permissions: {
-            allowLoops: true,
-            allowMultipleOutgoing: true,
-            stateActionsAllowed: false,
-            edgeActionsAllowed: true,
-            maxNodes: 12,
-            allowedSymbols: ["f", "d", "e", "b"],
-            allowedCommands: ["f", "d", "e", "b"],
-        },
-        initialGraph: {
-            nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
-            edges: [],
-        },
-        tutorial: [
-            {
-                text: "Mapa quadrado com o centro vazio. Sem restrições de solução — encontre o caminho que quiser e construa o autômato para percorrê-lo.",
-            },
-        ],
-    },
+    // {
+    //     id: 12,
+    //     name: "Desafio livre",
+    //     floor: `1111\n1--1\n1--1\n1116`,
+    //     playerPosition: [0, 0],
+    //     initialRotation: 0,
+    //     permissions: {
+    //         allowLoops: true,
+    //         allowMultipleOutgoing: true,
+    //         stateActionsAllowed: false,
+    //         edgeActionsAllowed: true,
+    //         maxNodes: 12,
+    //         allowedSymbols: ["f", "d", "e", "b"],
+    //         allowedCommands: ["f", "d", "e", "b"],
+    //     },
+    //     initialGraph: {
+    //         nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
+    //         edges: [],
+    //     },
+    //     tutorial: [
+    //         {
+    //             text: "Mapa quadrado com o centro vazio. Sem restrições de solução — encontre o caminho que quiser e construa o autômato para percorrê-lo.",
+    //         },
+    //     ],
+    // },
 ];
 
 // ═══════════════════════════════════════════════════════════════
