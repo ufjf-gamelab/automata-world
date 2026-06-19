@@ -139,7 +139,7 @@ const EdgeComponent = ({
 
     const PERP = 18; // distância perpendicular à aresta
     const TANG = 12; // deslocamento tangencial (lado a lado em colisão)
-    const STACK = 11; // deslocamento vertical para empilhar (sem colisão)
+    // const STACK = 11; // deslocamento vertical para empilhar (sem colisão)
 
     if (Math.abs(curveOffset) < 1) {
         pathData = `M ${startX},${startY} L ${endX},${endY}`;
