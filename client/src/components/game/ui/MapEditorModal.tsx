@@ -345,7 +345,7 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
         { id: "permissions", label: "🔒 Permissões" },
         { id: "automaton", label: "⚙ Autômato" },
         { id: "tape", label: "📼 Fita" },
-        { id: "tutorial", label: "📖 Tutorial" },
+        // { id: "tutorial", label: "📖 Tutorial" },
     ];
 
     return (
