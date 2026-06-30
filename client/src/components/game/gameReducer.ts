@@ -21,7 +21,6 @@ export type GameAction =
     | { type: "UPDATE_COMMANDS"; payload: string }
     | { type: "START_EXECUTION" }
     | { type: "STOP_EXECUTION" }
-    | { type: "NEXT_STEP" }
     | { type: "EXECUTE_ACTION"; payload: string }
     /** Disparado pela simulação quando determina que a condição de vitória foi atingida */
     | { type: "SET_VICTORY" };
@@ -199,32 +198,7 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
         case "STOP_EXECUTION":
             return { ...state, isExecuting: false };
 
-        case "NEXT_STEP": {
-            if (state.commandIndex >= state.commands.length) return state;
-            const char = state.commands[state.commandIndex].toLowerCase();
-            const nextCommandIndex = state.commandIndex + 1;
-            const applied = applyCommand(char, state);
-            const isTapeFinished = nextCommandIndex >= state.commands.length;
-            const totalButtons = countTotalButtons(state.activeStage.floor);
-            const isVictory =
-                totalButtons > 0 && applied.activeButtons.length === totalButtons && isTapeFinished;
-            return {
-                ...state,
-                ...applied,
-                commandIndex: nextCommandIndex,
-                stepCounter: state.stepCounter + 1,
-                isVictory,
-            };
-        }
-
         case "EXECUTE_ACTION": {
-            /*
-             * Executa comandos do jogo durante a simulação do autômato.
-             * NÃO verifica vitória aqui — a vitória é verificada e disparada
-             * exclusivamente pelo useSimulation via SET_VICTORY, garantindo
-             * que todos os critérios (fita lida, estado final, botões) sejam
-             * avaliados juntos no momento correto.
-             */
             const chars = normalizePayloadToChars(action.payload);
             let current = state;
             for (const ch of chars) {

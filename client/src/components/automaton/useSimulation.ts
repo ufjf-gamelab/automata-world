@@ -262,7 +262,13 @@ export function useSimulation({
      */
     const resolveVictory = (isCurrentNodeFinal: boolean) => {
         const hasFinalStates = nodes.some((n) => n.isFinal);
-        const stateOk = !hasFinalStates || isCurrentNodeFinal;
+
+        /*
+         * Semântica correta de AFD:
+         *  - Se não há nenhum estado final definido → rejeita (stateOk = false)
+         *  - Se há estados finais → aceita apenas se o estado atual for final
+         */
+        const stateOk = hasFinalStates && isCurrentNodeFinal;
 
         const totalButtons = countTotalButtons(activeFloorRef.current);
         const buttonsOk = totalButtons === 0 || activeButtonsRef.current.length === totalButtons;

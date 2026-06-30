@@ -42,7 +42,7 @@ const oldStages: Stage[] = [
         initialRotation: 1,
         permissions: {
             allowLoops: false,
-            allowMultipleOutgoing: false,
+            allowMultipleOutgoing: true,
             stateActionsAllowed: false,
             edgeActionsAllowed: true,
             maxNodes: 6,
@@ -282,8 +282,8 @@ const oldStages: Stage[] = [
             stateActionsAllowed: false,
             edgeActionsAllowed: true,
             maxNodes: 8,
-            allowedSymbols: ["f", "e", "b"],
-            allowedCommands: ["f", "e", "b"],
+            allowedSymbols: ["f", "e", "b", "p"],
+            allowedCommands: ["f", "e", "b", "p"],
         },
         initialGraph: {
             nodes: [{ id: "1", label: "1", isInitial: true, isFinal: false }],
