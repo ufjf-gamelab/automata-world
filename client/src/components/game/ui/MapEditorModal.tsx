@@ -89,7 +89,7 @@ function ActionSelect({
             <option value="">— nenhuma —</option>
             {commands.map((cmd) => (
                 <option key={cmd.key} value={cmd.key}>
-                    {cmd.display} ({cmd.key})
+                    {cmd.display}
                 </option>
             ))}
         </select>
@@ -345,7 +345,7 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
         { id: "permissions", label: "🔒 Permissões" },
         { id: "automaton", label: "⚙ Autômato" },
         { id: "tape", label: "📼 Fita" },
-        // { id: "tutorial", label: "📖 Tutorial" },
+        { id: "tutorial", label: "📖 Tutorial" },
     ];
 
     return (
@@ -613,7 +613,7 @@ export default function MapEditorModal({ stage, onSave, onClose }: MapEditorModa
                                                                 );
                                                             }}
                                                         />
-                                                        {cmd.display} <em>({cmd.key})</em>
+                                                        {cmd.display}
                                                     </label>
                                                 );
                                             })}

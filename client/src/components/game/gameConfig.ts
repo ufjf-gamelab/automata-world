@@ -15,7 +15,12 @@ export const MOVEMENT_MODE: MovementMode = "relative";
 export interface GameCommand {
     key: string;
     display: string;
+    /** Ícone react-icons — botões HTML (CommandSequenceBuilder) */
     icon: IconType;
+    /**
+     * Símbolo Unicode para placas SVG no canvas do autômato.
+     * ⊕ = símbolo universal de "pressionar/ativar" (círculo com cruz)
+     */
     svgSymbol: string;
     word: string;
 }
@@ -26,13 +31,12 @@ const COMMANDS_RELATIVE: GameCommand[] = [
     { key: "b", display: "Botão", icon: BsToggleOn, svgSymbol: "⊕", word: "button" },
     {
         key: "e",
-        display: "Girar ↺",
+        display: "Girar esq.",
         icon: BsArrowCounterclockwise,
         svgSymbol: "↺",
         word: "turnLeft",
     },
-    { key: "d", display: "Girar ↻", icon: BsArrowClockwise, svgSymbol: "↻", word: "turnRight" },
-    { key: "t", display: "Meia-volta", icon: BsArrowDown, svgSymbol: "⇅", word: "turnBack" },
+    { key: "d", display: "Girar dir.", icon: BsArrowClockwise, svgSymbol: "↻", word: "turnRight" },
 ];
 
 const COMMANDS_CARDINAL: GameCommand[] = [
